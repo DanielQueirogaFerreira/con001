@@ -587,5 +587,137 @@
     "citation": "Matthew Henry, Exposition, John 3",
     "visibility": "public",
     "license": "PD"
+  },
+  {
+    "id": "interp:dhp.1.buddhaghosa",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "dhammapada:1",
+      "granularity": "phrase",
+      "span": {
+        "origin": "ed:dhp.pi.src",
+        "start": 0,
+        "end": 21,
+        "exact": "Manopubbaṅgamā dhammā",
+        "prefix": "",
+        "suffix": ", manoseṭṭhā",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:dhp.buddhaghosa",
+    "author": {
+      "type": "historical",
+      "display": "Buddhaghosa",
+      "school": "theravada",
+      "century": 5
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Summary of the Dhammapada-aṭṭhakathā on verse 1: *mano-pubbaṅgamā* — mind goes before. The commentary supplies the occasion (the story of Cakkhupāla) rather than a definition, which is how this commentary works throughout: the verse is explained by the event that produced it.\n\nThe doctrinal point carried by the gloss is that what makes an act good or bad is the intention that precedes it, and the consequence follows the intention as the cart-wheel follows the ox. **Note what this is not saying:** the act is not evaluated by whether it succeeds."
+    },
+    "citation": "Dhammapada-aṭṭhakathā I, on verse 1",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:dhp.279.buddhaghosa",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "dhammapada:279",
+      "granularity": "phrase",
+      "span": {
+        "origin": "ed:dhp.pi.src",
+        "start": 0,
+        "end": 19,
+        "exact": "Sabbe dhammā anattā",
+        "prefix": "",
+        "suffix": " ti, yadā",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:dhp.buddhaghosa",
+    "author": {
+      "type": "historical",
+      "display": "Buddhaghosa",
+      "school": "theravada",
+      "century": 5
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Summary of Buddhaghosa on 279: *sabbe dhammā anattā* — all things whatsoever are without self. The commentary is careful about the scope of *sabbe dhammā*: unlike the two preceding verses, which say all *saṅkhāras* (conditioned things) are impermanent and unsatisfactory, this one says all *dhammās*, which includes the unconditioned. Nothing at all is a self.\n\nThis is the sharpest metaphysical divergence anywhere in the corpus. Set beside Śaṅkara on `upanishad:ISH.1`, the two are not answering differently — they are denying each other's subject."
+    },
+    "citation": "Dhammapada-aṭṭhakathā, on verses 277–279",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:analects.4-16.zhuxi",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "analects:4.16",
+      "granularity": "word",
+      "span": {
+        "origin": "ed:analects.lzh.src",
+        "start": 7,
+        "end": 8,
+        "exact": "義",
+        "prefix": "子曰：君子喻於",
+        "suffix": "，小人喻於利",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:analects.zhuxi",
+    "author": {
+      "type": "historical",
+      "display": "朱熹 Zhū Xī",
+      "school": "neo-confucian",
+      "century": 12
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Summary of Zhu Xi on 4.16: 義 (*yì*, rightness) is what heavenly principle requires; 利 (*lì*, gain) is what human desire pursues. The distinction between the noble person and the small person is not ability but which of the two the mind runs to first.\n\nA position on the same question the Gītā and the Dhammapada address — whether an act is measured by what it yields — reached from a completely different starting point, and with a socially relational rather than soteriological frame."
+    },
+    "citation": "朱熹, 論語集注, 里仁第四",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:bible.jhn1-1.matthew-henry",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "bible:JHN.1.1",
+      "granularity": "phrase",
+      "span": {
+        "origin": "ed:bible.en.kjv",
+        "start": 21,
+        "end": 29,
+        "exact": "the Word",
+        "prefix": "In the beginning was ",
+        "suffix": ", and the Word",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:bible.matthew-henry",
+    "author": {
+      "type": "historical",
+      "display": "Matthew Henry",
+      "school": "nonconformist protestant",
+      "century": 18
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Summary of Matthew Henry on John 1:1: the *Logos* is named as the one by whom God is made known and by whom God speaks — speech is not a veil over the divine but the mode in which the divine is given.\n\nWorth reading directly against `daodejing:1`, whose opening sentence says that a way that can be spoken is not the constant way. Two texts, both at the opening of their book, taking opposite positions on whether the ultimate can be uttered. Neither is refuting the other — they never met — and the resonance map records this as a **divergence with a shared question**, not as a dispute."
+    },
+    "citation": "Matthew Henry, Exposition, John 1",
+    "visibility": "public",
+    "license": "PD"
   }
 ]

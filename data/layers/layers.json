@@ -488,5 +488,39 @@
       "weight": 0.75,
       "basis": "The most widely circulated English-language commentary of the last three centuries."
     }
+  },
+  {
+    "id": "layer:dhp.buddhaghosa",
+    "type": "Layer",
+    "work": "work:dhammapada",
+    "kind": "traditional",
+    "title": {
+      "pi": "Dhammapada-aṭṭhakathā",
+      "en": "Buddhaghosa's Dhammapada Commentary"
+    },
+    "author": {
+      "type": "historical",
+      "display": "Buddhaghosa",
+      "school": "theravada",
+      "century": 5
+    },
+    "stance": "theravada",
+    "source": {
+      "work": "Dhammapada-aṭṭhakathā",
+      "language": "pi",
+      "circa": "5th century"
+    },
+    "license": {
+      "id": "PD"
+    },
+    "default_in_stack": true,
+    "canonical": {
+      "weight": 1,
+      "basis": "The commentary through which the Dhammapada has been read in Theravāda for fifteen centuries."
+    },
+    "coverage": {
+      "units_total": 423,
+      "units_annotated": 423
+    }
   }
 ]

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://con001.dev/schema/question.schema.json",
+  "title": "Question",
+  "description": "A question that several traditions actually address, with an axis their readings can be placed on. Questions — not traditions — are the unit of comparison. Comparing 'Christianity to Buddhism' is not a computation anyone can defend; comparing where two readings land on 'is the rightness of an act independent of what it yields' is. See docs/10-resonance.md.",
+  "type": "object",
+  "required": ["id", "type", "statement", "axis", "framing_note", "consequence_tier"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^q:[a-z0-9-]+$" },
+    "type": { "const": "Question" },
+    "statement": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "string" } },
+    "axis": {
+      "type": "object",
+      "required": ["low", "high"],
+      "additionalProperties": false,
+      "properties": {
+        "low": { "type": "string", "minLength": 1, "description": "What a value of 0 means." },
+        "high": { "type": "string", "minLength": 1, "description": "What a value of 1 means." }
+      }
+    },
+    "framing_note": {
+      "type": "string",
+      "minLength": 1,
+      "description": "REQUIRED. Whose vocabulary the question is posed in, and which traditions it fits badly. Every comparative question is asked from somewhere; recording where is the difference between comparison and imposition."
+    },
+    "consequence_tier": {
+      "enum": ["low", "medium", "high"],
+      "description": "How much damage a wrong claim does here. 'high' means the question touches a community's identity or exclusivity claims, and every resonance on it needs sign-off from the advisory group of each tradition involved. See docs/11-guardrails.md."
+    },
+    "fits_badly": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Traditions for which this question is a poor fit, named openly rather than silently forced onto the axis."
+    }
+  }
+}

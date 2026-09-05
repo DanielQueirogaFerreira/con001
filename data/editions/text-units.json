@@ -190,5 +190,89 @@
       "verified": false,
       "sha256": "8473c0b1c7664945528317faf77351258eb79f8b11ba821ef76d7e916cde711a"
     }
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:dhp.pi.src",
+    "cr": "dhammapada:1",
+    "label": "1",
+    "text": "Manopubbaṅgamā dhammā, manoseṭṭhā manomayā; manasā ce paduṭṭhena bhāsati vā karoti vā, tato naṃ dukkhamanveti cakkaṃva vahato padaṃ.",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "c1c3f6b424c971596b624e8f45a0f0f7a6af572cbf980bda680b8ebe05b68710"
+    }
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:dhp.en.muller",
+    "cr": "dhammapada:1",
+    "label": "1",
+    "text": "All that we are is the result of what we have thought: it is founded on our thoughts, it is made up of our thoughts. If a man speaks or acts with an evil thought, pain follows him, as the wheel follows the foot of the ox that draws the carriage.",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "ac4f4a10fc5c32b8c08360034531e162df74be1dd71b897d2fd39b196e459108"
+    }
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:dhp.pi.src",
+    "cr": "dhammapada:279",
+    "label": "279",
+    "text": "Sabbe dhammā anattā ti, yadā paññāya passati; atha nibbindati dukkhe, esa maggo visuddhiyā.",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "b4f217d51fb7a161e9b534759dd27d2d1b80b4e875d1e354e30a1fd2f8ac218b"
+    }
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:dhp.en.muller",
+    "cr": "dhammapada:279",
+    "label": "279",
+    "text": "All forms are unreal, he who knows and sees this becomes passive in pain; this is the way that leads to purity.",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "5aff6d1282601f0a549100249d474c479c43de8c3be7414fd833b3a74bf50056"
+    }
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:analects.lzh.src",
+    "cr": "analects:4.16",
+    "label": "4.16",
+    "text": "子曰：君子喻於義，小人喻於利。",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "c69b9fb631760d62e0537492145034ff9f5100ee7017c0098040396eb0a42469"
+    }
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:analects.en.legge",
+    "cr": "analects:4.16",
+    "label": "4.16",
+    "text": "The Master said, \"The mind of the superior man is conversant with righteousness; the mind of the mean man is conversant with gain.\"",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "df969b67bce70a5575645338b643c813c9c84703c13a1b38f59c42c5d5710ddf"
+    }
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:bible.en.kjv",
+    "cr": "bible:JHN.1.1",
+    "label": "1:1",
+    "text": "In the beginning was the Word, and the Word was with God, and the Word was God.",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "09c9620e89cbbf56f96c3edb0ddb8b0824a656bf92e940a83cdb527bd3426765"
+    }
   }
 ]

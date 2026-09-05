@@ -12,9 +12,11 @@ is worth doing — the second work in each pair is not a duplicate, it is the
 *opposition* to the first, and it exercises parts of the architecture the first
 one does not.
 
-**Note on the count:** six, not five. Both-Chinese plus both-Indian plus Bible
-plus Qur'ān comes to six works. Everything here is built for six; say the word
-if one should be dropped.
+**Then seven.** The Upaniṣads were confirmed as the sixth, and a seventh was
+asked for. It is the **Dhammapada** (§7), and the reasoning is a gap rather than
+a preference: six works covering Jewish, Christian, Islamic, Confucian, Daoist
+and Hindu reading, with no Buddhism in a corpus that claims to map worldviews
+across traditions, is indefensible.
 
 Selection criteria, in priority order:
 
@@ -234,6 +236,54 @@ bhāṣyas in Sanskrit.
 
 ---
 
+## 7. The seventh → **the Dhammapada**
+
+**Recommended, and chosen to close a gap rather than to add a favourite.**
+
+**Reference system:** `dhammapada:verse` — 423 verses, cited by verse number
+throughout the tradition.
+
+**Why this one:**
+
+- **Buddhism was the largest hole in the corpus.** Six works spanning Jewish,
+  Christian, Islamic, Confucian, Daoist and Hindu reading, and nothing from the
+  most transnational tradition of all. For a platform whose central feature is
+  mapping worldviews across traditions, that gap would have been the first thing
+  a critic named — and they would have been right.
+- **It makes the resonance map work.** The Dhammapada shares a great deal of
+  surface ethical content with the Analects, Proverbs and the Gītā, while resting
+  on metaphysics that contradict all three — no self, no creator. That is the
+  ideal test case: **high agreement at the ethical layer, flat contradiction at
+  the metaphysical one.** If the map can show that without either flattening the
+  traditions or setting them against each other, it works. `dhammapada:279`
+  (*sabbe dhammā anattā*) against `upanishad:ISH.1` is the sharpest opposition
+  anywhere in the corpus, and it is a real historical argument, not one we
+  invented.
+- **A different SHAPE of commentary.** Buddhaghosa's *Dhammapada-aṭṭhakathā*
+  (5th c.) explains each verse by narrating the occasion that produced it —
+  story, not gloss. Every other commentary layer in the corpus is expository.
+  That stress-tests the layer model in a way the others cannot.
+- **Compact and tractable**: 423 verses, fully public domain, with Max Müller's
+  1881 translation (SBE vol. 10) free.
+
+**One thing to get right:** Pāli is written in Sinhala, Thai, Burmese, Khmer and
+Devanāgarī scripts as well as roman. The roman edition is the interoperable
+choice, not the authoritative one, and a per-script transliteration edition is
+owed to each community. This is recorded on the edition rather than left to be
+discovered.
+
+**Strongest alternative — the Gurū Granth Sāhib.** A serious candidate,
+and uniquely apt for the alignment map because it *is* an inter-tradition
+anthology: it carries the voices of Hindu bhakti saints and Muslim Sufis
+alongside the Sikh Gurus, which is the thing this platform is trying to
+compute, already bound in one volume. It is held back for one reason: the
+handling protocols around it are the strictest of any text considered here,
+and it should be added **after** a Sikh advisory group is seated, not before.
+**Recommendation: the Gurū Granth Sāhib as work eight, with that as an explicit
+precondition.**
+
+---
+
 ## Summary
 
 | # | Work | CR grammar | Units | Original | First imported layers |
@@ -244,18 +294,24 @@ bhāṣyas in Sanskrit.
 | 4 | Dao De Jing | `daodejing:ch` | 81 | Classical Chinese | Wang Bi, Heshang Gong, Mawangdui |
 | 5 | Bhagavad Gītā | `gita:ch.v` | 700 | Sanskrit | Śaṅkara, Rāmānuja, Tilak, Gandhi |
 | 6 | Principal Upaniṣads | `upanishad:CODE.n` | ~1,350 | Sanskrit | Śaṅkara, Aurobindo |
+| 7 | Dhammapada | `dhammapada:v` | 423 | Pāli | Buddhaghosa |
 
-**Suggested build order: Gītā → Dao De Jing → Analects → Upaniṣads → Qur'ān →
-Bible.**
+Five traditions are now represented, with two internally-paired: Chinese thought
+holds its Confucian–Daoist argument, and Indian thought holds both the Gītā and
+the Upaniṣads it argues from.
+
+**Suggested build order: Gītā → Dhammapada → Dao De Jing → Analects → Upaniṣads
+→ Qur'ān → Bible.**
 
 The Gītā first: smallest complete corpus, most vivid contestation, cleanest
 licensing, and Devanāgarī combining marks already exercise grapheme alignment.
-Then the Dao De Jing, promoted to second because at 81 chapters it is the
-cheapest possible way to build the `variant` layer machinery against real
-manuscript evidence — and every later work needs that machinery. Then the
-Analects for a second non-alphabetic script, the Upaniṣads for multi-book
-reference grammars, the Qur'ān because RTL plus immutability plus doctrinal
-labelling is the real test, and the Bible last.
+**The Dhammapada promoted to second**, because at 423 verses it is the cheapest
+work that lets the resonance map be built and tested against a real
+cross-tradition contradiction rather than a synthetic one — and the resonance
+map is the feature everything else now serves. Then the Dao De Jing for variant
+machinery, the Analects for a second non-alphabetic script, the Upaniṣads for
+multi-book reference grammars, the Qur'ān because RTL plus immutability plus
+doctrinal labelling is the real test, and the Bible last.
 
 That order is deliberately the reverse of what a Western-market instinct would
 choose, and it is the right one on engineering grounds: **build against the

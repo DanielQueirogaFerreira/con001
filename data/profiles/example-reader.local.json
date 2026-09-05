@@ -1,0 +1,12 @@
+{
+  "_comment": "LOCAL-ONLY ARTEFACT — a fixture, not a stored record. A reader's worldview profile is computed and held on their own device and NEVER stored server-side. Inferred religious and philosophical belief is special-category data under GDPR Article 9 and, in a number of countries, the kind of record that gets people hurt. This file exists so tools/resonance.mjs has something to demonstrate against. Nothing in the production design writes a file like this to a server.",
+  "_synthetic": true,
+  "held": "client-side, encrypted at rest, exportable and erasable by the reader alone",
+  "reader": "example",
+  "positions": {
+    "q:act-and-outcome": 0.88,
+    "q:naming-the-ultimate": 0.2,
+    "q:abiding-self": 0.35
+  },
+  "derived_from": "readings this reader saved, forked, or annotated — never from what they merely opened"
+}

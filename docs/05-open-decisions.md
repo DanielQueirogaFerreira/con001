@@ -12,6 +12,10 @@ Decisions I made on my own, and decisions that are genuinely yours.
 | Popularity ranking | **Two axes, never blended, plus a diversity floor** | A single relevance score turns into a majority vote on meaning within a year. [`06`](06-salience.md) |
 | Engagement storage | **Outside the interpretation** | A reading must never carry its own popularity as though it were part of what it says. [`06`](06-salience.md) |
 | Text integrity | **Nothing displays unless `verified`** | Every sample passage here was hand-entered and is marked unverified. [`09`](09-ingestion.md) |
+| Seventh work | **Dhammapada** | Buddhism was the largest gap, and it is the ideal resonance-map test: shared ethics, contradictory metaphysics. [`03`](03-corpus.md) |
+| Cross-tradition comparison | **Positions on questions, never traditions** | "How aligned is Christianity with Buddhism" has no answer; any number produced for it is fabricated. [`10`](10-resonance.md) |
+| Worldview profiles | **Client-side only, never stored** | Inferred religious belief is special-category data and, in some countries, dangerous to hold. [`10`](10-resonance.md) |
+| Guardrails | **Rails on assertion, rooms around expression** | Different regimes: the system speaking for a tradition is gated hard, a person speaking for themselves is not. [`11`](11-guardrails.md) |
 | Anchoring | **Canonical Reference (mandatory) + Span (optional)** | The only scheme that survives translation switching and joins to the existing commentary corpus. [`01`](01-anchoring.md) |
 | Default visibility | **Private** | A first reading is a vulnerable thing. [`02`](02-layers.md) |
 | Anonymous public interpretation | **Not permitted** | Attribution is the substrate; without it the layer stack means nothing. [`04`](04-generative.md) |
@@ -29,17 +33,19 @@ Decisions I made on my own, and decisions that are genuinely yours.
 
 ## Yours to decide
 
-### 0. Two small confirmations
+### 0. Confirmations still needed
 
-**Six works, not five.** You said five; both-Chinese plus both-Indian plus Bible
-plus Qur'ān comes to six. Everything is built for six — say the word if one
-should go.
+**Work eight: the Gurū Granth Sāhib?** It is the strongest remaining candidate
+and uniquely apt here — it *is* an inter-tradition anthology, carrying Hindu
+bhakti saints and Muslim Sufis alongside the Sikh Gurus. I held it back for one
+reason: its handling protocols are the strictest of any text considered, and it
+should be added **after** a Sikh advisory group is seated. That is a sequencing
+decision, and it is yours.
 
-**Which second Indian work.** I chose the **Principal Upaniṣads** over the Yoga
-Sūtras and the Rāmāyaṇa, because Śaṅkara commented on both them and the Gītā,
-which makes author-level navigation across works demonstrable on day one. The
-Yoga Sūtras would be cheaper (196 sūtras, one stable citation grammar) if
-scope is the concern.
+**Seat the advisory groups.** This has moved from good practice to a blocker.
+Two high-consequence resonances are sitting at `pending-review` and cannot be
+published without sign-off from Hindu and Buddhist reviewers. That is the design
+working correctly, and it stays stuck until people exist.
 
 ### 0b. Confirm the licences
 

@@ -134,5 +134,25 @@
     ],
     "policy": "policy:upanishad.v1",
     "notes": "Added as the second Indian work. A corpus rather than a single book, so it takes a Bible-shaped reference grammar: a short code per Upaniṣad plus a numeric path. Śaṅkara commented on ten of them, which gives us the same commentator across two works — a real test of author-level layer navigation."
+  },
+  {
+    "id": "work:dhammapada",
+    "type": "Work",
+    "title": {
+      "pi": "धम्मपद / Dhammapada",
+      "en": "Dhammapada"
+    },
+    "tradition": "buddhist",
+    "cr_grammar": "dhammapada:verse",
+    "cr_pattern": "^dhammapada:\\d{1,3}$",
+    "unit_count": 423,
+    "structure": [
+      "verse"
+    ],
+    "source_languages": [
+      "pi"
+    ],
+    "policy": "policy:dhammapada.v1",
+    "notes": "The seventh work, and the one that closes the largest hole in the corpus: six works covering Jewish, Christian, Islamic, Confucian, Daoist and Hindu reading, and no Buddhism — the most transnational tradition of all. Buddhaghosa's Dhammapada-aṭṭhakathā is also a different SHAPE of commentary from anything else here: each verse gets a narrative occasion rather than a gloss, which stress-tests the layer model usefully."
   }
 ]

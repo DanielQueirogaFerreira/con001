@@ -252,5 +252,44 @@
     "license": {
       "id": "PD"
     }
+  },
+  {
+    "id": "ed:dhp.pi.src",
+    "type": "Edition",
+    "work": "work:dhammapada",
+    "kind": "source",
+    "language": "pi",
+    "script": "Latn",
+    "direction": "ltr",
+    "title": "Dhammapada, Pāli text in roman transliteration",
+    "translator": null,
+    "year": null,
+    "authority": "primary",
+    "immutable": true,
+    "normalization": "nfc",
+    "divine_name_policy": null,
+    "license": {
+      "id": "PD",
+      "jurisdiction_notes": "Pāli canon text is public domain. Note the script question: Pāli is written in Sinhala, Thai, Burmese, Khmer and Devanāgarī scripts as well as roman. Roman is the interoperable choice, not the authoritative one — a per-script transliteration edition is owed to each community."
+    }
+  },
+  {
+    "id": "ed:dhp.en.muller",
+    "type": "Edition",
+    "work": "work:dhammapada",
+    "kind": "translation",
+    "language": "en",
+    "script": "Latn",
+    "direction": "ltr",
+    "title": "The Dhammapada, trans. F. Max Müller, Sacred Books of the East vol. 10",
+    "translator": "Friedrich Max Müller",
+    "year": 1881,
+    "authority": "secondary",
+    "immutable": false,
+    "normalization": "nfc",
+    "divine_name_policy": null,
+    "license": {
+      "id": "PD"
+    }
   }
 ]

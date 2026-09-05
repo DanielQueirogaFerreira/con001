@@ -105,6 +105,9 @@ const layers = read('data/layers/layers.json');
 const interps = read('data/interpretations/interpretations.json');
 const lenses = read('data/lenses/lenses.json');
 const rends = read('data/renditions/renditions.json');
+const questions = read('data/questions/questions.json');
+const positions = read('data/positions/positions.json');
+const resonances = read('data/resonances/resonances.json');
 
 const errs = [];
 const sets = [
@@ -115,6 +118,9 @@ const sets = [
   ['interpretation', interps, 'data/interpretations/interpretations.json'],
   ['lens', lenses, 'data/lenses/lenses.json'],
   ['rendition', rends, 'data/renditions/renditions.json'],
+  ['question', questions, 'data/questions/questions.json'],
+  ['position', positions, 'data/positions/positions.json'],
+  ['resonance', resonances, 'data/resonances/resonances.json'],
 ];
 for (const [name, docs, file] of sets)
   docs.forEach((d, i) => check(schemas.get(S(name)), d, `${file}[${i}]`, errs));
@@ -212,6 +218,24 @@ for (const r of rends) {
     I(`${r.id}: synthetic recitation is never generated`);
   if (r.policy.decision === 'allowed' && !r.provenance_embedded)
     I(`${r.id}: an allowed rendition must carry embedded provenance`);
+}
+
+// The resonance layer. Structural checks only — the semantic invariants
+// (divergence required, claims matching axis geometry, advisory sign-off) live
+// in tools/resonance.mjs and its tests.
+const qIds = idsOf(questions);
+const posIds = idsOf(positions);
+for (const p of positions) {
+  if (!qIds.has(p.question)) I(`${p.id} references unknown question ${p.question}`);
+  if (!layerIds.has(p.held_by)) I(`${p.id} references unknown layer ${p.held_by}`);
+  for (const e of p.evidence)
+    if (!interpIds.has(e)) I(`${p.id} cites evidence ${e} that does not exist`);
+}
+for (const r of resonances) {
+  if (!qIds.has(r.question)) I(`${r.id} references unknown question ${r.question}`);
+  for (const id of r.positions) if (!posIds.has(id)) I(`${r.id} references unknown position ${id}`);
+  if (!(r.divergence ?? []).length)
+    I(`${r.id}: a resonance with no recorded divergence is syncretism, not comparison`);
 }
 
 /* ------------------------------------------------------------------ report */

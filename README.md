@@ -24,11 +24,10 @@ where the reader controls which readings are in front of them.
    and have the result carry the lens with it, so the rendering is attributable
    to a reading rather than floating free.
 
-## The six books
+## The seven books
 
-Held in pairs. The second work on each side is not a duplicate — it is the
-*opposition* to the first, and the corpus holds the argument rather than one
-side of it.
+Chinese and Indian thought are each held as a pair, so the corpus contains their
+internal argument rather than one side of it.
 
 | # | Work | Tradition | Why this one |
 |---|------|-----------|--------------|
@@ -38,6 +37,7 @@ side of it.
 | 4 | **Dao De Jing (道德經)** | Daoist | The Confucian–Daoist argument, and the best manuscript-variant material in existence: 常 for 恆 in the received text, changed by an emperor's naming taboo and inherited silently by every translation since. |
 | 5 | **Bhagavad Gītā** | Hindu | 700 verses, and Śaṅkara, Rāmānuja, Madhva, Tilak and Gandhi read them into five incompatible programs. The clearest proof of the product thesis. |
 | 6 | **Principal Upaniṣads** | Hindu | The source the Gītā argues from. Īśā 1 hosts the *same* dispute as Gītā 2.47, between the same two positions — computable, because stance is a first-class field. |
+| 7 | **Dhammapada** | Buddhist | Closes the largest gap in the corpus. Shares surface ethics with the Analects and the Gītā while contradicting both metaphysically — the ideal test of whether the resonance map can show agreement and contradiction at once. |
 
 Full reasoning, alternatives considered, and source/licence notes: [`docs/03-corpus.md`](docs/03-corpus.md).
 
@@ -53,14 +53,16 @@ Full reasoning, alternatives considered, and source/licence notes: [`docs/03-cor
 - [`docs/07-studio.md`](docs/07-studio.md) — the authoring and curation surface
 - [`docs/08-open-source-and-cost.md`](docs/08-open-source-and-cost.md) — licensing, running cost, governance
 - [`docs/09-ingestion.md`](docs/09-ingestion.md) — text integrity: why no sample text here is marked verified
+- [`docs/10-resonance.md`](docs/10-resonance.md) — **the alignment map**: comparing positions on questions, never traditions, and where a reader's worldview profile lives
+- [`docs/11-guardrails.md`](docs/11-guardrails.md) — thresholds, consequence tiers, and the line between the platform asserting and a person expressing
 - [`LICENSING.md`](LICENSING.md) — the four-licence split, awaiting confirmation
 
 ## Repository layout
 
 ```
 schema/     JSON Schema for every core entity
-data/       Worked samples — real passages, real commentators, all six books
-tools/      validate.mjs, salience.mjs, and their tests
+data/       Worked samples — real passages, real commentators, all seven books
+tools/      validate.mjs, salience.mjs, resonance.mjs, and their tests
 docs/       The specification
 ```
 
@@ -74,6 +76,12 @@ See where the tradition argues and where the readers are:
 
 ```
 npm run salience
+```
+
+See where traditions answer the same question, and where a reader stands:
+
+```
+npm run resonance
 ```
 
 No dependencies — the schema checker and the integrity checks are plain Node.
@@ -108,9 +116,57 @@ Plus a hard **diversity floor**: whatever the ranking says, every anchor must
 also carry a reading from outside the leading stance. Details and the failure
 modes it guards against: [`docs/06-salience.md`](docs/06-salience.md).
 
+## Aligned where? Comparing positions, not religions
+
+The platform's most delicate feature is showing a reader where their view sits
+across traditions. It has two failure modes, and the naive implementation —
+embed the texts, show what is close — produces both:
+
+- **Syncretism**: claiming two texts mean the same thing, erasing distinctions
+  every tradition here fought over.
+- **Manufactured conflict**: claiming traditions oppose each other, handing
+  sectarians a citable machine.
+
+So the unit of comparison is never a tradition. It is a **question** with an
+axis, and the things placed on it are specific readings by named commentators,
+each anchored to a passage you can open.
+
+```
+q:act-and-outcome — Is the rightness of an act independent of what it yields?
+
+    ··············●······  0.72  hindu      Tilak
+    ················●····  0.78  confucian  Zhu Xi
+    ················●····  0.80  buddhist   Buddhaghosa
+    ·················●···  0.85  hindu      Śaṅkara
+    ··················●··  0.92  hindu      Gandhi
+
+    internal spread, hindu: 0.72–0.92 across 3 readings
+```
+
+Zhu Xi is closer to Buddhaghosa than Tilak is to Gandhi. That is what the data
+says, and it makes "one tradition against another" a sentence this system cannot
+produce.
+
+Four rules, all with tests:
+
+1. **A resonance never displays without the internal spread of its traditions** —
+   disagreement *within* is always as visible as disagreement *between*.
+2. **Every agreement must record what it hides.** `divergence` is required even on
+   resonances that record agreement. An agreement concealing nothing is
+   syncretism, and it does not ship.
+3. **The claim vocabulary is closed** — `answers-similarly`,
+   `answers-oppositely`, `shares-question-only`. There is no field in which the
+   system can say two traditions agree, and no confidence score unlocks one.
+   Manufactured opposition is rejected as firmly as manufactured agreement.
+4. **The reader's worldview profile never leaves their device.** Inferred
+   religious belief is special-category data, and in many countries the kind of
+   record that gets people hurt. It reports proximity to *positions*, never
+   affiliation to a tradition — the system never tells anyone what they are — and
+   always offers the strongest reading *against* where they stand.
+
 ## Status
 
-Specification, data model, and a worked corpus across all six books. No
+Specification, data model, and a worked corpus across all seven books. No
 application yet — the data model has to be right first, because an anchoring
 scheme chosen badly cannot be migrated later without losing every annotation
 ever made.

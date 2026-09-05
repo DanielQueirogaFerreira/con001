@@ -1,0 +1,74 @@
+[
+  {
+    "id": "res:outcome.gita-analects-dhammapada",
+    "type": "Resonance",
+    "question": "q:act-and-outcome",
+    "positions": ["pos:gita.2-47.shankara", "pos:analects.4-16.zhuxi", "pos:dhp.1.buddhaghosa"],
+    "claim": "answers-similarly",
+    "divergence": [
+      {
+        "summary": "What the detachment is FOR differs completely. For Śaṅkara, acting without claim on the fruit purifies the mind toward liberating knowledge. For Zhu Xi there is no liberation in view at all: rightness is the mind's correct orientation within a web of social relations, and the point is to be the kind of person a society needs. For Buddhaghosa the frame is karmic: intention conditions consequence across lives.",
+        "evidence": ["interp:gita.2-47.shankara", "interp:analects.4-16.zhuxi", "interp:dhp.1.buddhaghosa"]
+      },
+      {
+        "summary": "They disagree about what an act even is. The Gītā's adhikāra is a term of ritual law about who is entitled to undertake something; the Analects is describing a disposition of mind; the Dhammapada is describing a causal mechanism. Three different objects, placed on one axis by us, for comparison.",
+        "evidence": []
+      }
+    ],
+    "consequence_tier": "low",
+    "review": { "status": "draft" }
+  },
+  {
+    "id": "res:naming.daodejing-quran",
+    "type": "Resonance",
+    "question": "q:naming-the-ultimate",
+    "positions": ["pos:ddj.1.wangbi", "pos:quran.2-1.ibn-kathir"],
+    "claim": "answers-similarly",
+    "divergence": [
+      {
+        "summary": "The kind of limit is not the same, and this is exactly where a naive similarity engine would flatten them. For Wang Bi the limit is ontological: the Dao is not the sort of thing language reaches, ever. For Ibn Kathīr the limit is local and deliberate — God speaks, extensively and namably, and has withheld the meaning of these particular letters. One is a claim about language; the other is a claim about a specific act of revelation.",
+        "evidence": ["interp:ddj.1.wangbi", "interp:quran.2-1.ibn-kathir"]
+      },
+      {
+        "summary": "The Qur'ānic position sits inside a tradition with ninety-nine named divine attributes. Reading it as apophatic in the Daoist sense inverts it.",
+        "evidence": []
+      }
+    ],
+    "consequence_tier": "medium",
+    "review": { "required_from": ["advisory:islamic", "advisory:daoist"], "status": "pending-review" }
+  },
+  {
+    "id": "res:naming.daodejing-john",
+    "type": "Resonance",
+    "question": "q:naming-the-ultimate",
+    "positions": ["pos:ddj.1.wangbi", "pos:bible.jhn1-1.matthew-henry"],
+    "claim": "answers-oppositely",
+    "divergence": [
+      {
+        "summary": "Two books whose first sentence takes the opposite position on whether the ultimate can be uttered. The Dao that can be spoken is not the constant Dao; in the beginning was the Word, and the Word was God. Neither is refuting the other — they never met, and neither knew the other existed.",
+        "evidence": ["interp:ddj.1.wangbi", "interp:bible.jhn1-1.matthew-henry"]
+      }
+    ],
+    "consequence_tier": "medium",
+    "review": { "status": "draft" }
+  },
+  {
+    "id": "res:self.upanishad-dhammapada",
+    "type": "Resonance",
+    "question": "q:abiding-self",
+    "positions": ["pos:upanishad.ish1.shankara", "pos:dhp.279.buddhaghosa"],
+    "claim": "answers-oppositely",
+    "divergence": [
+      {
+        "summary": "Not a difference of emphasis. ātman and attā are the same word, and these two traditions argued about precisely this for a thousand years, in writing, on purpose. Advaita holds the self is real and identical with the ultimate; Theravāda holds that all dhammas without exception are without self. Any presentation that softens this misrepresents both.",
+        "evidence": ["interp:upanishad.ish1.shankara", "interp:dhp.279.buddhaghosa"]
+      },
+      {
+        "summary": "Both nonetheless treat the question as the hinge on which liberation turns, and both describe the goal as the end of suffering through seeing what is actually the case. The shared question is real; the answers are contradictory.",
+        "evidence": []
+      }
+    ],
+    "consequence_tier": "high",
+    "review": { "required_from": ["advisory:hindu", "advisory:buddhist"], "status": "pending-review" }
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "q:act-and-outcome",
+    "type": "Question",
+    "statement": {
+      "en": "Is the rightness of an act independent of what it yields?"
+    },
+    "axis": {
+      "low": "an act is measured by the outcome it produces",
+      "high": "an act is right or wrong independently of its outcome"
+    },
+    "framing_note": "Posed in the vocabulary of moral philosophy, which is not the native vocabulary of any of the texts placed on it. The Gītā argues about entitlement (adhikāra), the Analects about the orientation of the mind, the Dhammapada about intention and its karmic fruit. The axis is a comparison device, not a claim that these three are having one conversation.",
+    "consequence_tier": "low"
+  },
+  {
+    "id": "q:abiding-self",
+    "type": "Question",
+    "statement": {
+      "en": "Is there an abiding self?"
+    },
+    "axis": {
+      "low": "there is no abiding self in anything whatsoever",
+      "high": "there is an abiding self, identical with the ultimate"
+    },
+    "framing_note": "The most load-bearing question in the corpus and the one most easily mishandled. 'Self' translates ātman and attā, which are cognate terms doing opposite work in two traditions that argued about precisely this for centuries. This axis is legitimate only because the two traditions themselves posed it to each other; it would be illegitimate if imposed on traditions that never asked it.",
+    "consequence_tier": "high",
+    "fits_badly": ["confucian", "daoist"]
+  },
+  {
+    "id": "q:naming-the-ultimate",
+    "type": "Question",
+    "statement": {
+      "en": "Can the ultimate be named or spoken?"
+    },
+    "axis": {
+      "low": "no — language does not reach it",
+      "high": "yes — it is given in and as speech"
+    },
+    "framing_note": "Apophatic and cataphatic are Greek-derived categories from Christian theology, applied here to texts that did not use them. Recorded because the question is genuinely asked in all four traditions placed on it, but the vocabulary is borrowed and the borrowing should be visible.",
+    "consequence_tier": "medium"
+  }
+]

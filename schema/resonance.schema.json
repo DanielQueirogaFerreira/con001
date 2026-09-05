@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://con001.dev/schema/resonance.schema.json",
+  "title": "Resonance",
+  "description": "A relation between positions on the SAME question. Never a claim that two texts mean the same thing — only that two readings answer one question similarly or oppositely, which is a far weaker and defensible claim. See docs/10-resonance.md.",
+  "type": "object",
+  "required": ["id", "type", "question", "positions", "claim", "divergence", "consequence_tier"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^res:" },
+    "type": { "const": "Resonance" },
+    "question": { "type": "string", "pattern": "^q:" },
+    "positions": { "type": "array", "minItems": 2, "items": { "type": "string", "pattern": "^pos:" } },
+    "claim": {
+      "enum": ["answers-similarly", "answers-oppositely", "shares-question-only"],
+      "description": "A CLOSED vocabulary, deliberately. There is no free-text field in which the system can assert that two traditions agree. This is the linguistic ceiling from docs/11-guardrails.md: the strongest thing the system may ever say is that two readings answer one question similarly."
+    },
+    "divergence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["summary"],
+        "additionalProperties": false,
+        "properties": {
+          "summary": { "type": "string", "minLength": 1 },
+          "evidence": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "description": "REQUIRED, at least one, INCLUDING on resonances that record agreement. A recorded agreement that does not also record what it hides is syncretism, and this project does not ship it. This is the single most important constraint in the resonance model."
+    },
+    "consequence_tier": { "enum": ["low", "medium", "high"] },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required_from": { "type": "array", "items": { "type": "string" } },
+        "signed_off_by": { "type": "array", "items": { "type": "string" } },
+        "status": { "enum": ["draft", "pending-review", "published"] }
+      }
+    }
+  }
+}
