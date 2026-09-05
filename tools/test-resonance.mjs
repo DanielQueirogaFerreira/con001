@@ -35,10 +35,11 @@ const t = (name, fn) => {
 const assert = (cond, msg) => {
   if (!cond) throw new Error(msg);
 };
-const hits = (problems, re) => problems.some((p) => re.test(p));
+const hits = (found, re) => found.some((f) => re.test(f.message));
+const errorsOf = (found) => found.filter((f) => f.severity === 'error');
 
 t('an agreement that records no divergence is rejected', (patch, run) => {
-  assert(run().audit().length === 0, 'baseline corpus should audit clean');
+  assert(errorsOf(run().audit()).length === 0, 'baseline corpus should have no audit errors');
   patch('data/resonances/resonances.json', (rs) => {
     rs.find((r) => r.id === 'res:outcome.gita-analects-dhammapada').divergence = [];
     return rs;
@@ -73,13 +74,38 @@ t('a position with no anchored evidence is rejected', (patch, run) => {
     'no position may exist without a real anchored interpretation behind it');
 });
 
-t('a high-consequence position with no advisory review is rejected', (patch, run) => {
+t('a high-consequence position with no advisory review is held', (patch, run) => {
   patch('data/positions/positions.json', (ps) => {
     delete ps.find((p) => p.id === 'pos:upanishad.ish1.shankara').reviewed_by;
     return ps;
   });
-  assert(hits(run().audit(), /high-consequence question with no advisory review/),
+  const dev = run().audit();
+  assert(hits(dev, /high-consequence question with no advisory review/),
     'high-tier questions require sign-off from inside the tradition');
+  assert(dev.find((f) => f.code === 'awaiting-advisory').severity === 'warn',
+    'in development an unreviewed high-tier item warns rather than failing the build');
+  const prod = run().audit({ strict: true });
+  assert(prod.find((f) => f.code === 'awaiting-advisory').severity === 'error',
+    'in production the same item must block');
+});
+
+t('"pending" is not a sign-off', (patch, run) => {
+  patch('data/positions/positions.json', (ps) => {
+    ps.find((p) => p.id === 'pos:upanishad.ish1.shankara').reviewed_by = ['advisory:hindu (pending)'];
+    return ps;
+  });
+  assert(hits(run().audit(), /no advisory review/),
+    'a placeholder must not satisfy a review gate — otherwise writing the word "pending" clears it');
+});
+
+t('the production set excludes held items and names them', (_patch, run) => {
+  const m = run();
+  const prod = m.productionSet();
+  assert(prod.held.includes('res:self.upanishad-dhammapada'),
+    'the unreviewed high-tier resonance must be named as held');
+  assert(!prod.resonances.some((r) => r.id === 'res:self.upanishad-dhammapada'),
+    'held items must be excluded from a production bundle, never silently downgraded');
+  assert(prod.resonances.length === m.resonances.length - 1, 'only the held item is excluded');
 });
 
 t('a resonance can never be obtained without the internal spread of its traditions', (_patch, run) => {

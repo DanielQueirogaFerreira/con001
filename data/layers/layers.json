@@ -32,6 +32,21 @@
     "canonical": {
       "weight": 1,
       "basis": "Foundational bhāṣya; every later commentator writes with or against it."
+    },
+    "direction": {
+      "register": "interior, withdrawn — the actor already half-dissolved into the witness",
+      "motifs": [
+        "stillness inside motion",
+        "the witness behind the eyes",
+        "a hand that acts without gripping"
+      ],
+      "avoid": [
+        "triumph",
+        "the battle rendered as spectacle",
+        "the fruit of the act depicted at all"
+      ],
+      "palette": "cool, low contrast, light without a source",
+      "figural": "permitted"
     }
   },
   {
@@ -67,6 +82,21 @@
     "canonical": {
       "weight": 0.7,
       "basis": "Major modern commentary with documented historical consequence."
+    },
+    "direction": {
+      "register": "kinetic, engaged, unmistakably in the world",
+      "motifs": [
+        "the field of action",
+        "the hand on the bow",
+        "duty taken up rather than escaped"
+      ],
+      "avoid": [
+        "renunciate withdrawal",
+        "the scene emptied of consequence",
+        "passivity read as wisdom"
+      ],
+      "palette": "warm, high contrast, hard directional light",
+      "figural": "permitted"
     }
   },
   {
@@ -101,6 +131,21 @@
     "canonical": {
       "weight": 0.7,
       "basis": "Major modern commentary with documented historical consequence."
+    },
+    "direction": {
+      "register": "restrained, ascetic, the discipline visible in the body",
+      "motifs": [
+        "means held above ends",
+        "the spinning wheel as a figure of the act",
+        "work done at cost"
+      ],
+      "avoid": [
+        "martial glory",
+        "violence aestheticised",
+        "detachment rendered as indifference"
+      ],
+      "palette": "muted earth, plain cloth, no ornament",
+      "figural": "permitted"
     }
   },
   {
@@ -197,6 +242,20 @@
     "canonical": {
       "weight": 1,
       "basis": "State orthodoxy and examination curriculum, 1313–1905."
+    },
+    "direction": {
+      "register": "social, relational — the person inside a web of obligations",
+      "motifs": [
+        "study repeated until it becomes flight",
+        "right order between people",
+        "the mind orienting toward what is right"
+      ],
+      "avoid": [
+        "solitary transcendence",
+        "the individual abstracted from relation"
+      ],
+      "palette": "measured, restrained, formal",
+      "figural": "permitted"
     }
   },
   {
@@ -230,6 +289,21 @@
     "canonical": {
       "weight": 0.95,
       "basis": "Among the most widely transmitted classical tafsīr works."
+    },
+    "direction": {
+      "register": "calligraphic and geometric — meaning carried by the letter and by pattern",
+      "motifs": [
+        "the letterform itself",
+        "geometry without terminus",
+        "what is deliberately withheld"
+      ],
+      "avoid": [
+        "any figural depiction whatsoever",
+        "representation of the divine or of prophets",
+        "illustration of the withheld meaning"
+      ],
+      "palette": "ink, gold, deep ground",
+      "figural": "blocked"
     }
   },
   {
@@ -258,6 +332,20 @@
     "canonical": {
       "weight": 0.9,
       "basis": "Classical Amoraic midrash, continuously transmitted."
+    },
+    "direction": {
+      "register": "the shape of the letter is the argument",
+      "motifs": [
+        "a letter closed on three sides and open forward",
+        "the scribal hand",
+        "what may not be asked"
+      ],
+      "avoid": [
+        "depiction of the divine",
+        "rendering of the act of creation as a figure"
+      ],
+      "palette": "parchment, iron gall, restraint",
+      "figural": "blocked"
     }
   },
   {
@@ -339,6 +427,20 @@
     "coverage": {
       "units_total": 81,
       "units_annotated": 81
+    },
+    "direction": {
+      "register": "apophatic — the subject is what the image cannot contain",
+      "motifs": [
+        "negative space carrying the weight",
+        "the unnamed centre",
+        "form implying what exceeds it"
+      ],
+      "avoid": [
+        "personification of the Dao",
+        "any figure standing for the ultimate"
+      ],
+      "palette": "ink, vast margin, near-monochrome",
+      "figural": "permitted"
     }
   },
   {
@@ -373,6 +475,20 @@
     "coverage": {
       "units_total": 81,
       "units_annotated": 81
+    },
+    "direction": {
+      "register": "practical, bodily — a way that is lived rather than contemplated",
+      "motifs": [
+        "breath",
+        "the body as the site of the work",
+        "long duration"
+      ],
+      "avoid": [
+        "pure abstraction",
+        "the reading rendered as metaphysics only"
+      ],
+      "palette": "warm ink, close focus",
+      "figural": "permitted"
     }
   },
   {
@@ -429,6 +545,20 @@
     "canonical": {
       "weight": 1,
       "basis": "The commentaries that fixed which ten Upaniṣads count as principal."
+    },
+    "direction": {
+      "register": "the world seen as not other than the one seeing it",
+      "motifs": [
+        "containment",
+        "a single ground beneath appearances",
+        "enjoyment through release"
+      ],
+      "avoid": [
+        "world-denial rendered as emptiness",
+        "the ultimate as a separate figure"
+      ],
+      "palette": "saturated, unbroken, a single field of colour",
+      "figural": "permitted"
     }
   },
   {
@@ -458,6 +588,20 @@
     "canonical": {
       "weight": 0.6,
       "basis": "Modern commentary, widely read, explicitly written against the renunciatory reading."
+    },
+    "direction": {
+      "register": "life affirmed — the world as the place where it happens, not the obstacle",
+      "motifs": [
+        "abundance held without grasping",
+        "movement forward",
+        "the ordinary made luminous"
+      ],
+      "avoid": [
+        "renunciation as withdrawal",
+        "asceticism as the visual default"
+      ],
+      "palette": "bright, expansive, generous",
+      "figural": "permitted"
     }
   },
   {
@@ -487,6 +631,20 @@
     "canonical": {
       "weight": 0.75,
       "basis": "The most widely circulated English-language commentary of the last three centuries."
+    },
+    "direction": {
+      "register": "plain, homiletic, addressed to a congregation",
+      "motifs": [
+        "speech as self-disclosure",
+        "the offer left unrestricted",
+        "light in the opening"
+      ],
+      "avoid": [
+        "depiction of God the Father",
+        "the Tetragrammaton rendered as an image"
+      ],
+      "palette": "plain, warm, unadorned",
+      "figural": "permitted"
     }
   },
   {
@@ -521,6 +679,20 @@
     "coverage": {
       "units_total": 423,
       "units_annotated": 423
+    },
+    "direction": {
+      "register": "narrative occasion — a scene, with a story behind it",
+      "motifs": [
+        "mind preceding the act",
+        "the cart-wheel following the ox",
+        "consequence arriving later"
+      ],
+      "avoid": [
+        "a self placed at the centre of the composition",
+        "a creator implied anywhere in the frame"
+      ],
+      "palette": "daylight, ordinary, domestic scale",
+      "figural": "permitted"
     }
   }
 ]

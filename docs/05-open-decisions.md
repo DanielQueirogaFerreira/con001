@@ -33,19 +33,27 @@ Decisions I made on my own, and decisions that are genuinely yours.
 
 ## Yours to decide
 
-### 0. Confirmations still needed
+### 0. Settled — seven works locked
 
-**Work eight: the Gurū Granth Sāhib?** It is the strongest remaining candidate
-and uniquely apt here — it *is* an inter-tradition anthology, carrying Hindu
-bhakti saints and Muslim Sufis alongside the Sikh Gurus. I held it back for one
-reason: its handling protocols are the strictest of any text considered, and it
-should be added **after** a Sikh advisory group is seated. That is a sequencing
-decision, and it is yours.
+- **Work eight (Gurū Granth Sāhib): held for Version 2**, after the advisory
+  framework is stable and a Sikh advisory group is seated. Recorded in
+  [`03`](03-corpus.md).
+- **Licences committed** — AGPL-3.0, CC BY-SA 4.0, CC0, and a public-domain
+  statement for source texts, under *Copyright (c) 2026 The Open Hermeneutics
+  Project Contributors*. See [`LICENSING.md`](../LICENSING.md).
+- **The advisory gate is staged by target**: warns in development, refuses the
+  production build. See [`11`](11-guardrails.md).
 
-**Seat the advisory groups.** This has moved from good practice to a blocker.
-Two high-consequence resonances are sitting at `pending-review` and cannot be
-published without sign-off from Hindu and Buddhist reviewers. That is the design
-working correctly, and it stays stuck until people exist.
+### 0b. The one thing still blocking production
+
+**Seat the advisory groups.** `npm run build:prod` currently refuses, naming
+three high-consequence items awaiting Hindu and Buddhist sign-off. That is the
+gate working. Until people exist, production either ships without those items
+(`--hold-excluded`, which names them in the manifest) or does not ship.
+
+Also still open: **where copyright sits.** The notice names contributors, which
+is fine for now, but it is not a legal entity — and dual-licensing, donations
+and liability all need one.
 
 ### 0b. Confirm the licences
 

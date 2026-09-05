@@ -1,0 +1,26 @@
+Copyright (c) 2026 The Open Hermeneutics Project Contributors
+
+This project is licensed in four parts. Reasoning: docs/08-open-source-and-cost.md
+and LICENSING.md.
+
+  Application code                 AGPL-3.0-only    LICENSE
+    tools/, web/, and any application built in this repository
+
+  Interpretation corpus            CC-BY-SA-4.0     data/LICENSE-CORPUS
+    data/interpretations/, data/layers/, data/questions/,
+    data/positions/, data/resonances/, data/lenses/
+
+  Anchoring data                   CC0-1.0          data/LICENSE-ANCHORS
+    data/works/, Canonical Reference grammars, alignment and
+    projection tables, schema/
+
+  Source texts                     public domain    data/editions/LICENSE-SOURCE-TEXTS
+    data/editions/text-units.json — no rights claimed
+
+Third-party commentary carries its own licence, recorded on each Layer's
+`license` field and never assumed from the Work. A fourteenth-century tafsir is
+public domain; a modern translation of it is not.
+
+Contributions are accepted under the Developer Certificate of Origin — a
+Signed-off-by line — and not under a copyright assignment agreement. See
+LICENSING.md.

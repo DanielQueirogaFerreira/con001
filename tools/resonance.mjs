@@ -107,39 +107,79 @@ export function map(root = '.') {
   }
 
   // Integrity checks the schema cannot express.
-  function audit() {
-    const problems = [];
+  //
+  // Findings carry a severity, because two different things are being checked.
+  // STRUCTURAL findings mean the data is wrong and are errors everywhere.
+  // STAGING findings mean the data is fine but not yet cleared by the people
+  // who must clear it — those warn in development and block in production.
+  // See docs/11-guardrails.md.
+  // A placeholder entry such as "advisory:hindu (pending)" is not a sign-off.
+  // Without this, a review gate is satisfied by writing the word "pending".
+  const signedOff = (list) =>
+    (list ?? []).filter((r) => typeof r === 'string' && !/pending|tbd|todo/i.test(r));
+
+  function audit({ strict = false } = {}) {
+    const found = [];
+    const err = (id, code, message) => found.push({ severity: 'error', id, code, message });
+    const hold = (id, code, message) =>
+      found.push({ severity: strict ? 'error' : 'warn', id, code, message, staging: true });
+
     for (const p of positions) {
       for (const e of p.evidence)
-        if (!interpIds.has(e)) problems.push(`${p.id}: evidence ${e} does not exist`);
-      if (!qOf.has(p.question)) problems.push(`${p.id}: unknown question ${p.question}`);
+        if (!interpIds.has(e)) err(p.id, 'missing-evidence', `evidence ${e} does not exist`);
+      if (!qOf.has(p.question)) err(p.id, 'unknown-question', `unknown question ${p.question}`);
       const q = qOf.get(p.question);
-      if (q?.consequence_tier === 'high' && !(p.reviewed_by ?? []).length)
-        problems.push(`${p.id}: sits on a high-consequence question with no advisory review`);
+      if (q?.consequence_tier === 'high' && !signedOff(p.reviewed_by).length)
+        hold(p.id, 'awaiting-advisory', 'sits on a high-consequence question with no advisory review');
     }
+
     for (const r of resonances) {
-      if (!qOf.has(r.question)) problems.push(`${r.id}: unknown question ${r.question}`);
-      for (const id of r.positions) if (!posOf.has(id)) problems.push(`${r.id}: unknown position ${id}`);
+      if (!qOf.has(r.question)) err(r.id, 'unknown-question', `unknown question ${r.question}`);
+      for (const id of r.positions)
+        if (!posOf.has(id)) err(r.id, 'unknown-position', `unknown position ${id}`);
       if (!r.divergence?.length)
-        problems.push(`${r.id}: records a resonance with no divergence — agreement that hides nothing is syncretism`);
+        err(r.id, 'no-divergence', 'a resonance with no divergence is syncretism, not comparison');
+
       const ps = r.positions.map((id) => posOf.get(id)).filter(Boolean);
       if (ps.some((p) => p.question !== r.question))
-        problems.push(`${r.id}: relates positions from different questions`);
+        err(r.id, 'question-mismatch', 'relates positions from different questions');
+
       // The claim must match the geometry: readings far apart on the axis
-      // cannot be filed as answering similarly.
+      // cannot be filed as answering similarly, and near-identical readings
+      // cannot be filed as opposed.
       const vals = ps.map((p) => p.value);
-      const spread = Math.max(...vals) - Math.min(...vals);
+      const spread = vals.length ? Math.max(...vals) - Math.min(...vals) : 0;
       if (r.claim === 'answers-similarly' && spread > NEAR)
-        problems.push(`${r.id}: claims "answers-similarly" but the positions span ${spread.toFixed(2)} on the axis`);
+        err(r.id, 'claim-geometry', `claims "answers-similarly" but the positions span ${spread.toFixed(2)} on the axis`);
       if (r.claim === 'answers-oppositely' && spread <= NEAR)
-        problems.push(`${r.id}: claims "answers-oppositely" but the positions span only ${spread.toFixed(2)}`);
-      if (r.consequence_tier === 'high' && r.review?.status === 'published' && !(r.review?.signed_off_by ?? []).length)
-        problems.push(`${r.id}: published at high consequence with no sign-off`);
+        err(r.id, 'claim-geometry', `claims "answers-oppositely" but the positions span only ${spread.toFixed(2)}`);
+
+      if (r.consequence_tier === 'high') {
+        const signed = signedOff(r.review?.signed_off_by).length > 0;
+        if (r.review?.status === 'published' && !signed)
+          err(r.id, 'published-unsigned', 'published at high consequence with no sign-off');
+        if (r.review?.status !== 'published' || !signed)
+          hold(r.id, 'awaiting-advisory',
+            `high-tier resonance at "${r.review?.status ?? 'draft'}" — needs ${(r.review?.required_from ?? ['advisory sign-off']).join(' + ')}`);
+      }
     }
-    return problems;
+    return found;
   }
 
-  return { questions, positions, resonances, qOf, posOf, forQuestion, internalSpread, withContext, profile, audit };
+  // What a production bundle may carry. Held items are excluded rather than
+  // silently downgraded, and the exclusion is reported.
+  function productionSet() {
+    const held = new Set(
+      audit({ strict: true }).filter((f) => f.staging).map((f) => f.id)
+    );
+    return {
+      resonances: resonances.filter((r) => !held.has(r.id)),
+      positions: positions.filter((p) => !held.has(p.id)),
+      held: [...held],
+    };
+  }
+
+  return { questions, positions, resonances, qOf, posOf, forQuestion, internalSpread, withContext, profile, audit, productionSet };
 }
 
 /* ------------------------------------------------------------------ report */
@@ -196,11 +236,26 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     console.log(`    read against you: ${row.steelman.position.held_by} (${row.steelman.position.tradition})\n`);
   }
 
-  const problems = m.audit();
-  if (problems.length) {
-    console.error(`AUDIT FAILED — ${problems.length} problem(s)\n`);
-    for (const p of problems) console.error('  ' + p);
+  const strict = process.argv.includes('--strict');
+  const found = m.audit({ strict });
+  const errors = found.filter((f) => f.severity === 'error');
+  const warns = found.filter((f) => f.severity === 'warn');
+
+  if (warns.length) {
+    console.log('AUDIT — HELD FOR REVIEW (warning in development, blocking in production)\n');
+    console.log('  severity  code               id                                  detail');
+    console.log('  ' + '-'.repeat(100));
+    for (const w of warns)
+      console.log(`  ${w.severity.padEnd(9)} ${w.code.padEnd(18)} ${w.id.padEnd(35)} ${w.message}`);
+    console.log('\n  These are not defects. The data is well formed and the people who must clear it have not yet.');
+    console.log('  Run `npm run build:prod` to see the production gate reject them.\n');
+  }
+
+  if (errors.length) {
+    console.error(`AUDIT FAILED — ${errors.length} error(s)\n`);
+    for (const e of errors) console.error(`  ${e.id}: ${e.message}`);
     process.exit(1);
   }
-  console.log(`  audit clean — ${m.positions.length} positions, ${m.resonances.length} resonances, ${m.questions.length} questions`);
+  console.log(`  audit clean — ${m.positions.length} positions, ${m.resonances.length} resonances, ` +
+    `${m.questions.length} questions${warns.length ? `, ${warns.length} held for review` : ''}`);
 }

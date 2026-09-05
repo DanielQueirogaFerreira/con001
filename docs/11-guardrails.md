@@ -129,6 +129,31 @@ speaking for themselves**, which is protected and roomy, and **the platform
 speaking for a tradition**, which is gated hard. Art gets its room by being
 correctly attributed to the person making it — not by being unregulated.
 
+## The staging rule: where the gate bites
+
+A gate that blocks development blocks the project. A gate that never blocks
+anything is decoration. So enforcement is scoped by target, not by severity:
+
+| Target | High-tier item awaiting sign-off |
+|---|---|
+| `npm test`, `npm run resonance` | **Structured warning table.** Schema and integrity still pass. Development is never blocked. |
+| `npm run build:prod` | **Build refused.** It cannot reach the production CDN. |
+| `node tools/build-prod.mjs --hold-excluded` | Ships without it. Excluded from the bundle and **named in `dist/manifest.json`** — never silently downgraded. |
+
+Two properties of this that matter:
+
+- **Structural findings and staging findings are different things.** A resonance
+  with no divergence is *wrong* and errors everywhere. A resonance awaiting
+  advisory sign-off is *well formed but uncleared* — the data is right, the
+  people who must clear it have not. Only the second is staged.
+- **A placeholder is not a sign-off.** An entry containing "pending", "tbd" or
+  "todo" in `reviewed_by` or `signed_off_by` does not satisfy a gate. Without
+  that rule, writing the word "pending" clears the review. There is a test.
+
+The third option — lowering a question's `consequence_tier` — exists, and the
+build names it. It is an editorial decision that should be argued for on its
+merits, never taken to unblock a build.
+
 ## What still needs people, not code
 
 Every rail here is mechanical and therefore gameable, and none of them is a

@@ -107,6 +107,47 @@
           "description": "Why this weight. Recorded so it can be argued with rather than inherited silently."
         }
       }
+    },
+    "direction": {
+      "type": "object",
+      "description": "The Director Lens Hook: how THIS layer directs a visual rendition of a passage. Reading Gita 2.47 through Sankara and reading it through Tilak should not produce the same image, because they are not describing the same scene. Composed at generation time from every active layer, and always shown to the reader before anything is generated. See docs/12-reader-prototype.md.",
+      "required": [
+        "register",
+        "motifs",
+        "avoid"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "register": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The overall visual key this reading implies."
+        },
+        "motifs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "avoid": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "What this reading positively excludes. As load-bearing as the motifs: a Gandhian reading of 2.47 that renders martial glory has not been directed, it has been ignored."
+        },
+        "palette": {
+          "type": "string"
+        },
+        "figural": {
+          "enum": [
+            "permitted",
+            "blocked"
+          ],
+          "description": "Hard corpus policy surfaced into the directive itself, so the constraint is visible in the studio rather than discovered at the point of refusal. See docs/04-generative.md."
+        }
+      }
     }
   },
   "allOf": [

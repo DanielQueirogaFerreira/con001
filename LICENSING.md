@@ -3,13 +3,19 @@
 This project is open source, and the different parts of it need different
 licences. Reasoning: [`docs/08-open-source-and-cost.md`](docs/08-open-source-and-cost.md).
 
-| Part | Licence | Status |
+**Copyright (c) 2026 The Open Hermeneutics Project Contributors.** See
+[`COPYRIGHT`](COPYRIGHT).
+
+| Part | Licence | File |
 |---|---|---|
-| Application code (`tools/`, and any application built here) | **AGPL-3.0** | Recommended — awaiting confirmation |
-| Interpretation corpus (`data/interpretations/`, `data/layers/`) | **CC BY-SA 4.0** | Recommended — awaiting confirmation |
-| Anchoring data (`data/works/`, reference tables, alignment maps) | **CC0 1.0** | Recommended — awaiting confirmation |
-| Source texts (`data/editions/text-units.json`) | Public domain | No new rights claimed |
+| Application code (`tools/`, `web/`) | **AGPL-3.0-only** | [`LICENSE`](LICENSE) |
+| Interpretation corpus (`data/interpretations/`, `data/layers/`, `data/questions/`, `data/positions/`, `data/resonances/`, `data/lenses/`) | **CC BY-SA 4.0** | [`data/LICENSE-CORPUS`](data/LICENSE-CORPUS) |
+| Anchoring data (`data/works/`, `schema/`, reference and alignment tables) | **CC0 1.0** | [`data/LICENSE-ANCHORS`](data/LICENSE-ANCHORS) |
+| Source texts (`data/editions/text-units.json`) | Public domain, no rights claimed | [`data/editions/LICENSE-SOURCE-TEXTS`](data/editions/LICENSE-SOURCE-TEXTS) |
 | Third-party commentary | Per `license` field on each Layer | Tracked per layer, never per work |
+
+All four are committed and in force. The AGPL, CC BY-SA and CC0 texts are the
+verbatim canonical versions from the SPDX license list.
 
 ## Why the split
 
@@ -37,15 +43,17 @@ on each commit. Deliberately *not* a copyright-assignment CLA: on a philanthropi
 religious project a CLA reads as a land grab and costs more in trust than it
 returns.
 
-## Not yet decided
+## Still open
 
-The `LICENSE` files are not in the repository yet, because the choice is the
-project's to make and it is hard to reverse — an AGPL release cannot be quietly
-walked back. Once confirmed, three files get added: `LICENSE` (AGPL-3.0),
-`data/LICENSE-CORPUS` (CC BY-SA 4.0), and `data/LICENSE-ANCHORS` (CC0 1.0).
+**Where copyright sits.** "The Open Hermeneutics Project Contributors" is the
+notice, which is correct and sufficient for now — but it is not a legal entity.
+A dual-licence arrangement later is impossible without copyright held somewhere
+that can grant one, and the same body is what accepts donations and holds
+liability when someone objects to a layer. A church body, a foundation, or a
+fiscal host such as Software Freedom Conservancy. This needs counsel, not an
+engineering decision.
 
-One consequence to accept knowingly: AGPL will deter some commercial
-contributors and some hosting partners. For this project that is closer to a
-feature than a cost — but it is a real trade, and a dual-licence arrangement
-later requires copyright to sit somewhere that can grant it. See the governance
-section of [`docs/08-open-source-and-cost.md`](docs/08-open-source-and-cost.md).
+One consequence already accepted: AGPL will deter some commercial contributors
+and some hosting partners. For this project that is closer to a feature than a
+cost. See the governance section of
+[`docs/08-open-source-and-cost.md`](docs/08-open-source-and-cost.md).

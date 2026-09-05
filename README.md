@@ -54,7 +54,8 @@ Full reasoning, alternatives considered, and source/licence notes: [`docs/03-cor
 - [`docs/08-open-source-and-cost.md`](docs/08-open-source-and-cost.md) — licensing, running cost, governance
 - [`docs/09-ingestion.md`](docs/09-ingestion.md) — text integrity: why no sample text here is marked verified
 - [`docs/10-resonance.md`](docs/10-resonance.md) — **the alignment map**: comparing positions on questions, never traditions, and where a reader's worldview profile lives
-- [`docs/11-guardrails.md`](docs/11-guardrails.md) — thresholds, consequence tiers, and the line between the platform asserting and a person expressing
+- [`docs/11-guardrails.md`](docs/11-guardrails.md) — thresholds, consequence tiers, the staging rule, and the line between the platform asserting and a person expressing
+- [`docs/12-reader-prototype.md`](docs/12-reader-prototype.md) — the Reader / Studio prototype and what it demonstrates
 - [`LICENSING.md`](LICENSING.md) — the four-licence split, awaiting confirmation
 
 ## Repository layout
@@ -62,9 +63,14 @@ Full reasoning, alternatives considered, and source/licence notes: [`docs/03-cor
 ```
 schema/     JSON Schema for every core entity
 data/       Worked samples — real passages, real commentators, all seven books
-tools/      validate.mjs, salience.mjs, resonance.mjs, and their tests
+tools/      validate, salience, resonance, the builds, and their tests
+web/        reader.html — the prototype (built, self-contained, no server)
 docs/       The specification
 ```
+
+Licensed in four parts — AGPL-3.0 for code, CC BY-SA 4.0 for the interpretation
+corpus, CC0 for anchoring data, nothing claimed over source texts. See
+[`LICENSING.md`](LICENSING.md) and [`COPYRIGHT`](COPYRIGHT).
 
 Validate the samples, then check that the validator actually rejects broken data:
 
@@ -82,6 +88,19 @@ See where traditions answer the same question, and where a reader stands:
 
 ```
 npm run resonance
+```
+
+Build the Reader / Studio prototype, then open `web/reader.html`:
+
+```
+npm run reader
+```
+
+Build for production — this **refuses** while any high-consequence claim is
+still awaiting advisory sign-off:
+
+```
+npm run build:prod
 ```
 
 No dependencies — the schema checker and the integrity checks are plain Node.
@@ -163,6 +182,47 @@ Four rules, all with tests:
    record that gets people hurt. It reports proximity to *positions*, never
    affiliation to a tradition — the system never tells anyone what they are — and
    always offers the strongest reading *against* where they stand.
+
+## The prototype
+
+`npm run reader` builds a self-contained `web/reader.html` — corpus inlined, no
+server, no dependencies. Three things are demonstrable by hand:
+
+- **The layered view.** Source and translation stacked, every active layer's span
+  highlighted in the text. Qur'ān translations labelled *interpretation of the
+  meaning*. Machine layer off by default and visually distinct.
+- **The contestation slider.** Left end: the leading reading alone. Moving right
+  admits dissenting stances in order of distance from it. On Gītā 2.47 that is
+  four voices collapsing to one and back; on John 3:16 there is nothing to open
+  onto, and it says so. The diversity floor keeps the majority reading from ever
+  standing alone.
+- **The Director Lens Hook.** Active layers compose a visual directive — register,
+  motifs, and what each reading positively *excludes*. Conflicts are surfaced from
+  the fork graph, not resolved: *"Tilak rebuts Śaṅkara: directs 'kinetic, engaged,
+  unmistakably in the world' where Śaṅkara directs 'interior, withdrawn'."* An
+  image that splits the difference represents no reading at all. On `quran:2:1`
+  the figural block appears in the directive itself, before generation.
+
+Driven in Chromium and checked: five anchors render, Devanāgarī and Arabic
+display correctly, Arabic is RTL, the slider works, the block fires, no console
+errors.
+
+## The advisory gate, staged
+
+`npm run build:prod` **currently refuses to build.** Three high-consequence
+claims — including *sabbe dhammā anattā* set against Śaṅkara on the self — await
+sign-off from Hindu and Buddhist advisory groups. That is the gate working.
+
+Enforcement is scoped by target, so the gate never blocks development:
+
+| Target | Behaviour |
+|---|---|
+| `npm test`, `npm run resonance` | Structured warning table; schema and integrity pass |
+| `npm run build:prod` | Build refused; cannot reach the production CDN |
+| `--hold-excluded` | Ships without them, named in `dist/manifest.json` — never silently downgraded |
+
+A placeholder is not a sign-off: an entry containing "pending" does not satisfy a
+gate, and there is a test for it.
 
 ## Status
 

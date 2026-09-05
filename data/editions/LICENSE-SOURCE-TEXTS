@@ -1,0 +1,36 @@
+SOURCE TEXTS — NO RIGHTS CLAIMED
+
+The scriptural source texts carried in this directory are in the public domain
+by reason of age. The Open Hermeneutics Project claims no copyright, database
+right, or other exclusive right over them, and asserts none by including them
+here.
+
+Where this project has produced anything about a source text — segmentation
+into units, Canonical Reference assignment, normalisation, checksums, or
+alignment data — that material is released under CC0 1.0 Universal
+(../LICENSE-ANCHORS) and is likewise free of restriction.
+
+TWO THINGS THIS DOES NOT COVER
+------------------------------
+
+1. TRANSLATIONS. A translation is a separate copyrightable work with its own
+   term. Every Edition record carries its own `license` field with per-
+   jurisdiction notes. Public domain is jurisdictional: the King James Version
+   remains under perpetual Crown letters patent in the United Kingdom while
+   being free elsewhere, and it is recorded that way rather than filed as
+   flatly "public domain".
+
+2. COMMENTARY. A fourteenth-century tafsir is public domain; a modern English
+   translation of that tafsir is a fresh copyrightable work. Licence is tracked
+   per Layer, never per Work.
+
+VERIFICATION
+------------
+
+Every TextUnit carries a `provenance` block with a source, a SHA-256 checksum,
+and a `verified` flag. Units marked `verified: false` were entered by hand to
+demonstrate the data format and are NOT authoritative editions of anyone's
+scripture. They must not be displayed to readers. See ../../docs/09-ingestion.md.
+
+Copyright (c) 2026 The Open Hermeneutics Project Contributors — as to the
+project's own materials only, and released as stated above.
