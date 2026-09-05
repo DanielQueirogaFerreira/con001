@@ -368,5 +368,224 @@
     },
     "visibility": "public",
     "license": "PD"
+  },
+  {
+    "id": "interp:ddj.1.wangbi",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "daodejing:1",
+      "granularity": "phrase",
+      "span": {
+        "origin": "ed:ddj.lzh.wangbi",
+        "start": 0,
+        "end": 7,
+        "exact": "道可道，非常道",
+        "prefix": "",
+        "suffix": "。名可名",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:ddj.wangbi",
+    "author": {
+      "type": "historical",
+      "display": "王弼 Wáng Bì",
+      "school": "xuanxue",
+      "century": 3
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "zh-Hant",
+      "value": "可道之道，可名之名，指事造形，非其常也。故不可道，不可名也。\n\n(A way that can be spoken, a name that can be named — these point at affairs and shape forms, and so are not the constant. Therefore it cannot be spoken and cannot be named.)\n\nA metaphysical reading: the opening denies that language reaches the Dao at all."
+    },
+    "citation": "王弼, 老子道德經注, 第一章",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:ddj.1.heshanggong",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "daodejing:1",
+      "granularity": "phrase",
+      "span": {
+        "origin": "ed:ddj.lzh.wangbi",
+        "start": 0,
+        "end": 7,
+        "exact": "道可道，非常道",
+        "prefix": "",
+        "suffix": "。名可名",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:ddj.heshanggong",
+    "author": {
+      "type": "historical",
+      "display": "河上公 Héshàng Gōng",
+      "school": "self-cultivation",
+      "century": 2
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "zh-Hant",
+      "value": "Summary of the Heshang Gong reading: the \"way that can be spoken\" is the way of classical learning and government instruction — a real way, but a taught one. The constant Dao is the way of spontaneity and long life, which is practised in the body rather than transmitted in words.\n\nSame seven characters as Wang Bi, and a completely different book: not a metaphysics of language, but a manual of self-cultivation. This is the disagreement the layer switcher exists to show."
+    },
+    "citation": "河上公章句, 體道第一",
+    "derived_from": [
+      "interp:ddj.1.wangbi"
+    ],
+    "relation": "rebuts",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:ddj.1.mawangdui.heng",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "daodejing:1",
+      "granularity": "letter",
+      "span": {
+        "origin": "ed:ddj.lzh.wangbi",
+        "start": 5,
+        "end": 6,
+        "exact": "常",
+        "prefix": "道可道，非",
+        "suffix": "道。",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:ddj.mawangdui",
+    "author": {
+      "type": "institution",
+      "display": "Mawangdui silk manuscripts (168 BCE)"
+    },
+    "kind": "variant",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "The Mawangdui manuscripts read **恆** (*héng*, constant) where the received text reads **常** (*cháng*). The substitution is a naming taboo: 恆 was the personal name of Emperor Wen of Han (Liu Heng, r. 180–157 BCE), and scribes replaced it.\n\nOne character in the most-translated Chinese text in the world, changed by an emperor's name — and every English translation since inherits the substitution without mentioning it. This is exactly what a `variant` layer is for, and it is a single-character annotation."
+    },
+    "citation": "馬王堆帛書老子 甲本・乙本",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:upanishad.ish1.shankara",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "upanishad:ISH.1",
+      "granularity": "phrase",
+      "span": {
+        "origin": "ed:upanishad.sa.src",
+        "start": 43,
+        "end": 64,
+        "exact": "तेन त्यक्तेन भुञ्जीथा",
+        "prefix": "जगत्। ",
+        "suffix": " मा गृधः",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:upanishad.shankara",
+    "author": {
+      "type": "historical",
+      "display": "Ādi Śaṅkarācārya",
+      "school": "advaita",
+      "century": 8
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Summary of Śaṅkara on Īśā 1: *tena tyaktena bhuñjīthāḥ* — one protects the self through renunciation. The verse addresses the renunciate; the ritual life described from verse 2 onward is a separate path for those not qualified for knowledge. The two are not combined."
+    },
+    "citation": "Śaṅkara, Īśāvāsyopaniṣadbhāṣya ad 1",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:upanishad.ish1.aurobindo",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "upanishad:ISH.1",
+      "granularity": "phrase",
+      "span": {
+        "origin": "ed:upanishad.sa.src",
+        "start": 43,
+        "end": 64,
+        "exact": "तेन त्यक्तेन भुञ्जीथा",
+        "prefix": "जगत्। ",
+        "suffix": " मा गृधः",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:upanishad.aurobindo",
+    "author": {
+      "type": "historical",
+      "display": "Sri Aurobindo",
+      "school": "integral",
+      "century": 20
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Summary of Aurobindo on Īśā 1: the verse says *enjoy* — the renunciation is of desire and of ownership, not of the world. Read as a command to withdraw, the sentence contradicts its own main verb.\n\nNote the resonance with Gītā 2.47 (`gita:2.47`): the same argument, between the same two positions, on a different text. Cross-work stance tracking is what makes that visible."
+    },
+    "citation": "Aurobindo, Isha Upanishad (1924)",
+    "derived_from": [
+      "interp:upanishad.ish1.shankara"
+    ],
+    "relation": "rebuts",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:upanishad.bau1-3-28.shankara",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "upanishad:BAU.1.3.28",
+      "granularity": "unit"
+    },
+    "layer": "layer:upanishad.shankara",
+    "author": {
+      "type": "historical",
+      "display": "Ādi Śaṅkarācārya",
+      "school": "advaita",
+      "century": 8
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Summary of Śaṅkara on the *pavamāna* mantras: the singer asks to be led from the unreal to the real, from darkness to light, from death to immortality — not to a different place, but to what he already is, uncovered.\n\nOne of the most recited passages in the corpus, and among the least contested. High popularity, low contestation: the two measures are independent, and the reading surface must not confuse them."
+    },
+    "citation": "Śaṅkara, Bṛhadāraṇyakopaniṣadbhāṣya ad 1.3.28",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:bible.jhn3-16.matthew-henry",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "bible:JHN.3.16",
+      "granularity": "unit"
+    },
+    "layer": "layer:bible.matthew-henry",
+    "author": {
+      "type": "historical",
+      "display": "Matthew Henry",
+      "school": "nonconformist protestant",
+      "century": 18
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Summary of Matthew Henry on John 3:16: the exposition dwells on the scope of \"the world\" and on \"whosoever\" — the offer is not restricted in the text, and Henry reads that lack of restriction as the point of the verse.\n\nThe most-read verse in the corpus. It is in the sample specifically to show that the popularity axis and the contestation axis rank differently."
+    },
+    "citation": "Matthew Henry, Exposition, John 3",
+    "visibility": "public",
+    "license": "PD"
   }
 ]

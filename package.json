@@ -2,12 +2,15 @@
   "name": "con001",
   "version": "0.1.0",
   "private": true,
-  "description": "A layered reader for contested texts — specification and data model.",
+  "description": "A layered reader for contested texts \u2014 specification and data model.",
   "type": "module",
   "scripts": {
     "validate": "node tools/validate.mjs",
+    "salience": "node tools/salience.mjs",
     "resolve-spans": "node tools/resolve-spans.mjs",
-    "test": "node tools/validate.mjs && node tools/test-validate.mjs"
+    "test": "node tools/validate.mjs && node tools/test-validate.mjs && node tools/test-salience.mjs"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

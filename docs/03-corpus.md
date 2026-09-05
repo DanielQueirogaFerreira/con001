@@ -1,9 +1,20 @@
-# 03 — The Corpus: which four books, and why
+# 03 — The Corpus: which books, and why
 
 The brief fixed two (Bible, Qur'ān) and left two open: "a book that is a lot of
 interpretation and is a basis for Asians", plus one for India. Note that India is
 of course in Asia — the distinction being drawn is **East Asia** and **South
 Asia**, and that is how it is resolved here.
+
+**Revised: both, on each side.** The decision was then taken to carry both
+Chinese works and both Indian works rather than choosing. That gives six:
+Bible, Qur'ān, Analects, Dao De Jing, Bhagavad Gītā, Principal Upaniṣads. This
+is worth doing — the second work in each pair is not a duplicate, it is the
+*opposition* to the first, and it exercises parts of the architecture the first
+one does not.
+
+**Note on the count:** six, not five. Both-Chinese plus both-Indian plus Bible
+plus Qur'ān comes to six works. Everything here is built for six; say the word
+if one should be dropped.
 
 Selection criteria, in priority order:
 
@@ -100,9 +111,9 @@ English than any Chinese text; excellent commentaries (Wang Bi, Heshanggong); an
 the Mawangdui (168 BCE) and Guodian (c. 300 BCE) manuscript finds would be a
 superb stress test of the `variant` layer kind. It loses on the brief's own
 criterion — "a basis for Asians". Confucianism, not Daoism, is the shared
-substrate across China, Korea, Japan and Vietnam. **Recommendation: Analects
-first, Dao De Jing as the fifth work**, specifically to exercise variant
-handling.
+substrate across China, Korea, Japan and Vietnam. **Now resolved: both are in
+the corpus** (§5), and the Dao De Jing is promoted early in the build order
+specifically to exercise variant handling.
 
 **Alternative considered — a Buddhist sūtra** (Lotus, Heart, Diamond). Genuinely
 pan-Asian and enormously commented, but the canon is a translation-chain problem
@@ -150,11 +161,76 @@ translations of it PD.
 
 **Alternatives considered.** The *Upaniṣads* are more philosophically foundational
 and carry Śaṅkara's finest commentary, but they are a corpus rather than a book,
-with no single stable citation grammar across all of them — better as work five
-or six. The *Rāmāyaṇa* and *Mahābhārata* are civilisationally central but too
+with no single stable citation grammar across all of them. **Now resolved: they
+are in the corpus too** (§6), with a Bible-shaped reference grammar. The
+*Rāmāyaṇa* and *Mahābhārata* are civilisationally central but too
 large for a first corpus and have a regional-recension problem that would put the
 `variant` machinery on the critical path immediately. The *Yoga Sūtras* are
 compact and heavily commented but narrower in reach.
+
+---
+
+## 5. East Asia, second → **the Dao De Jing (道德經)**
+
+**Added alongside the Analects, not instead of it.**
+
+**Reference system:** `daodejing:chapter` — 81 chapters.
+
+**Why it earns a slot rather than duplicating the Analects:**
+
+- **It is the opposition, not the echo.** Confucian and Daoist readings of what a
+  life is for are the central argument of Chinese thought. Holding both means the
+  corpus contains that argument rather than one side of it.
+- **It is the best variant-layer material in existence.** The Mawangdui silk
+  manuscripts (168 BCE) and the Guodian bamboo slips (c. 300 BCE) differ from the
+  received text in order and in wording. One example already in the sample data:
+  the received text's 常 (*cháng*, constant) appears as 恆 (*héng*) at Mawangdui,
+  because 恆 was the personal name of Emperor Wen of Han and scribes replaced it
+  under naming taboo. **A single character in the most-translated Chinese text in
+  the world, altered by an emperor's name — and inherited silently by every
+  translation since.** No other work in the corpus makes the case for the
+  `variant` layer kind so sharply.
+- **Its two great commentaries genuinely disagree.** Wang Bi (3rd c.) reads
+  chapter 1 as metaphysics: language cannot reach the Dao. Heshang Gong (2nd c.)
+  reads the same seven characters as a manual of self-cultivation and long life.
+  Same characters, different book.
+
+**Public domain:** Chinese text, Legge (1891), Wang Bi and Heshang Gong in the
+original.
+
+---
+
+## 6. India, second → **the Principal Upaniṣads**
+
+**Added alongside the Gītā.**
+
+**Reference system:** `upanishad:CODE.section[.subsection[.verse]]` — a short code
+per Upaniṣad plus a numeric path, e.g. `upanishad:ISH.1`,
+`upanishad:BAU.1.3.28`. Structurally this is the Bible's problem, so it takes the
+Bible's solution: a corpus of separate books under one reference grammar.
+
+**Why this rather than the Yoga Sūtras or the Rāmāyaṇa:**
+
+- **It is the source the Gītā is arguing from.** Holding both lets a reader follow
+  a doctrine back to where it starts.
+- **Śaṅkara commented on ten of them and on the Gītā.** The same commentator
+  across two works is a real test of author-level navigation — *show me
+  everything Śaṅkara says about renunciation, in both books* — and it is the
+  first feature that no existing product offers.
+- **Īśā 1 is the sharpest contested anchor in the whole seed corpus.** *tena
+  tyaktena bhuñjīthāḥ*: Śaṅkara reads renunciation; Aurobindo reads the sentence's
+  own main verb — *enjoy* — and argues the renunciatory reading contradicts it.
+  This is the **same argument, between the same two positions, as Gītā 2.47**, on
+  a different text. Because `stance` is a first-class field, that resonance is
+  computable rather than something a scholar has to notice. It is the clearest
+  demonstration of why the corpus should hold pairs.
+
+**Cost of admission:** the Upaniṣads are a corpus, not a book, so the reference
+grammar needs a code table before ingestion, and unit counts are approximate
+until the ten principal texts are actually loaded.
+
+**Public domain:** Sanskrit throughout; Max Müller (SBE, 1879), Telang; Śaṅkara's
+bhāṣyas in Sanskrit.
 
 ---
 
@@ -162,19 +238,27 @@ compact and heavily commented but narrower in reach.
 
 | # | Work | CR grammar | Units | Original | First imported layers |
 |---|---|---|---|---|---|
-| 1 | Bible | `bible:BOOK.ch.v` | 31,102 | Hebrew, Greek | Rashi, Matthew Henry |
+| 1 | Bible | `bible:BOOK.ch.v` | 31,102 | Hebrew, Greek | Bereshit Rabbah, Masorah, Matthew Henry |
 | 2 | Qur'ān | `quran:s:a` | 6,236 | Arabic | Ibn Kathīr, Jalālayn |
 | 3 | Analects | `analects:b.c` | ~512 | Classical Chinese | Zhu Xi, He Yan |
-| 4 | Bhagavad Gītā | `gita:ch.v` | 700 | Sanskrit | Śaṅkara, Rāmānuja, Tilak, Gandhi |
+| 4 | Dao De Jing | `daodejing:ch` | 81 | Classical Chinese | Wang Bi, Heshang Gong, Mawangdui |
+| 5 | Bhagavad Gītā | `gita:ch.v` | 700 | Sanskrit | Śaṅkara, Rāmānuja, Tilak, Gandhi |
+| 6 | Principal Upaniṣads | `upanishad:CODE.n` | ~1,350 | Sanskrit | Śaṅkara, Aurobindo |
 
-**Suggested build order: Gītā first.** It is the smallest complete corpus, it has
-the most vivid contestation, its licensing is the cleanest, and its script
-(Devanāgarī with combining marks) already exercises the grapheme-alignment
-requirement. Then the Analects, for a second non-alphabetic script. Then the
-Qur'ān, because RTL plus immutability plus doctrinal labelling is the real test.
-Then the Bible, which is the largest and — because so many tools already handle
-it — the least informative about whether the architecture is right.
+**Suggested build order: Gītā → Dao De Jing → Analects → Upaniṣads → Qur'ān →
+Bible.**
+
+The Gītā first: smallest complete corpus, most vivid contestation, cleanest
+licensing, and Devanāgarī combining marks already exercise grapheme alignment.
+Then the Dao De Jing, promoted to second because at 81 chapters it is the
+cheapest possible way to build the `variant` layer machinery against real
+manuscript evidence — and every later work needs that machinery. Then the
+Analects for a second non-alphabetic script, the Upaniṣads for multi-book
+reference grammars, the Qur'ān because RTL plus immutability plus doctrinal
+labelling is the real test, and the Bible last.
 
 That order is deliberately the reverse of what a Western-market instinct would
 choose, and it is the right one on engineering grounds: **build against the
-hardest constraints while changing them is still cheap.**
+hardest constraints while changing them is still cheap.** The Bible is last
+precisely because so many tools already handle it that it teaches you least
+about whether the architecture is right.

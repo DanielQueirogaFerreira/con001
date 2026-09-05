@@ -2,53 +2,137 @@
   {
     "id": "work:gita",
     "type": "Work",
-    "title": { "sa": "भगवद्गीता", "en": "Bhagavad Gītā", "pt": "Bhagavad Gita" },
+    "title": {
+      "sa": "भगवद्गीता",
+      "en": "Bhagavad Gītā",
+      "pt": "Bhagavad Gita"
+    },
     "tradition": "hindu",
     "cr_grammar": "gita:chapter.verse",
     "cr_pattern": "^gita:\\d{1,2}\\.\\d{1,3}$",
     "unit_count": 700,
-    "structure": ["chapter", "verse"],
-    "source_languages": ["sa"],
+    "structure": [
+      "chapter",
+      "verse"
+    ],
+    "source_languages": [
+      "sa"
+    ],
     "policy": "policy:gita.v1",
     "notes": "Build first. Smallest complete corpus, sharpest contestation (Śaṅkara / Rāmānuja / Madhva / Tilak / Gandhi), cleanest licensing, and Devanāgarī combining marks already exercise grapheme alignment."
   },
   {
     "id": "work:analects",
     "type": "Work",
-    "title": { "zh": "論語", "en": "The Analects", "pt": "Analectos" },
+    "title": {
+      "zh": "論語",
+      "en": "The Analects",
+      "pt": "Analectos"
+    },
     "tradition": "confucian",
     "cr_grammar": "analects:book.chapter",
     "cr_pattern": "^analects:\\d{1,2}\\.\\d{1,3}$",
     "unit_count": 512,
-    "structure": ["book", "chapter"],
-    "source_languages": ["lzh"],
+    "structure": [
+      "book",
+      "chapter"
+    ],
+    "source_languages": [
+      "lzh"
+    ],
     "policy": "policy:analects.v1",
     "notes": "Zhu Xi's Jizhu was the imperial examination curriculum from 1313 to 1905 across China, Korea, Japan and Vietnam — one interpretive layer selecting a civilisation's governing class for six centuries."
   },
   {
     "id": "work:quran",
     "type": "Work",
-    "title": { "ar": "القرآن", "en": "Qur'ān", "pt": "Alcorão" },
+    "title": {
+      "ar": "القرآن",
+      "en": "Qur'ān",
+      "pt": "Alcorão"
+    },
     "tradition": "islamic",
     "cr_grammar": "quran:sura:ayah",
     "cr_pattern": "^quran:\\d{1,3}:\\d{1,3}$",
     "unit_count": 6236,
-    "structure": ["sura", "ayah"],
-    "source_languages": ["ar"],
+    "structure": [
+      "sura",
+      "ayah"
+    ],
+    "source_languages": [
+      "ar"
+    ],
     "policy": "policy:quran.v1",
     "notes": "The hardest case and therefore the most useful to design against: RTL, an immutable source text, and a tradition where translation is categorically secondary."
   },
   {
     "id": "work:bible",
     "type": "Work",
-    "title": { "he": "תנ\"ך", "grc": "Βιβλία", "en": "Bible", "pt": "Bíblia" },
+    "title": {
+      "he": "תנ\"ך",
+      "grc": "Βιβλία",
+      "en": "Bible",
+      "pt": "Bíblia"
+    },
     "tradition": "christian",
     "cr_grammar": "bible:BOOK.chapter.verse (USFM book codes)",
     "cr_pattern": "^bible:[A-Z0-9]{3}\\.\\d{1,3}\\.\\d{1,3}$",
     "unit_count": 31102,
-    "structure": ["book", "chapter", "verse"],
-    "source_languages": ["he", "arc", "grc"],
+    "structure": [
+      "book",
+      "chapter",
+      "verse"
+    ],
+    "source_languages": [
+      "he",
+      "arc",
+      "grc"
+    ],
     "policy": "policy:bible.v1",
     "notes": "Chapters from Langton (c. 1227), verses from Estienne (1551) — stable across every translation since, which is exactly the property the Canonical Reference needs."
+  },
+  {
+    "id": "work:daodejing",
+    "type": "Work",
+    "title": {
+      "zh": "道德經",
+      "en": "Dao De Jing",
+      "pt": "Tao Te Ching"
+    },
+    "tradition": "daoist",
+    "cr_grammar": "daodejing:chapter",
+    "cr_pattern": "^daodejing:\\d{1,2}$",
+    "unit_count": 81,
+    "structure": [
+      "chapter"
+    ],
+    "source_languages": [
+      "lzh"
+    ],
+    "policy": "policy:daodejing.v1",
+    "notes": "Added as the second Chinese work. Earns its place on the variant axis: the Mawangdui (168 BCE) and Guodian (c. 300 BCE) manuscripts differ from the received text, including a word changed by imperial naming taboo — the sharpest possible demonstration of the `variant` layer kind."
+  },
+  {
+    "id": "work:upanishad",
+    "type": "Work",
+    "title": {
+      "sa": "उपनिषद्",
+      "en": "Principal Upaniṣads"
+    },
+    "tradition": "hindu",
+    "cr_grammar": "upanishad:CODE.section",
+    "cr_pattern": "^upanishad:[A-Z]{2,4}\\.\\d{1,3}(\\.\\d{1,3}){0,2}$",
+    "unit_count": 1350,
+    "structure": [
+      "upanishad",
+      "section",
+      "subsection",
+      "verse"
+    ],
+    "source_languages": [
+      "sa"
+    ],
+    "policy": "policy:upanishad.v1",
+    "notes": "Added as the second Indian work. A corpus rather than a single book, so it takes a Bible-shaped reference grammar: a short code per Upaniṣad plus a numeric path. Śaṅkara commented on ten of them, which gives us the same commentator across two works — a real test of author-level layer navigation."
   }
 ]

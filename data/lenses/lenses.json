@@ -5,10 +5,24 @@
     "work": "work:gita",
     "title": "2.47 — the argument",
     "description": "Sanskrit and Telang side by side, with Śaṅkara, Tilak and Gandhi on the same twelve words. The three-second demonstration of what this system is for.",
-    "editions": ["ed:gita.sa.src", "ed:gita.en.telang"],
-    "layers": ["layer:gita.shankara", "layer:gita.tilak", "layer:gita.gandhi", "layer:gita.philology"],
-    "filters": { "min_projection_confidence": 0.5 },
-    "author": { "type": "user", "id": "user:daniel", "display": "Daniel" },
+    "editions": [
+      "ed:gita.sa.src",
+      "ed:gita.en.telang"
+    ],
+    "layers": [
+      "layer:gita.shankara",
+      "layer:gita.tilak",
+      "layer:gita.gandhi",
+      "layer:gita.philology"
+    ],
+    "filters": {
+      "min_projection_confidence": 0.5
+    },
+    "author": {
+      "type": "user",
+      "id": "user:daniel",
+      "display": "Daniel"
+    },
     "visibility": "public"
   },
   {
@@ -17,9 +31,63 @@
     "work": "work:bible",
     "title": "Letter-level readings",
     "description": "Where the tradition annotates single letters. Proof that letter granularity is inherited from the sources, not invented as a feature.",
-    "editions": ["ed:bible.he.wlc", "ed:bible.en.kjv"],
-    "layers": ["layer:bible.bereshit-rabbah", "layer:bible.masorah"],
-    "author": { "type": "user", "id": "user:daniel", "display": "Daniel" },
+    "editions": [
+      "ed:bible.he.wlc",
+      "ed:bible.en.kjv"
+    ],
+    "layers": [
+      "layer:bible.bereshit-rabbah",
+      "layer:bible.masorah"
+    ],
+    "author": {
+      "type": "user",
+      "id": "user:daniel",
+      "display": "Daniel"
+    },
+    "visibility": "public"
+  },
+  {
+    "id": "lens:ddj.1.two-readings",
+    "type": "Lens",
+    "work": "work:daodejing",
+    "title": "Dao De Jing 1 — metaphysics or medicine",
+    "description": "Wang Bi and Heshang Gong on the same seven characters, with the Mawangdui witness underneath. Two commentaries, two different books.",
+    "editions": [
+      "ed:ddj.lzh.wangbi",
+      "ed:ddj.lzh.mawangdui",
+      "ed:ddj.en.legge"
+    ],
+    "layers": [
+      "layer:ddj.wangbi",
+      "layer:ddj.heshanggong",
+      "layer:ddj.mawangdui"
+    ],
+    "author": {
+      "type": "user",
+      "id": "user:daniel",
+      "display": "Daniel"
+    },
+    "visibility": "public"
+  },
+  {
+    "id": "lens:renunciation-across-works",
+    "type": "Lens",
+    "work": "work:upanishad",
+    "title": "Renunciation — Śaṅkara against the moderns",
+    "description": "Īśā 1 with Śaṅkara and Aurobindo. The same argument as Gītā 2.47, between the same two positions, on a different text — which is why the corpus holds pairs.",
+    "editions": [
+      "ed:upanishad.sa.src",
+      "ed:upanishad.en.muller"
+    ],
+    "layers": [
+      "layer:upanishad.shankara",
+      "layer:upanishad.aurobindo"
+    ],
+    "author": {
+      "type": "user",
+      "id": "user:daniel",
+      "display": "Daniel"
+    },
     "visibility": "public"
   }
 ]

@@ -4,32 +4,154 @@
   "title": "Layer",
   "description": "A named, attributable, selectable set of interpretations over one Work. See docs/02-layers.md.",
   "type": "object",
-  "required": ["id", "type", "work", "kind", "title", "author", "license"],
+  "required": [
+    "id",
+    "type",
+    "work",
+    "kind",
+    "title",
+    "author",
+    "license"
+  ],
   "additionalProperties": false,
   "properties": {
-    "id": { "type": "string", "pattern": "^layer:[a-z0-9.\\-]+$" },
-    "type": { "const": "Layer" },
-    "work": { "type": "string", "pattern": "^work:" },
+    "id": {
+      "type": "string",
+      "pattern": "^layer:[a-z0-9.\\-]+$"
+    },
+    "type": {
+      "const": "Layer"
+    },
+    "work": {
+      "type": "string",
+      "pattern": "^work:"
+    },
     "kind": {
-      "enum": ["philological", "variant", "traditional", "historical", "devotional", "critical", "personal", "machine"],
+      "enum": [
+        "philological",
+        "variant",
+        "traditional",
+        "historical",
+        "devotional",
+        "critical",
+        "personal",
+        "machine"
+      ],
       "description": "Closed vocabulary. Drives typography, stacking order and policy. A machine-authored layer can never be filed as 'traditional' or 'critical'."
     },
-    "title": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "string" } },
-    "author": { "$ref": "https://con001.dev/schema/author.schema.json" },
-    "stance": { "type": "string", "description": "Declared editorial or doctrinal commitment, e.g. 'advaita', 'neo-confucian'." },
-    "source": { "type": "object", "additionalProperties": true, "description": "Bibliographic origin of the imported commentary." },
-    "license": { "type": "object", "required": ["id"], "additionalProperties": true, "properties": { "id": { "type": "string" } } },
-    "default_in_stack": { "type": "boolean", "default": false, "description": "Machine layers MUST be false — opt-in every time." },
+    "title": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "author": {
+      "$ref": "https://con001.dev/schema/author.schema.json"
+    },
+    "stance": {
+      "type": "string",
+      "description": "Declared editorial or doctrinal commitment, e.g. 'advaita', 'neo-confucian'."
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Bibliographic origin of the imported commentary."
+    },
+    "license": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "default_in_stack": {
+      "type": "boolean",
+      "default": false,
+      "description": "Machine layers MUST be false — opt-in every time."
+    },
     "coverage": {
       "type": "object",
       "additionalProperties": false,
-      "properties": { "units_total": { "type": "integer" }, "units_annotated": { "type": "integer" } }
+      "properties": {
+        "units_total": {
+          "type": "integer"
+        },
+        "units_annotated": {
+          "type": "integer"
+        }
+      }
+    },
+    "canonical": {
+      "type": "object",
+      "description": "Canonical standing within this work's own tradition. DECLARED EDITORIALLY, never computed from engagement, and never compared across traditions. Kept strictly separate from the engagement axis so the two can never be blended into one score. See docs/06-salience.md.",
+      "required": [
+        "weight",
+        "basis"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "basis": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Why this weight. Recorded so it can be argued with rather than inherited silently."
+        }
+      }
     }
   },
   "allOf": [
     {
-      "if": { "properties": { "kind": { "const": "machine" } }, "required": ["kind"] },
-      "then": { "properties": { "default_in_stack": { "const": false } } }
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "machine"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "default_in_stack": {
+            "const": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "machine"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "canonical": {
+            "properties": {
+              "weight": {
+                "const": 0
+              }
+            }
+          }
+        }
+      },
+      "$comment": "Machine-authored content carries no canonical weight, by rule."
     }
   ]
 }

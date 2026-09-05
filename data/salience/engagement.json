@@ -1,0 +1,25 @@
+{
+  "_comment": "SYNTHETIC SEED DATA. Not telemetry. Present so tools/salience.mjs has something to rank while there are no readers. Engagement is deliberately stored HERE and never on the Interpretation itself, so a reading can never carry its own popularity around as though popularity were part of what it says.",
+  "_generated": "2026-09-05",
+  "_synthetic": true,
+  "window_days": 90,
+  "interpretations": {
+    "interp:bible.jhn3-16.matthew-henry":      { "reads": 481200, "saves": 22400, "forks": 310, "shares": 9800 },
+    "interp:upanishad.bau1-3-28.shankara":     { "reads": 95300,  "saves": 8100,  "forks": 44,  "shares": 3900 },
+    "interp:quran.2-1.ibn-kathir":             { "reads": 88700,  "saves": 9600,  "forks": 120, "shares": 2700 },
+    "interp:gita.2-47.shankara":               { "reads": 62100,  "saves": 7300,  "forks": 480, "shares": 2100 },
+    "interp:ddj.1.wangbi":                     { "reads": 41500,  "saves": 3900,  "forks": 210, "shares": 1600 },
+    "interp:gita.2-47.gandhi":                 { "reads": 34800,  "saves": 5100,  "forks": 620, "shares": 3300 },
+    "interp:bible.gen1-1.bereshit-rabbah.bet": { "reads": 27400,  "saves": 4200,  "forks": 190, "shares": 2400 },
+    "interp:gita.2-47.tilak":                  { "reads": 21300,  "saves": 2800,  "forks": 400, "shares": 1500 },
+    "interp:analects.1-1.zhuxi.xi":            { "reads": 15100,  "saves": 2600,  "forks": 95,  "shares": 880 },
+    "interp:upanishad.ish1.shankara":          { "reads": 12200,  "saves": 1500,  "forks": 60,  "shares": 410 },
+    "interp:ddj.1.heshanggong":                { "reads": 9200,   "saves": 1900,  "forks": 130, "shares": 740 },
+    "interp:upanishad.ish1.aurobindo":         { "reads": 8800,   "saves": 1700,  "forks": 150, "shares": 690 },
+    "interp:gita.ch2.shankara.summary":        { "reads": 7000,   "saves": 900,   "forks": 20,  "shares": 260 },
+    "interp:gita.2-47.philology.adhikara":     { "reads": 4800,   "saves": 1100,  "forks": 35,  "shares": 180 },
+    "interp:bible.gen1-1.masorah.large-bet":   { "reads": 3100,   "saves": 780,   "forks": 25,  "shares": 210 },
+    "interp:ddj.1.mawangdui.heng":             { "reads": 1400,   "saves": 620,   "forks": 40,  "shares": 340 },
+    "interp:gita.2-47.machine.01":             { "reads": 900,    "saves": 60,    "forks": 5,   "shares": 30 }
+  }
+}

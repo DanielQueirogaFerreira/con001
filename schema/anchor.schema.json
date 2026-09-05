@@ -10,12 +10,12 @@
     "cr": {
       "type": "string",
       "description": "Canonical Reference. MANDATORY. An anchor without a CR is invalid, which is what guarantees no interpretation is ever orphaned.",
-      "pattern": "^(bible:[A-Z0-9]{3}\\.\\d{1,3}\\.\\d{1,3}|quran:\\d{1,3}:\\d{1,3}|gita:\\d{1,2}\\.\\d{1,3}|analects:\\d{1,2}\\.\\d{1,3})$"
+      "pattern": "^(bible:[A-Z0-9]{3}\\.\\d{1,3}\\.\\d{1,3}|quran:\\d{1,3}:\\d{1,3}|gita:\\d{1,2}\\.\\d{1,3}|analects:\\d{1,2}\\.\\d{1,3}|daodejing:\\d{1,2}|upanishad:[A-Z]{2,4}\\.\\d{1,3}(\\.\\d{1,3}){0,2})$"
     },
     "cr_end": {
       "type": "string",
       "description": "Inclusive end of a range. Must share the CR grammar of `cr`.",
-      "pattern": "^(bible:[A-Z0-9]{3}\\.\\d{1,3}\\.\\d{1,3}|quran:\\d{1,3}:\\d{1,3}|gita:\\d{1,2}\\.\\d{1,3}|analects:\\d{1,2}\\.\\d{1,3})$"
+      "pattern": "^(bible:[A-Z0-9]{3}\\.\\d{1,3}\\.\\d{1,3}|quran:\\d{1,3}:\\d{1,3}|gita:\\d{1,2}\\.\\d{1,3}|analects:\\d{1,2}\\.\\d{1,3}|daodejing:\\d{1,2}|upanishad:[A-Z]{2,4}\\.\\d{1,3}(\\.\\d{1,3}){0,2})$"
     },
     "granularity": {
       "enum": ["chapter", "unit", "clause", "phrase", "word", "letter"],

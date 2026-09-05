@@ -4,126 +4,489 @@
     "type": "Layer",
     "work": "work:gita",
     "kind": "traditional",
-    "title": { "sa": "गीताभाष्य", "en": "Śaṅkara's Bhāṣya" },
-    "author": { "type": "historical", "display": "Ādi Śaṅkarācārya", "school": "advaita", "century": 8 },
+    "title": {
+      "sa": "गीताभाष्य",
+      "en": "Śaṅkara's Bhāṣya"
+    },
+    "author": {
+      "type": "historical",
+      "display": "Ādi Śaṅkarācārya",
+      "school": "advaita",
+      "century": 8
+    },
     "stance": "advaita",
-    "source": { "work": "Bhagavadgītābhāṣya", "language": "sa", "circa": "8th century" },
-    "license": { "id": "PD", "notes": "Sanskrit original is PD. A modern English translation of it is a separate copyrightable work — licence is tracked per edition." },
+    "source": {
+      "work": "Bhagavadgītābhāṣya",
+      "language": "sa",
+      "circa": "8th century"
+    },
+    "license": {
+      "id": "PD",
+      "notes": "Sanskrit original is PD. A modern English translation of it is a separate copyrightable work — licence is tracked per edition."
+    },
     "default_in_stack": true,
-    "coverage": { "units_total": 700, "units_annotated": 700 }
+    "coverage": {
+      "units_total": 700,
+      "units_annotated": 700
+    },
+    "canonical": {
+      "weight": 1,
+      "basis": "Foundational bhāṣya; every later commentator writes with or against it."
+    }
   },
   {
     "id": "layer:gita.tilak",
     "type": "Layer",
     "work": "work:gita",
     "kind": "traditional",
-    "title": { "mr": "गीतारहस्य", "en": "Gītā Rahasya" },
-    "author": { "type": "historical", "display": "Bāl Gangādhar Tilak", "school": "karmayoga", "century": 20 },
+    "title": {
+      "mr": "गीतारहस्य",
+      "en": "Gītā Rahasya"
+    },
+    "author": {
+      "type": "historical",
+      "display": "Bāl Gangādhar Tilak",
+      "school": "karmayoga",
+      "century": 20
+    },
     "stance": "activist karmayoga",
-    "source": { "work": "Śrīmad Bhagavadgītā Rahasya", "language": "mr", "year": 1915, "note": "Written during imprisonment in Mandalay." },
-    "license": { "id": "PD" },
+    "source": {
+      "work": "Śrīmad Bhagavadgītā Rahasya",
+      "language": "mr",
+      "year": 1915,
+      "note": "Written during imprisonment in Mandalay."
+    },
+    "license": {
+      "id": "PD"
+    },
     "default_in_stack": false,
-    "coverage": { "units_total": 700, "units_annotated": 700 }
+    "coverage": {
+      "units_total": 700,
+      "units_annotated": 700
+    },
+    "canonical": {
+      "weight": 0.7,
+      "basis": "Major modern commentary with documented historical consequence."
+    }
   },
   {
     "id": "layer:gita.gandhi",
     "type": "Layer",
     "work": "work:gita",
     "kind": "traditional",
-    "title": { "gu": "અનાસક્તિ યોગ", "en": "Anāsakti Yoga" },
-    "author": { "type": "historical", "display": "Mohandas K. Gandhi", "school": "anasakti", "century": 20 },
+    "title": {
+      "gu": "અનાસક્તિ યોગ",
+      "en": "Anāsakti Yoga"
+    },
+    "author": {
+      "type": "historical",
+      "display": "Mohandas K. Gandhi",
+      "school": "anasakti",
+      "century": 20
+    },
     "stance": "non-attachment inseparable from ahiṃsā",
-    "source": { "work": "Anāsaktiyoga", "language": "gu", "year": 1929 },
-    "license": { "id": "PD" },
+    "source": {
+      "work": "Anāsaktiyoga",
+      "language": "gu",
+      "year": 1929
+    },
+    "license": {
+      "id": "PD"
+    },
     "default_in_stack": false,
-    "coverage": { "units_total": 700, "units_annotated": 700 }
+    "coverage": {
+      "units_total": 700,
+      "units_annotated": 700
+    },
+    "canonical": {
+      "weight": 0.7,
+      "basis": "Major modern commentary with documented historical consequence."
+    }
   },
   {
     "id": "layer:gita.philology",
     "type": "Layer",
     "work": "work:gita",
     "kind": "philological",
-    "title": { "en": "Sanskrit lexicon and grammar" },
-    "author": { "type": "institution", "display": "con001 philology desk" },
-    "license": { "id": "CC-BY-4.0" },
-    "default_in_stack": true
+    "title": {
+      "en": "Sanskrit lexicon and grammar"
+    },
+    "author": {
+      "type": "institution",
+      "display": "con001 philology desk"
+    },
+    "license": {
+      "id": "CC-BY-4.0"
+    },
+    "default_in_stack": true,
+    "canonical": {
+      "weight": 0.5,
+      "basis": "Reference apparatus, not a reading."
+    }
   },
   {
     "id": "layer:gita.machine.reading-01",
     "type": "Layer",
     "work": "work:gita",
     "kind": "machine",
-    "title": { "en": "Model reading, 2026-09 (experimental)" },
+    "title": {
+      "en": "Model reading, 2026-09 (experimental)"
+    },
     "author": {
       "type": "model",
       "display": "Model reading",
       "model": "claude-opus-5",
       "generated": "2026-09-05",
       "inputs": {
-        "layers_in_context": ["layer:gita.shankara", "layer:gita.tilak", "layer:gita.gandhi", "layer:gita.philology"],
-        "editions_in_context": ["ed:gita.sa.src", "ed:gita.en.telang"],
+        "layers_in_context": [
+          "layer:gita.shankara",
+          "layer:gita.tilak",
+          "layer:gita.gandhi",
+          "layer:gita.philology"
+        ],
+        "editions_in_context": [
+          "ed:gita.sa.src",
+          "ed:gita.en.telang"
+        ],
         "prompt": "Read this verse against the three commentaries supplied. Report only what is visible in the Sanskrit or in the supplied layers. Do not attribute any claim to a commentator not supplied."
       }
     },
-    "license": { "id": "CC-BY-4.0" },
+    "license": {
+      "id": "CC-BY-4.0"
+    },
     "default_in_stack": false,
-    "coverage": { "units_total": 700, "units_annotated": 1 }
+    "coverage": {
+      "units_total": 700,
+      "units_annotated": 1
+    },
+    "canonical": {
+      "weight": 0,
+      "basis": "Machine-authored content carries no canonical weight, by rule."
+    }
   },
   {
     "id": "layer:analects.zhuxi",
     "type": "Layer",
     "work": "work:analects",
     "kind": "traditional",
-    "title": { "zh": "四書章句集注", "en": "Collected Commentaries on the Four Books" },
-    "author": { "type": "historical", "display": "朱熹 Zhū Xī", "school": "neo-confucian", "century": 12 },
+    "title": {
+      "zh": "四書章句集注",
+      "en": "Collected Commentaries on the Four Books"
+    },
+    "author": {
+      "type": "historical",
+      "display": "朱熹 Zhū Xī",
+      "school": "neo-confucian",
+      "century": 12
+    },
     "stance": "Cheng–Zhu Neo-Confucianism",
-    "source": { "work": "四書章句集注", "language": "lzh", "year": 1190, "note": "Prescribed for the imperial examinations 1313–1905." },
-    "license": { "id": "PD" },
+    "source": {
+      "work": "四書章句集注",
+      "language": "lzh",
+      "year": 1190,
+      "note": "Prescribed for the imperial examinations 1313–1905."
+    },
+    "license": {
+      "id": "PD"
+    },
     "default_in_stack": true,
-    "coverage": { "units_total": 512, "units_annotated": 512 }
+    "coverage": {
+      "units_total": 512,
+      "units_annotated": 512
+    },
+    "canonical": {
+      "weight": 1,
+      "basis": "State orthodoxy and examination curriculum, 1313–1905."
+    }
   },
   {
     "id": "layer:quran.ibn-kathir",
     "type": "Layer",
     "work": "work:quran",
     "kind": "traditional",
-    "title": { "ar": "تفسير ابن كثير", "en": "Tafsīr Ibn Kathīr" },
-    "author": { "type": "historical", "display": "Ismāʿīl ibn Kathīr", "century": 14 },
-    "source": { "work": "Tafsīr al-Qurʾān al-ʿAẓīm", "language": "ar", "circa": "14th century" },
-    "license": { "id": "PD", "notes": "Arabic original PD. Modern English translations of it are NOT — import the Arabic and translate, or licence the translation." },
+    "title": {
+      "ar": "تفسير ابن كثير",
+      "en": "Tafsīr Ibn Kathīr"
+    },
+    "author": {
+      "type": "historical",
+      "display": "Ismāʿīl ibn Kathīr",
+      "century": 14
+    },
+    "source": {
+      "work": "Tafsīr al-Qurʾān al-ʿAẓīm",
+      "language": "ar",
+      "circa": "14th century"
+    },
+    "license": {
+      "id": "PD",
+      "notes": "Arabic original PD. Modern English translations of it are NOT — import the Arabic and translate, or licence the translation."
+    },
     "default_in_stack": true,
-    "coverage": { "units_total": 6236, "units_annotated": 6236 }
+    "coverage": {
+      "units_total": 6236,
+      "units_annotated": 6236
+    },
+    "canonical": {
+      "weight": 0.95,
+      "basis": "Among the most widely transmitted classical tafsīr works."
+    }
   },
   {
     "id": "layer:bible.bereshit-rabbah",
     "type": "Layer",
     "work": "work:bible",
     "kind": "traditional",
-    "title": { "he": "בראשית רבה", "en": "Bereshit Rabbah" },
-    "author": { "type": "institution", "display": "Bereshit Rabbah (Amoraic midrash)", "century": 5 },
-    "source": { "work": "Bereshit Rabbah", "language": "he", "circa": "5th century" },
-    "license": { "id": "PD" },
-    "default_in_stack": true
+    "title": {
+      "he": "בראשית רבה",
+      "en": "Bereshit Rabbah"
+    },
+    "author": {
+      "type": "institution",
+      "display": "Bereshit Rabbah (Amoraic midrash)",
+      "century": 5
+    },
+    "source": {
+      "work": "Bereshit Rabbah",
+      "language": "he",
+      "circa": "5th century"
+    },
+    "license": {
+      "id": "PD"
+    },
+    "default_in_stack": true,
+    "canonical": {
+      "weight": 0.9,
+      "basis": "Classical Amoraic midrash, continuously transmitted."
+    }
   },
   {
     "id": "layer:bible.masorah",
     "type": "Layer",
     "work": "work:bible",
     "kind": "variant",
-    "title": { "en": "Masoretic scribal apparatus" },
-    "author": { "type": "institution", "display": "Masoretic tradition" },
-    "source": { "work": "Masorah parva / magna", "language": "he" },
-    "license": { "id": "PD" },
-    "default_in_stack": false
+    "title": {
+      "en": "Masoretic scribal apparatus"
+    },
+    "author": {
+      "type": "institution",
+      "display": "Masoretic tradition"
+    },
+    "source": {
+      "work": "Masorah parva / magna",
+      "language": "he"
+    },
+    "license": {
+      "id": "PD"
+    },
+    "default_in_stack": false,
+    "canonical": {
+      "weight": 0.8,
+      "basis": "Scribal apparatus carried with the text itself."
+    }
   },
   {
     "id": "layer:user.daniel.private",
     "type": "Layer",
     "work": "work:gita",
     "kind": "personal",
-    "title": { "en": "Daniel — reading notes" },
-    "author": { "type": "user", "id": "user:daniel", "display": "Daniel" },
-    "license": { "id": "all-rights-reserved" },
-    "default_in_stack": true
+    "title": {
+      "en": "Daniel — reading notes"
+    },
+    "author": {
+      "type": "user",
+      "id": "user:daniel",
+      "display": "Daniel"
+    },
+    "license": {
+      "id": "all-rights-reserved"
+    },
+    "default_in_stack": true,
+    "canonical": {
+      "weight": 0,
+      "basis": "Personal layer; canonical weight does not apply."
+    }
+  },
+  {
+    "id": "layer:ddj.wangbi",
+    "type": "Layer",
+    "work": "work:daodejing",
+    "kind": "traditional",
+    "title": {
+      "zh": "老子注",
+      "en": "Wang Bi's Commentary"
+    },
+    "author": {
+      "type": "historical",
+      "display": "王弼 Wáng Bì",
+      "school": "xuanxue",
+      "century": 3
+    },
+    "stance": "metaphysical (xuanxue)",
+    "source": {
+      "work": "老子道德經注",
+      "language": "lzh",
+      "circa": "3rd century"
+    },
+    "license": {
+      "id": "PD"
+    },
+    "default_in_stack": true,
+    "canonical": {
+      "weight": 1,
+      "basis": "The commentary through which the received text was transmitted; inseparable from it in practice."
+    },
+    "coverage": {
+      "units_total": 81,
+      "units_annotated": 81
+    }
+  },
+  {
+    "id": "layer:ddj.heshanggong",
+    "type": "Layer",
+    "work": "work:daodejing",
+    "kind": "traditional",
+    "title": {
+      "zh": "河上公章句",
+      "en": "Heshang Gong Commentary"
+    },
+    "author": {
+      "type": "historical",
+      "display": "河上公 Héshàng Gōng",
+      "school": "self-cultivation",
+      "century": 2
+    },
+    "stance": "physiological self-cultivation",
+    "source": {
+      "work": "老子道德經河上公章句",
+      "language": "lzh",
+      "circa": "2nd century"
+    },
+    "license": {
+      "id": "PD"
+    },
+    "default_in_stack": true,
+    "canonical": {
+      "weight": 0.9,
+      "basis": "The dominant reading in religious Daoism and in popular transmission — a different canon from the literati one."
+    },
+    "coverage": {
+      "units_total": 81,
+      "units_annotated": 81
+    }
+  },
+  {
+    "id": "layer:ddj.mawangdui",
+    "type": "Layer",
+    "work": "work:daodejing",
+    "kind": "variant",
+    "title": {
+      "en": "Mawangdui manuscript witness"
+    },
+    "author": {
+      "type": "institution",
+      "display": "Mawangdui silk manuscripts (168 BCE)"
+    },
+    "source": {
+      "work": "馬王堆帛書老子",
+      "language": "lzh",
+      "year": -168
+    },
+    "license": {
+      "id": "PD"
+    },
+    "default_in_stack": false,
+    "canonical": {
+      "weight": 0.85,
+      "basis": "Primary manuscript evidence predating the received text by roughly a millennium."
+    }
+  },
+  {
+    "id": "layer:upanishad.shankara",
+    "type": "Layer",
+    "work": "work:upanishad",
+    "kind": "traditional",
+    "title": {
+      "sa": "उपनिषद्भाष्य",
+      "en": "Śaṅkara's Upaniṣad Bhāṣyas"
+    },
+    "author": {
+      "type": "historical",
+      "display": "Ādi Śaṅkarācārya",
+      "school": "advaita",
+      "century": 8
+    },
+    "stance": "advaita",
+    "source": {
+      "work": "Bhāṣyas on ten principal Upaniṣads",
+      "language": "sa",
+      "circa": "8th century"
+    },
+    "license": {
+      "id": "PD"
+    },
+    "default_in_stack": true,
+    "canonical": {
+      "weight": 1,
+      "basis": "The commentaries that fixed which ten Upaniṣads count as principal."
+    }
+  },
+  {
+    "id": "layer:upanishad.aurobindo",
+    "type": "Layer",
+    "work": "work:upanishad",
+    "kind": "traditional",
+    "title": {
+      "en": "Aurobindo on the Īśā Upaniṣad"
+    },
+    "author": {
+      "type": "historical",
+      "display": "Sri Aurobindo",
+      "school": "integral",
+      "century": 20
+    },
+    "stance": "life-affirming integral reading",
+    "source": {
+      "work": "Isha Upanishad",
+      "language": "en",
+      "year": 1924
+    },
+    "license": {
+      "id": "PD"
+    },
+    "default_in_stack": false,
+    "canonical": {
+      "weight": 0.6,
+      "basis": "Modern commentary, widely read, explicitly written against the renunciatory reading."
+    }
+  },
+  {
+    "id": "layer:bible.matthew-henry",
+    "type": "Layer",
+    "work": "work:bible",
+    "kind": "traditional",
+    "title": {
+      "en": "Matthew Henry's Exposition"
+    },
+    "author": {
+      "type": "historical",
+      "display": "Matthew Henry",
+      "school": "nonconformist protestant",
+      "century": 18
+    },
+    "stance": "devotional protestant exposition",
+    "source": {
+      "work": "An Exposition of the Old and New Testament",
+      "language": "en",
+      "year": 1710
+    },
+    "license": {
+      "id": "PD"
+    },
+    "default_in_stack": true,
+    "canonical": {
+      "weight": 0.75,
+      "basis": "The most widely circulated English-language commentary of the last three centuries."
+    }
   }
 ]

@@ -4,62 +4,191 @@
     "edition": "ed:gita.sa.src",
     "cr": "gita:2.47",
     "label": "2.47",
-    "text": "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन। मा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि॥"
+    "text": "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन। मा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि॥",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "aa3a66ef5463ed39dc5b848b45faae033613e0cf8fd7977368d906f20787c58e"
+    }
   },
   {
     "type": "TextUnit",
     "edition": "ed:gita.en.telang",
     "cr": "gita:2.47",
     "label": "2.47",
-    "text": "Your business is with action alone; not by any means with fruit. Let not the fruit of action be your motive to action. Let not your attachment be fixed on inaction."
+    "text": "Your business is with action alone; not by any means with fruit. Let not the fruit of action be your motive to action. Let not your attachment be fixed on inaction.",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "9f1f641758fca6bca5b6b25fec934c74fcee106e7a09757097e55e8a02388351"
+    }
   },
   {
     "type": "TextUnit",
     "edition": "ed:gita.sa.src",
     "cr": "gita:11.12",
     "label": "11.12",
-    "text": "दिवि सूर्यसहस्रस्य भवेद्युगपदुत्थिता। यदि भाः सदृशी सा स्याद्भासस्तस्य महात्मनः॥"
+    "text": "दिवि सूर्यसहस्रस्य भवेद्युगपदुत्थिता। यदि भाः सदृशी सा स्याद्भासस्तस्य महात्मनः॥",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "0e11b5ae14a2c8ffe765e67c35ded357ae6ac17f43cd5ee1caec0cafa3d454b5"
+    }
   },
   {
     "type": "TextUnit",
     "edition": "ed:analects.lzh.src",
     "cr": "analects:1.1",
     "label": "1.1",
-    "text": "子曰：學而時習之，不亦說乎？有朋自遠方來，不亦樂乎？人不知而不慍，不亦君子乎？"
+    "text": "子曰：學而時習之，不亦說乎？有朋自遠方來，不亦樂乎？人不知而不慍，不亦君子乎？",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "736eb2796a2a4f92d108313a35161c25184414afaf7a059bfdd32bfbaa928aab"
+    }
   },
   {
     "type": "TextUnit",
     "edition": "ed:analects.en.legge",
     "cr": "analects:1.1",
     "label": "1.1",
-    "text": "The Master said, \"Is it not pleasant to learn with a constant perseverance and application? Is it not delightful to have friends coming from distant quarters? Is he not a man of complete virtue, who feels no discomposure though men may take no note of him?\""
+    "text": "The Master said, \"Is it not pleasant to learn with a constant perseverance and application? Is it not delightful to have friends coming from distant quarters? Is he not a man of complete virtue, who feels no discomposure though men may take no note of him?\"",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "aa95014e8897710b3f8fda3c4a83c906b6b1d212fdbaaa5fdc70526d220be89b"
+    }
   },
   {
     "type": "TextUnit",
     "edition": "ed:quran.ar.uthmani",
     "cr": "quran:2:1",
     "label": "2:1",
-    "text": "الم"
+    "text": "الم",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "58bc1e3007bc0ed70b737b562ad04a88867c38e78e58e2f15c3f43c9be783acb"
+    }
   },
   {
     "type": "TextUnit",
     "edition": "ed:quran.en.pickthall",
     "cr": "quran:2:1",
     "label": "2:1",
-    "text": "Alif. Lam. Mim."
+    "text": "Alif. Lam. Mim.",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "31efed8081913dd48772b80eedca6eb21d625441f39521cf6004ff33f3d54699"
+    }
   },
   {
     "type": "TextUnit",
     "edition": "ed:bible.he.wlc",
     "cr": "bible:GEN.1.1",
     "label": "1:1",
-    "text": "בְּרֵאשִׁית בָּרָא אֱלֹהִים אֵת הַשָּׁמַיִם וְאֵת הָאָרֶץ׃"
+    "text": "בְּרֵאשִׁית בָּרָא אֱלֹהִים אֵת הַשָּׁמַיִם וְאֵת הָאָרֶץ׃",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "37eb63f0cffb461e5918b34024c221e3bbd33aa319774b8e6f2cc594dd176945"
+    }
   },
   {
     "type": "TextUnit",
     "edition": "ed:bible.en.kjv",
     "cr": "bible:GEN.1.1",
     "label": "1:1",
-    "text": "In the beginning God created the heaven and the earth."
+    "text": "In the beginning God created the heaven and the earth.",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "6f785a86b2716dcc5a48caa0de944396ba871d5c7f3bf776993648335fcb2bb2"
+    }
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:ddj.lzh.wangbi",
+    "cr": "daodejing:1",
+    "label": "1",
+    "text": "道可道，非常道。名可名，非常名。無名天地之始，有名萬物之母。故常無欲，以觀其妙；常有欲，以觀其徼。此兩者，同出而異名，同謂之玄。玄之又玄，眾妙之門。",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "8e687e745121792d9305cecd2f732921a1711192a5367fd40c134b0988e36e73"
+    }
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:ddj.lzh.mawangdui",
+    "cr": "daodejing:1",
+    "label": "1",
+    "text": "道可道也，非恆道也。名可名也，非恆名也。",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "23e4e56c4a608d2b928eadf97197135fa66b5b9de2308921e5e9eba167caf8ed"
+    }
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:ddj.en.legge",
+    "cr": "daodejing:1",
+    "label": "1",
+    "text": "The Tao that can be trodden is not the enduring and unchanging Tao. The name that can be named is not the enduring and unchanging name.",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "93be2edf34ac1f45f49d13e1b05ba56998822816eb88071b3f948cc155ffdca3"
+    }
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:upanishad.sa.src",
+    "cr": "upanishad:ISH.1",
+    "label": "Īśā 1",
+    "text": "ईशा वास्यमिदं सर्वं यत्किञ्च जगत्यां जगत्। तेन त्यक्तेन भुञ्जीथा मा गृधः कस्यस्विद्धनम्॥",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "6684c530ae2846495a41bade38266792e1ed5416aa5a771c1938179b6f761614"
+    }
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:upanishad.en.muller",
+    "cr": "upanishad:ISH.1",
+    "label": "Īśā 1",
+    "text": "All this, whatsoever moves on earth, is to be hidden in the Lord. When thou hast surrendered all this, then thou mayest enjoy. Do not covet the wealth of any man.",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "4ed20c67527fba5230c29633af97e2d1a3869c00b267ccbade016bdda594d780"
+    }
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:upanishad.sa.src",
+    "cr": "upanishad:BAU.1.3.28",
+    "label": "Bṛhadāraṇyaka 1.3.28",
+    "text": "असतो मा सद्गमय। तमसो मा ज्योतिर्गमय। मृत्योर्मामृतं गमय॥",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "07901c243b9a0c8b60b766d8dd095db3e58acb4a2d52b2b03af6599775b531f8"
+    }
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:bible.en.kjv",
+    "cr": "bible:JHN.3.16",
+    "label": "3:16",
+    "text": "For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.",
+    "provenance": {
+      "source": "hand-entered sample, not an authoritative edition",
+      "verified": false,
+      "sha256": "8473c0b1c7664945528317faf77351258eb79f8b11ba821ef76d7e916cde711a"
+    }
   }
 ]

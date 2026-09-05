@@ -6,15 +6,49 @@ Decisions I made on my own, and decisions that are genuinely yours.
 
 | Decision | Chosen | Why |
 |---|---|---|
-| East Asian book | **Analects** | Zhu Xi's commentary was the examination curriculum of four countries for six centuries — layered interpretation as civilisational infrastructure. Dao De Jing is the alternative and belongs in slot five. [`03`](03-corpus.md) |
-| Indian book | **Bhagavad Gītā** | Śaṅkara / Tilak / Gandhi on the same twelve words is the product thesis in one screen. [`03`](03-corpus.md) |
-| Build order | **Gītā → Analects → Qur'ān → Bible** | Build against the hardest constraints while changing them is still cheap. The Bible last, precisely because it is the most familiar. [`03`](03-corpus.md) |
+| East Asian books | **Analects + Dao De Jing** | Confirmed: both. The second is the opposition, not a duplicate, and it carries the best manuscript-variant material in existence. [`03`](03-corpus.md) |
+| Indian books | **Bhagavad Gītā + Principal Upaniṣads** | Confirmed: both. Īśā 1 hosts the same dispute as Gītā 2.47 between the same two positions — the clearest argument for holding pairs. [`03`](03-corpus.md) |
+| Build order | **Gītā → Dao De Jing → Analects → Upaniṣads → Qur'ān → Bible** | Build against the hardest constraints while changing them is still cheap. The Dao De Jing promoted to second: 81 chapters is the cheapest way to build variant machinery every later work needs. [`03`](03-corpus.md) |
+| Popularity ranking | **Two axes, never blended, plus a diversity floor** | A single relevance score turns into a majority vote on meaning within a year. [`06`](06-salience.md) |
+| Engagement storage | **Outside the interpretation** | A reading must never carry its own popularity as though it were part of what it says. [`06`](06-salience.md) |
+| Text integrity | **Nothing displays unless `verified`** | Every sample passage here was hand-entered and is marked unverified. [`09`](09-ingestion.md) |
 | Anchoring | **Canonical Reference (mandatory) + Span (optional)** | The only scheme that survives translation switching and joins to the existing commentary corpus. [`01`](01-anchoring.md) |
 | Default visibility | **Private** | A first reading is a vulnerable thing. [`02`](02-layers.md) |
 | Anonymous public interpretation | **Not permitted** | Attribution is the substrate; without it the layer stack means nothing. [`04`](04-generative.md) |
 | Machine layers | **Opt-in, separately registered, never in the tradition's register** | The value collapses to zero the moment a reader cannot tell them apart. [`02`](02-layers.md) |
 
+## Settled by you, now implemented
+
+- **Open source.** Taken as decided. The four-licence split and its reasoning are
+  in [`LICENSING.md`](../LICENSING.md) and [`08`](08-open-source-and-cost.md).
+- **Philanthropic, church-backed, not profit-seeking.** This shapes the cost
+  architecture (nothing calls a model when a reader turns a page; the corpus is
+  static and nearly free to serve) and the governance model (per-corpus
+  stewardship, no CLA).
+- **Both Chinese, both Indian.** Six works, all specified and seeded.
+
 ## Yours to decide
+
+### 0. Two small confirmations
+
+**Six works, not five.** You said five; both-Chinese plus both-Indian plus Bible
+plus Qur'ān comes to six. Everything is built for six — say the word if one
+should go.
+
+**Which second Indian work.** I chose the **Principal Upaniṣads** over the Yoga
+Sūtras and the Rāmāyaṇa, because Śaṅkara commented on both them and the Gītā,
+which makes author-level navigation across works demonstrable on day one. The
+Yoga Sūtras would be cheaper (196 sūtras, one stable citation grammar) if
+scope is the concern.
+
+### 0b. Confirm the licences
+
+`LICENSE` files are deliberately **not** in the repository yet. AGPL-3.0 for
+code, CC BY-SA 4.0 for the corpus, CC0 for anchoring data — reasoning in
+[`LICENSING.md`](../LICENSING.md). An AGPL release cannot be quietly walked
+back, so this needs your explicit yes. It also needs a decision about **where
+copyright sits** (church body, foundation, or a fiscal host like Software
+Freedom Conservancy), because dual-licensing later is impossible without one.
 
 ### 1. What is the product, actually?
 
@@ -50,4 +84,6 @@ Deliberately unaddressed here, but it constrains everything above. The awkward t
 2. **Span projection quality is the product's ceiling.** If highlights land wrongly across editions, the illusion breaks immediately. The confidence threshold and its "this span exists in the original" fallback need real user testing early, not late.
 3. **Machine-layer fabrication is an existential risk, not a quality issue.** One AI layer inventing a plausible Śaṅkara quotation, screenshotted and shared, would end the project's credibility permanently. The rule in [`02`](02-layers.md) — no assertion attributed to a source that was not in context — must be enforced mechanically, not by prompt.
 4. **Moderating public interpretation of scripture is harder than it looks.** The stance in [`04`](04-generative.md) (host disagreement, remove only misattribution and harassment) is defensible but will be tested by people acting in bad faith on day one.
-5. **Four traditions means four sets of expectations you can violate without noticing.** This is why the advisory groups are a technical dependency, not a PR exercise.
+5. **Six works across five traditions means five sets of expectations you can violate without noticing.** This is why the advisory groups are a technical dependency, not a PR exercise.
+6. **A church-funded platform hosting other traditions' scripture will be questioned, publicly and early.** The answer cannot be a statement of good intentions; it has to be structural — per-corpus stewardship held by people inside each tradition, and a published neutrality commitment that is hard to change. Both are specified in [`07`](07-studio.md) and [`08`](08-open-source-and-cost.md), and neither exists until you appoint people.
+7. **Popularity data is a liability as well as an asset.** Reading records on scripture are sensitive in ways that reading records on most things are not — in some jurisdictions and for some communities, dangerous. Aggregate early, retain little, and decide the retention policy before collecting rather than after.

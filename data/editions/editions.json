@@ -14,7 +14,10 @@
     "immutable": true,
     "normalization": "nfc",
     "divine_name_policy": null,
-    "license": { "id": "PD", "jurisdiction_notes": "Ancient text; no rights subsist in the Sanskrit." }
+    "license": {
+      "id": "PD",
+      "jurisdiction_notes": "Ancient text; no rights subsist in the Sanskrit."
+    }
   },
   {
     "id": "ed:gita.en.telang",
@@ -31,7 +34,10 @@
     "immutable": false,
     "normalization": "nfc",
     "divine_name_policy": null,
-    "license": { "id": "PD", "jurisdiction_notes": "Published 1882; public domain worldwide." }
+    "license": {
+      "id": "PD",
+      "jurisdiction_notes": "Published 1882; public domain worldwide."
+    }
   },
   {
     "id": "ed:analects.lzh.src",
@@ -48,7 +54,9 @@
     "immutable": true,
     "normalization": "nfc",
     "divine_name_policy": null,
-    "license": { "id": "PD" }
+    "license": {
+      "id": "PD"
+    }
   },
   {
     "id": "ed:analects.en.legge",
@@ -65,7 +73,9 @@
     "immutable": false,
     "normalization": "nfc",
     "divine_name_policy": null,
-    "license": { "id": "PD" }
+    "license": {
+      "id": "PD"
+    }
   },
   {
     "id": "ed:quran.ar.uthmani",
@@ -82,7 +92,10 @@
     "immutable": true,
     "normalization": "nfc",
     "divine_name_policy": null,
-    "license": { "id": "PD", "jurisdiction_notes": "The Arabic text is public domain. Stored form is never normalised for search convenience; a normalised index is built separately and never displayed." }
+    "license": {
+      "id": "PD",
+      "jurisdiction_notes": "The Arabic text is public domain. Stored form is never normalised for search convenience; a normalised index is built separately and never displayed."
+    }
   },
   {
     "id": "ed:quran.en.pickthall",
@@ -99,7 +112,10 @@
     "immutable": false,
     "normalization": "nfc",
     "divine_name_policy": null,
-    "license": { "id": "PD", "jurisdiction_notes": "Public domain in most jurisdictions. Modern translations (e.g. Sahih International) are NOT free — never assume." }
+    "license": {
+      "id": "PD",
+      "jurisdiction_notes": "Public domain in most jurisdictions. Modern translations (e.g. Sahih International) are NOT free — never assume."
+    }
   },
   {
     "id": "ed:bible.he.wlc",
@@ -116,7 +132,10 @@
     "immutable": true,
     "normalization": "nfc",
     "divine_name_policy": "preserve-tetragrammaton",
-    "license": { "id": "PD", "source_url": "https://tanach.us/" }
+    "license": {
+      "id": "PD",
+      "source_url": "https://tanach.us/"
+    }
   },
   {
     "id": "ed:bible.en.kjv",
@@ -133,6 +152,105 @@
     "immutable": false,
     "normalization": "nfc",
     "divine_name_policy": "LORD-small-caps",
-    "license": { "id": "PD", "jurisdiction_notes": "Public domain outside the United Kingdom. In the UK the KJV remains under perpetual Crown letters patent — recorded per-jurisdiction, not filed as flatly 'public domain'." }
+    "license": {
+      "id": "PD",
+      "jurisdiction_notes": "Public domain outside the United Kingdom. In the UK the KJV remains under perpetual Crown letters patent — recorded per-jurisdiction, not filed as flatly 'public domain'."
+    }
+  },
+  {
+    "id": "ed:ddj.lzh.wangbi",
+    "type": "Edition",
+    "work": "work:daodejing",
+    "kind": "source",
+    "language": "lzh",
+    "script": "Hant",
+    "direction": "ltr",
+    "title": "道德經 — received (Wang Bi) text",
+    "translator": null,
+    "year": null,
+    "authority": "primary",
+    "immutable": true,
+    "normalization": "nfc",
+    "divine_name_policy": null,
+    "license": {
+      "id": "PD"
+    }
+  },
+  {
+    "id": "ed:ddj.lzh.mawangdui",
+    "type": "Edition",
+    "work": "work:daodejing",
+    "kind": "critical",
+    "language": "lzh",
+    "script": "Hant",
+    "direction": "ltr",
+    "title": "馬王堆帛書 — Mawangdui silk manuscript",
+    "translator": null,
+    "year": -168,
+    "authority": "primary",
+    "immutable": true,
+    "normalization": "nfc",
+    "divine_name_policy": null,
+    "license": {
+      "id": "PD",
+      "jurisdiction_notes": "Excavated 1973. The manuscript is PD; a modern scholarly reconstruction of it may not be."
+    }
+  },
+  {
+    "id": "ed:ddj.en.legge",
+    "type": "Edition",
+    "work": "work:daodejing",
+    "kind": "translation",
+    "language": "en",
+    "script": "Latn",
+    "direction": "ltr",
+    "title": "The Tao Teh King, trans. James Legge, Sacred Books of the East vol. 39",
+    "translator": "James Legge",
+    "year": 1891,
+    "authority": "secondary",
+    "immutable": false,
+    "normalization": "nfc",
+    "divine_name_policy": null,
+    "license": {
+      "id": "PD"
+    }
+  },
+  {
+    "id": "ed:upanishad.sa.src",
+    "type": "Edition",
+    "work": "work:upanishad",
+    "kind": "source",
+    "language": "sa",
+    "script": "Deva",
+    "direction": "ltr",
+    "title": "Principal Upaniṣads, received Sanskrit text",
+    "translator": null,
+    "year": null,
+    "authority": "primary",
+    "immutable": true,
+    "normalization": "nfc",
+    "divine_name_policy": null,
+    "license": {
+      "id": "PD"
+    }
+  },
+  {
+    "id": "ed:upanishad.en.muller",
+    "type": "Edition",
+    "work": "work:upanishad",
+    "kind": "translation",
+    "language": "en",
+    "script": "Latn",
+    "direction": "ltr",
+    "title": "The Upanishads, trans. F. Max Müller, Sacred Books of the East vols. 1 & 15",
+    "translator": "Friedrich Max Müller",
+    "year": 1879,
+    "authority": "secondary",
+    "immutable": false,
+    "normalization": "nfc",
+    "divine_name_policy": null,
+    "license": {
+      "id": "PD"
+    }
   }
 ]
