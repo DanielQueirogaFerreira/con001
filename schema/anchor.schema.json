@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://con001.dev/schema/anchor.schema.json",
+  "title": "Anchor",
+  "description": "The address of an interpretation. Two levels: a mandatory edition-independent Canonical Reference, and an optional edition-bound character Span. See docs/01-anchoring.md.",
+  "type": "object",
+  "required": ["cr"],
+  "additionalProperties": false,
+  "properties": {
+    "cr": {
+      "type": "string",
+      "description": "Canonical Reference. MANDATORY. An anchor without a CR is invalid, which is what guarantees no interpretation is ever orphaned.",
+      "pattern": "^(bible:[A-Z0-9]{3}\\.\\d{1,3}\\.\\d{1,3}|quran:\\d{1,3}:\\d{1,3}|gita:\\d{1,2}\\.\\d{1,3}|analects:\\d{1,2}\\.\\d{1,3})$"
+    },
+    "cr_end": {
+      "type": "string",
+      "description": "Inclusive end of a range. Must share the CR grammar of `cr`.",
+      "pattern": "^(bible:[A-Z0-9]{3}\\.\\d{1,3}\\.\\d{1,3}|quran:\\d{1,3}:\\d{1,3}|gita:\\d{1,2}\\.\\d{1,3}|analects:\\d{1,2}\\.\\d{1,3})$"
+    },
+    "granularity": {
+      "enum": ["chapter", "unit", "clause", "phrase", "word", "letter"],
+      "description": "Declared intent. Informational: `unit` and above require no span; clause and below require one."
+    },
+    "span": {
+      "type": "object",
+      "description": "Character precision within ONE unit of ONE edition. Optional. Always degrades to `cr` if it cannot be resolved.",
+      "required": ["origin", "start", "end", "exact"],
+      "additionalProperties": false,
+      "properties": {
+        "origin": {
+          "type": "string",
+          "description": "Edition id the offsets are measured in.",
+          "pattern": "^ed:"
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Unicode CODEPOINT offset into the NFC-normalised stored text of this unit in `origin`. Not bytes, not UTF-16 units."
+        },
+        "end": { "type": "integer", "minimum": 0 },
+        "exact": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The quoted text. Redundant with the offsets on purpose: if the edition is corrected and offsets shift, the span is re-found by quote match."
+        },
+        "prefix": { "type": "string", "description": "Up to 32 codepoints before `exact`, for disambiguation." },
+        "suffix": { "type": "string", "description": "Up to 32 codepoints after `exact`." },
+        "grapheme_aligned": {
+          "type": "boolean",
+          "default": true,
+          "description": "Snap to extended grapheme cluster boundaries. Required true for letter-granularity spans in Hebrew, Arabic and Devanagari, so that a consonant is never split from its combining marks."
+        }
+      }
+    },
+    "projections": {
+      "type": "object",
+      "description": "CACHE ONLY, never authoritative. Recomputable; deleting this loses nothing. Keyed by target edition id.",
+      "propertyNames": { "pattern": "^ed:" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["start", "end", "confidence", "method"],
+        "additionalProperties": false,
+        "properties": {
+          "start": { "type": "integer", "minimum": 0 },
+          "end": { "type": "integer", "minimum": 0 },
+          "confidence": {
+            "type": "number", "minimum": 0, "maximum": 1,
+            "description": "Below the display threshold the span is NOT drawn; the annotation falls back to the whole unit. Silently drawing a low-confidence projection puts words in a commentator's mouth."
+          },
+          "method": { "enum": ["token-align", "manual", "identity", "pivot-source"] },
+          "via": { "type": "string", "description": "Pivot edition, when projecting translation-to-translation through the source language." }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "granularity": { "enum": ["clause", "phrase", "word", "letter"] } }, "required": ["granularity"] },
+      "then": { "required": ["span"] }
+    }
+  ]
+}

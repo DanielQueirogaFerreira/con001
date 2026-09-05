@@ -1,0 +1,372 @@
+[
+  {
+    "id": "interp:gita.ch2.shankara.summary",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "gita:2.1",
+      "cr_end": "gita:2.72",
+      "granularity": "chapter"
+    },
+    "layer": "layer:gita.shankara",
+    "author": {
+      "type": "historical",
+      "display": "Ādi Śaṅkarācārya",
+      "school": "advaita",
+      "century": 8
+    },
+    "kind": "summary",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Summary of the introduction to chapter 2 in the *Bhagavadgītābhāṣya*: the chapter sets out Sāṅkhya — knowledge of the imperishable self — and only then turns to action. On this reading the teaching of action is preparatory: action performed without claim on its results purifies the mind, and it is knowledge (*jñāna*) that liberates. The order of the chapter is itself the argument."
+    },
+    "citation": "Śaṅkara, Bhagavadgītābhāṣya, introduction to adhyāya 2",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:gita.2-47.shankara",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "gita:2.47",
+      "granularity": "unit"
+    },
+    "layer": "layer:gita.shankara",
+    "author": {
+      "type": "historical",
+      "display": "Ādi Śaṅkarācārya",
+      "school": "advaita",
+      "century": 8
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Summary of Śaṅkara on 2.47: *adhikāra* — entitlement — extends to action and not to its fruit. The verse is addressed to one not yet qualified for the path of knowledge; renouncing the claim on results is what makes the mind fit for that path. The verse licenses action, but as preparation, not as the end."
+    },
+    "citation": "Śaṅkara, Bhagavadgītābhāṣya ad 2.47",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:gita.2-47.tilak",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "gita:2.47",
+      "granularity": "phrase",
+      "span": {
+        "origin": "ed:gita.sa.src",
+        "start": 20,
+        "end": 34,
+        "exact": "मा फलेषु कदाचन",
+        "prefix": "कर्मण्येवाधिकारस्ते ",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:gita.tilak",
+    "author": {
+      "type": "historical",
+      "display": "Bāl Gangādhar Tilak",
+      "school": "karmayoga",
+      "century": 20
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Summary of Tilak, *Gītā Rahasya* (1915): the renunciation commanded here is of the *claim on the fruit*, not of the action. Read as a whole the Gītā is a summons to act in the world — Arjuna is told to fight, not to withdraw — and the reading that makes it a manual of renunciation reverses its plain sense. The Gītā's final teaching is *karmayoga*: energetic action, performed without attachment to result."
+    },
+    "citation": "Tilak, Śrīmad Bhagavadgītā Rahasya (1915)",
+    "derived_from": [
+      "interp:gita.2-47.shankara"
+    ],
+    "relation": "rebuts",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:gita.2-47.gandhi",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "gita:2.47",
+      "granularity": "phrase",
+      "span": {
+        "origin": "ed:gita.sa.src",
+        "start": 20,
+        "end": 34,
+        "exact": "मा फलेषु कदाचन",
+        "prefix": "कर्मण्येवाधिकारस्ते ",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:gita.gandhi",
+    "author": {
+      "type": "historical",
+      "display": "Mohandas K. Gandhi",
+      "school": "anasakti",
+      "century": 20
+    },
+    "kind": "application",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Summary of Gandhi, *Anāsakti Yoga* (1929): non-attachment to results is not a licence for any action whatever. One who has truly surrendered the fruit cannot act in anger or from self-interest, and so the verse carries *ahiṃsā* inside it. The activist reading is accepted as far as it goes — the Gītā does command action — but a reading that makes detachment compatible with violence has kept the letter and lost the discipline."
+    },
+    "citation": "Gandhi, Anāsaktiyoga (1929)",
+    "derived_from": [
+      "interp:gita.2-47.tilak"
+    ],
+    "relation": "rebuts",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:gita.2-47.philology.adhikara",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "gita:2.47",
+      "granularity": "word",
+      "span": {
+        "origin": "ed:gita.sa.src",
+        "start": 0,
+        "end": 19,
+        "exact": "कर्मण्येवाधिकारस्ते",
+        "prefix": "",
+        "suffix": " मा फलेषु",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:gita.philology",
+    "author": {
+      "type": "institution",
+      "display": "con001 philology desk"
+    },
+    "kind": "lexical",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "*karmaṇi eva adhikāraḥ te* — sandhi-joined in the written form. **adhikāra**: entitlement, jurisdiction, qualification to undertake something. A technical term of Mīmāṃsā ritual law, where it names who is eligible to perform a rite. The word denies a *claim*, not an outcome — which is the hinge every commentator in this stack turns on."
+    },
+    "visibility": "public",
+    "license": "CC-BY-4.0"
+  },
+  {
+    "id": "interp:gita.2-47.machine.01",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "gita:2.47",
+      "granularity": "unit"
+    },
+    "layer": "layer:gita.machine.reading-01",
+    "author": {
+      "type": "model",
+      "display": "Model reading",
+      "model": "claude-opus-5",
+      "generated": "2026-09-05",
+      "inputs": {
+        "layers_in_context": [
+          "layer:gita.shankara",
+          "layer:gita.tilak",
+          "layer:gita.gandhi",
+          "layer:gita.philology"
+        ],
+        "editions_in_context": [
+          "ed:gita.sa.src",
+          "ed:gita.en.telang"
+        ],
+        "prompt": "Read this verse against the three commentaries supplied. Report only what is visible in the Sanskrit or in the supplied layers. Do not attribute any claim to a commentator not supplied."
+      }
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "**Machine-authored. Not a commentary.**\n\nObservation from the three layers supplied: all three commentators accept that *adhikāra* denies a claim rather than an outcome, and all three then disagree about what a person is therefore free to do. Śaṅkara treats the freedom as freedom *from* the world, Tilak as freedom *for* action in it, Gandhi as freedom constrained by the character the discipline produces.\n\nThe verse itself supplies no scope marker — nothing in the Sanskrit says whether the release from claim applies to a monastic or a soldier. The commentators are not reading different words; they are supplying different premises about who the verse addresses. That gap in the text is where the whole 1,200-year argument sits.\n\n*Produced from the four layers named in this record. No claim here is attributed to any commentator not listed.*"
+    },
+    "visibility": "public",
+    "license": "CC-BY-4.0"
+  },
+  {
+    "id": "interp:gita.2-47.user.daniel.01",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "gita:2.47",
+      "granularity": "phrase",
+      "span": {
+        "origin": "ed:gita.en.telang",
+        "start": 36,
+        "end": 63,
+        "exact": "not by any means with fruit",
+        "prefix": "action alone; ",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:user.daniel.private",
+    "author": {
+      "type": "user",
+      "id": "user:daniel",
+      "display": "Daniel"
+    },
+    "kind": "question",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "If Gandhi is right that the discipline changes what you are able to do, then the verse is not a rule at all — it is a description of a person. Does any of the three read it that way? Come back to this."
+    },
+    "derived_from": [
+      "interp:gita.2-47.gandhi"
+    ],
+    "relation": "questions",
+    "visibility": "private",
+    "created": "2026-09-05"
+  },
+  {
+    "id": "interp:analects.1-1.zhuxi.xi",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "analects:1.1",
+      "granularity": "word",
+      "span": {
+        "origin": "ed:analects.lzh.src",
+        "start": 6,
+        "end": 7,
+        "exact": "習",
+        "prefix": "子曰：學而時",
+        "suffix": "之，不亦說乎？",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:analects.zhuxi",
+    "author": {
+      "type": "historical",
+      "display": "朱熹 Zhū Xī",
+      "school": "neo-confucian",
+      "century": 12
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "zh-Hant",
+      "value": "習，鳥數飛也。學之不已，如鳥數飛也。\n\n(*xí*: a bird beating its wings again and again. To learn without ceasing is like a bird flying repeatedly.)\n\nOne character, glossed once — and for six centuries every examination candidate in China, Korea, Japan and Vietnam learned that 習 means *practice repeated until it becomes flight*, not *review*."
+    },
+    "citation": "朱熹, 論語集注, 學而第一",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:quran.2-1.ibn-kathir",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "quran:2:1",
+      "granularity": "unit"
+    },
+    "layer": "layer:quran.ibn-kathir",
+    "author": {
+      "type": "historical",
+      "display": "Ismāʿīl ibn Kathīr",
+      "century": 14
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Summary of Ibn Kathīr on the *ḥurūf muqaṭṭaʿāt*, the disconnected letters opening this sūra: he records a spread of positions rather than settling one. Among them — that these letters belong to the *mutashābihāt*, whose meaning is known to God alone; that they are names or attributes of God; that they open the sūra to arrest the listener; and that they demonstrate the challenge of the Qur'ān, since it is composed of the same letters the Arabs themselves use.\n\nThe commentary here is *about three letters*. No system that can only annotate whole verses can represent it."
+    },
+    "citation": "Ibn Kathīr, Tafsīr al-Qurʾān al-ʿAẓīm, opening of Sūrat al-Baqara",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:quran.2-1.user.letter",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "quran:2:1",
+      "granularity": "letter",
+      "span": {
+        "origin": "ed:quran.ar.uthmani",
+        "start": 1,
+        "end": 2,
+        "exact": "ل",
+        "prefix": "ا",
+        "suffix": "م",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:user.daniel.private",
+    "author": {
+      "type": "user",
+      "id": "user:daniel",
+      "display": "Daniel"
+    },
+    "kind": "question",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Letter-granularity test: a note anchored to the middle letter alone. Which of the positions Ibn Kathīr reports would even permit a question about one letter in isolation?"
+    },
+    "visibility": "private",
+    "created": "2026-09-05"
+  },
+  {
+    "id": "interp:bible.gen1-1.bereshit-rabbah.bet",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "bible:GEN.1.1",
+      "granularity": "letter",
+      "span": {
+        "origin": "ed:bible.he.wlc",
+        "start": 0,
+        "end": 3,
+        "exact": "בְּ",
+        "prefix": "",
+        "suffix": "רֵאשִׁית",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:bible.bereshit-rabbah",
+    "author": {
+      "type": "institution",
+      "display": "Bereshit Rabbah (Amoraic midrash)",
+      "century": 5
+    },
+    "kind": "gloss",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Summary of *Bereshit Rabbah* 1:10: why does the Torah open with *bet* rather than *alef*, the first letter? Because the shape of *bet* is closed on three sides and open only forward — teaching that one does not ask what is above, what is below, what came before; only what is from this point onward.\n\nThe reading is of the **shape of one letter**. Note that the span covers three codepoints — the consonant and its two combining marks — because splitting them would break the rendering and, in this tradition, the text."
+    },
+    "citation": "Bereshit Rabbah 1:10",
+    "visibility": "public",
+    "license": "PD"
+  },
+  {
+    "id": "interp:bible.gen1-1.masorah.large-bet",
+    "type": "Interpretation",
+    "anchor": {
+      "cr": "bible:GEN.1.1",
+      "granularity": "letter",
+      "span": {
+        "origin": "ed:bible.he.wlc",
+        "start": 0,
+        "end": 3,
+        "exact": "בְּ",
+        "prefix": "",
+        "suffix": "רֵאשִׁית",
+        "grapheme_aligned": true
+      }
+    },
+    "layer": "layer:bible.masorah",
+    "author": {
+      "type": "institution",
+      "display": "Masoretic tradition"
+    },
+    "kind": "variant",
+    "body": {
+      "format": "markdown",
+      "language": "en",
+      "value": "Scribal apparatus, not exegesis: this *bet* is one of the *litterae majusculae* — written oversized in the scribal tradition. A plain Unicode edition cannot carry that information at all, which is why scribal features are a `variant` layer over the text rather than an attempt to encode them in it."
+    },
+    "visibility": "public",
+    "license": "PD"
+  }
+]

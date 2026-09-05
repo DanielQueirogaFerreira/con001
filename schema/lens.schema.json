@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://con001.dev/schema/lens.schema.json",
+  "title": "Lens",
+  "description": "A saved, shareable reading configuration. The unit of sharing: handing someone a lens hands them a way of reading.",
+  "type": "object",
+  "required": ["id", "type", "work", "editions", "layers"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^lens:" },
+    "type": { "const": "Lens" },
+    "work": { "type": "string", "pattern": "^work:" },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "editions": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^ed:" } },
+    "layers": { "type": "array", "items": { "type": "string", "pattern": "^layer:" } },
+    "filters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kinds": { "type": "array", "items": { "type": "string" } },
+        "min_projection_confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "author": { "$ref": "https://con001.dev/schema/author.schema.json" },
+    "visibility": { "enum": ["private", "group", "unlisted", "public"] }
+  }
+}

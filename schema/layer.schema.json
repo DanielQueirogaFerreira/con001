@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://con001.dev/schema/layer.schema.json",
+  "title": "Layer",
+  "description": "A named, attributable, selectable set of interpretations over one Work. See docs/02-layers.md.",
+  "type": "object",
+  "required": ["id", "type", "work", "kind", "title", "author", "license"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^layer:[a-z0-9.\\-]+$" },
+    "type": { "const": "Layer" },
+    "work": { "type": "string", "pattern": "^work:" },
+    "kind": {
+      "enum": ["philological", "variant", "traditional", "historical", "devotional", "critical", "personal", "machine"],
+      "description": "Closed vocabulary. Drives typography, stacking order and policy. A machine-authored layer can never be filed as 'traditional' or 'critical'."
+    },
+    "title": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "string" } },
+    "author": { "$ref": "https://con001.dev/schema/author.schema.json" },
+    "stance": { "type": "string", "description": "Declared editorial or doctrinal commitment, e.g. 'advaita', 'neo-confucian'." },
+    "source": { "type": "object", "additionalProperties": true, "description": "Bibliographic origin of the imported commentary." },
+    "license": { "type": "object", "required": ["id"], "additionalProperties": true, "properties": { "id": { "type": "string" } } },
+    "default_in_stack": { "type": "boolean", "default": false, "description": "Machine layers MUST be false — opt-in every time." },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "units_total": { "type": "integer" }, "units_annotated": { "type": "integer" } }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "machine" } }, "required": ["kind"] },
+      "then": { "properties": { "default_in_stack": { "const": false } } }
+    }
+  ]
+}

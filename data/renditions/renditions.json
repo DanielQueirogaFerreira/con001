@@ -1,0 +1,48 @@
+[
+  {
+    "id": "rend:gita.11-12.vishvarupa",
+    "type": "Rendition",
+    "anchor": { "cr": "gita:11.12", "granularity": "unit" },
+    "lens": "lens:gita.the-argument",
+    "layers_in_context": ["layer:gita.shankara"],
+    "medium": "image",
+    "prompt": "The light of a thousand suns rising at once in the sky — Gītā 11.12, read through Śaṅkara.",
+    "model": "example-image-model",
+    "generated": "2026-09-05",
+    "policy": { "corpus_policy": "policy:gita.v1", "decision": "allowed", "rule": "gita.iconography.permitted" },
+    "visibility": "public",
+    "provenance_embedded": true
+  },
+  {
+    "id": "rend:quran.blocked.example",
+    "type": "Rendition",
+    "anchor": { "cr": "quran:2:1", "granularity": "unit" },
+    "medium": "image",
+    "prompt": "[request that would depict a prophetic figure]",
+    "model": "example-image-model",
+    "generated": "2026-09-05",
+    "policy": {
+      "corpus_policy": "policy:quran.v1",
+      "decision": "blocked",
+      "rule": "quran.no-figural-depiction-of-prophets — hard block evaluated before generation, no user override. Refusal is shown with this rule named and is appealable to a human."
+    },
+    "visibility": "private",
+    "provenance_embedded": false
+  },
+  {
+    "id": "rend:quran.audio.blocked",
+    "type": "Rendition",
+    "anchor": { "cr": "quran:2:255", "granularity": "unit" },
+    "medium": "audio",
+    "prompt": "[synthetic recitation request]",
+    "model": "example-audio-model",
+    "generated": "2026-09-05",
+    "policy": {
+      "corpus_policy": "policy:quran.v1",
+      "decision": "blocked",
+      "rule": "no-synthetic-recitation — recitation is a trained discipline with its own rules of tajwīd. Where recitation is offered it is licensed from human reciters, attributed by name and riwāyah."
+    },
+    "visibility": "private",
+    "provenance_embedded": false
+  }
+]

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://con001.dev/schema/work.schema.json",
+  "title": "Work",
+  "description": "An abstract book, independent of any edition or translation.",
+  "type": "object",
+  "required": ["id", "type", "title", "tradition", "cr_grammar", "unit_count"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^work:[a-z0-9-]+$" },
+    "type": { "const": "Work" },
+    "title": {
+      "type": "object",
+      "description": "Titles by BCP-47 language tag. The original-language title is required.",
+      "minProperties": 1,
+      "additionalProperties": { "type": "string" }
+    },
+    "tradition": { "enum": ["jewish", "christian", "islamic", "hindu", "confucian", "buddhist", "daoist"] },
+    "cr_grammar": { "type": "string", "description": "Human-readable form of the Canonical Reference, e.g. 'gita:chapter.verse'." },
+    "cr_pattern": { "type": "string", "description": "Regex the CR must match for this work." },
+    "unit_count": { "type": "integer", "minimum": 1 },
+    "structure": {
+      "type": "array",
+      "description": "Level names, outermost first, e.g. ['chapter','verse'].",
+      "items": { "type": "string" }
+    },
+    "source_languages": { "type": "array", "items": { "type": "string" } },
+    "policy": { "type": "string", "description": "Id of the generative/display policy for this corpus. See docs/04-generative.md." },
+    "notes": { "type": "string" }
+  }
+}

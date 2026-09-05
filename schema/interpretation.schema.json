@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://con001.dev/schema/interpretation.schema.json",
+  "title": "Interpretation",
+  "description": "A single anchored reading. The first-class object of the system.",
+  "type": "object",
+  "required": ["id", "type", "anchor", "layer", "author", "body", "visibility"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^interp:" },
+    "type": { "const": "Interpretation" },
+    "anchor": { "$ref": "https://con001.dev/schema/anchor.schema.json" },
+    "layer": { "type": "string", "pattern": "^layer:" },
+    "author": { "$ref": "https://con001.dev/schema/author.schema.json" },
+    "body": {
+      "type": "object",
+      "required": ["format", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "format": { "enum": ["text", "markdown"] },
+        "language": { "type": "string" },
+        "value": { "type": "string", "minLength": 1 }
+      }
+    },
+    "kind": { "enum": ["gloss", "lexical", "variant", "cross-reference", "question", "translation-note", "application", "summary"] },
+    "visibility": {
+      "enum": ["private", "group", "unlisted", "public"],
+      "description": "Private is the default for user-authored content. Public requires an attribution."
+    },
+    "derived_from": {
+      "type": "array",
+      "description": "Fork lineage. A fork cannot detach from its parent; unpublishing a parent leaves a tombstone.",
+      "items": { "type": "string", "pattern": "^interp:" }
+    },
+    "relation": { "enum": ["extends", "rebuts", "questions", "translates", "applies", "illustrates"] },
+    "citation": { "type": "string", "description": "Bibliographic source for an imported traditional interpretation." },
+    "created": { "type": "string" },
+    "license": { "type": "string" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "visibility": { "const": "public" } }, "required": ["visibility"] },
+      "then": { "required": ["author"] }
+    },
+    {
+      "if": { "required": ["relation"] },
+      "then": { "required": ["derived_from"] }
+    }
+  ]
+}

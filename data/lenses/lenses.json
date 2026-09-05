@@ -1,0 +1,25 @@
+[
+  {
+    "id": "lens:gita.the-argument",
+    "type": "Lens",
+    "work": "work:gita",
+    "title": "2.47 — the argument",
+    "description": "Sanskrit and Telang side by side, with Śaṅkara, Tilak and Gandhi on the same twelve words. The three-second demonstration of what this system is for.",
+    "editions": ["ed:gita.sa.src", "ed:gita.en.telang"],
+    "layers": ["layer:gita.shankara", "layer:gita.tilak", "layer:gita.gandhi", "layer:gita.philology"],
+    "filters": { "min_projection_confidence": 0.5 },
+    "author": { "type": "user", "id": "user:daniel", "display": "Daniel" },
+    "visibility": "public"
+  },
+  {
+    "id": "lens:letters",
+    "type": "Lens",
+    "work": "work:bible",
+    "title": "Letter-level readings",
+    "description": "Where the tradition annotates single letters. Proof that letter granularity is inherited from the sources, not invented as a feature.",
+    "editions": ["ed:bible.he.wlc", "ed:bible.en.kjv"],
+    "layers": ["layer:bible.bereshit-rabbah", "layer:bible.masorah"],
+    "author": { "type": "user", "id": "user:daniel", "display": "Daniel" },
+    "visibility": "public"
+  }
+]

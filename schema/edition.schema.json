@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://con001.dev/schema/edition.schema.json",
+  "title": "Edition",
+  "description": "A concrete text of a Work: a source recension, a translation, or a transliteration.",
+  "type": "object",
+  "required": ["id", "type", "work", "kind", "language", "script", "authority", "normalization", "license"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^ed:[a-z0-9.\\-]+$" },
+    "type": { "const": "Edition" },
+    "work": { "type": "string", "pattern": "^work:" },
+    "kind": { "enum": ["source", "translation", "transliteration", "critical"] },
+    "language": { "type": "string", "description": "BCP-47." },
+    "script": { "type": "string", "description": "ISO 15924, e.g. Deva, Arab, Hebr, Hans." },
+    "direction": { "enum": ["ltr", "rtl"], "default": "ltr" },
+    "title": { "type": "string" },
+    "translator": { "type": ["string", "null"] },
+    "year": { "type": ["integer", "null"] },
+    "authority": {
+      "enum": ["primary", "secondary", "interpretive-of-meaning"],
+      "description": "How the tradition regards this edition. Qur'an translations MUST be 'interpretive-of-meaning' and are labelled as such in the UI — this is the tradition's own position, not a courtesy. See docs/03-corpus.md."
+    },
+    "immutable": {
+      "type": "boolean",
+      "default": false,
+      "description": "True for sacred source texts. The loader refuses any transform, including normalisation for search, on the stored form."
+    },
+    "normalization": { "enum": ["nfc", "nfd"], "description": "Span offsets are measured against text in this form." },
+    "divine_name_policy": {
+      "type": ["string", "null"],
+      "description": "How the Tetragrammaton or equivalent is rendered in this edition. Declared, never silently normalised."
+    },
+    "license": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "SPDX id or 'PD'." },
+        "jurisdiction_notes": {
+          "type": "string",
+          "description": "Public domain is jurisdictional. The KJV remains under Crown letters patent in the UK; a 14th-c. tafsir is PD but a modern translation OF it is a fresh copyrightable work."
+        },
+        "source_url": { "type": "string" }
+      }
+    }
+  }
+}

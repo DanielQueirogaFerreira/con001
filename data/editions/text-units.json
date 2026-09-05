@@ -1,0 +1,65 @@
+[
+  {
+    "type": "TextUnit",
+    "edition": "ed:gita.sa.src",
+    "cr": "gita:2.47",
+    "label": "2.47",
+    "text": "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन। मा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि॥"
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:gita.en.telang",
+    "cr": "gita:2.47",
+    "label": "2.47",
+    "text": "Your business is with action alone; not by any means with fruit. Let not the fruit of action be your motive to action. Let not your attachment be fixed on inaction."
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:gita.sa.src",
+    "cr": "gita:11.12",
+    "label": "11.12",
+    "text": "दिवि सूर्यसहस्रस्य भवेद्युगपदुत्थिता। यदि भाः सदृशी सा स्याद्भासस्तस्य महात्मनः॥"
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:analects.lzh.src",
+    "cr": "analects:1.1",
+    "label": "1.1",
+    "text": "子曰：學而時習之，不亦說乎？有朋自遠方來，不亦樂乎？人不知而不慍，不亦君子乎？"
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:analects.en.legge",
+    "cr": "analects:1.1",
+    "label": "1.1",
+    "text": "The Master said, \"Is it not pleasant to learn with a constant perseverance and application? Is it not delightful to have friends coming from distant quarters? Is he not a man of complete virtue, who feels no discomposure though men may take no note of him?\""
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:quran.ar.uthmani",
+    "cr": "quran:2:1",
+    "label": "2:1",
+    "text": "الم"
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:quran.en.pickthall",
+    "cr": "quran:2:1",
+    "label": "2:1",
+    "text": "Alif. Lam. Mim."
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:bible.he.wlc",
+    "cr": "bible:GEN.1.1",
+    "label": "1:1",
+    "text": "בְּרֵאשִׁית בָּרָא אֱלֹהִים אֵת הַשָּׁמַיִם וְאֵת הָאָרֶץ׃"
+  },
+  {
+    "type": "TextUnit",
+    "edition": "ed:bible.en.kjv",
+    "cr": "bible:GEN.1.1",
+    "label": "1:1",
+    "text": "In the beginning God created the heaven and the earth."
+  }
+]

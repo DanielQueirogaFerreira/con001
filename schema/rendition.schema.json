@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://con001.dev/schema/rendition.schema.json",
+  "title": "Rendition",
+  "description": "A generated image, video or audio piece. Attributed to a READING, never to the text. See docs/04-generative.md.",
+  "type": "object",
+  "required": ["id", "type", "anchor", "medium", "model", "generated", "policy", "visibility", "provenance_embedded"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^rend:" },
+    "type": { "const": "Rendition" },
+    "anchor": { "$ref": "https://con001.dev/schema/anchor.schema.json" },
+    "lens": { "type": "string", "pattern": "^lens:" },
+    "layers_in_context": { "type": "array", "items": { "type": "string" } },
+    "medium": { "enum": ["image", "video", "audio"] },
+    "prompt": { "type": "string" },
+    "model": { "type": "string" },
+    "generated": { "type": "string" },
+    "policy": {
+      "type": "object",
+      "required": ["corpus_policy", "decision"],
+      "additionalProperties": false,
+      "properties": {
+        "corpus_policy": { "type": "string" },
+        "decision": { "enum": ["allowed", "blocked"] },
+        "rule": { "type": "string", "description": "Which rule applied. Refusals are explained and appealable — a silent block on a religious request reads as contempt." }
+      }
+    },
+    "visibility": {
+      "enum": ["private", "group", "unlisted", "public"],
+      "description": "Inherits from the source annotation. Generating from a private note does not publish it."
+    },
+    "provenance_embedded": {
+      "type": "boolean",
+      "description": "C2PA or equivalent. Devotional imagery detaches from its source and travels; it must stay identifiable as generated after being screenshotted."
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "medium": { "const": "audio" } }, "required": ["medium"] },
+      "then": {
+        "properties": { "policy": { "properties": { "decision": { "const": "blocked" } } } },
+        "$comment": "Synthetic recitation is not generated for any corpus; recitation is licensed from named human reciters."
+      }
+    }
+  ]
+}
