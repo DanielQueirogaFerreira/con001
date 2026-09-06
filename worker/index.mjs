@@ -456,9 +456,11 @@ async function handle(request, env) {
       return new Response(null, { status: 303, headers: { Location: '/login', ...SECURITY_HEADERS } });
     }
 
-    // The site root is the console: progress and the running reader in one
-    // page, so a signed-in reader lands on something rather than a 404.
-    const target = url.pathname === '/' ? new URL('/console.html', url) : request;
+    // Clean paths for the pages people actually name. The root is the platform
+    // itself — a reader who signs in wants the text, not a dashboard about the
+    // text — and the build status lives one path along at /status.
+    const PAGES = { '/': '/reader.html', '/status': '/status.html', '/console': '/console.html' };
+    const target = PAGES[url.pathname] ? new URL(PAGES[url.pathname], url) : request;
     const asset = await env.ASSETS.fetch(target);
     const res = new Response(asset.body, asset);
     for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.headers.set(k, v);

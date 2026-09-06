@@ -29,6 +29,7 @@ const get = (path, init = {}) =>
 console.log(`\nVERIFYING ${base}\n`);
 
 // 1. The gate. An unauthenticated request for the site root must not return a page.
+//    (The loop below then checks the same for every named path, root included.)
 const root = await get('/');
 if (root.error) {
   console.error(`  could not reach the site: ${root.error}\n`);
@@ -41,7 +42,8 @@ check('it redirects to the login page', (root.headers?.get('Location') ?? '') ==
 
 // 2. THE test. Named assets must not be reachable by going straight at them —
 // this is what fails if the Worker is not running first.
-for (const asset of ['/reader.html', '/status.html', '/console.html', '/index.html']) {
+for (const asset of ['/', '/status', '/console',
+                     '/reader.html', '/status.html', '/console.html', '/index.html']) {
   const res = await get(asset);
   const leaked = res.status === 200;
   check(`${asset} is not served without a session`, !leaked,

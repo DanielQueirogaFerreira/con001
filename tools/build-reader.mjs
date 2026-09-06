@@ -134,6 +134,7 @@ const html = `<title>Open Hermeneutics Reader</title>
     Seven works. Layered reading, the contestation slider, and the Director Lens Hook.
     <span class="mono" style="color:var(--accent)">${version.build}</span> · <span id="mode"></span> ·
     <strong>no source text here is verified</strong> — every passage was hand-entered to demonstrate the format.
+    &nbsp;·&nbsp; <a href="/status">Build status</a>
   </div>
 
   <div class="bar" id="anchors"></div>
