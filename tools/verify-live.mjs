@@ -84,6 +84,23 @@ check('the refusal does not reveal whether the account exists',
   !/no account|unknown user|not found|no such/i.test(badBody));
 check('a failed sign-in sets no session cookie', !bad.headers?.get('Set-Cookie'));
 
+// 6. The reset page. It is public, it is the recovery path, and it renders and
+// takes a POST — so it can throw where the login page does not. A 500 here is
+// invisible to every other check on this list.
+const resetGet = await get('/reset');
+check('the reset page is served', resetGet.status === 200, `got ${resetGet.status}`);
+
+const resetPost = await get('/reset', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  body: new URLSearchParams({
+    email: 'nobody@example.invalid', code: 'AAAAA-AAAAA-AAAAA-AAAAA',
+    next: 'a password long enough', confirm: 'a password long enough',
+  }),
+});
+check('a junk reset code is refused, not fatal', resetPost.status === 200,
+  `got ${resetPost.status}${resetPost.status >= 500 ? ' — the route threw' : ''}`);
+
 // 6. Liveness, which is allowed to be public and must give nothing away.
 const health = await get('/healthz');
 check('/healthz responds', health.status === 200, `got ${health.status}`);
