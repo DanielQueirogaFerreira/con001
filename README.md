@@ -313,9 +313,21 @@ sign in with the password you just set.
 ```
 npm run user -- --email a@b.org --name "A B" --generate   # invite
 npm run user -- --reset --email a@b.org                   # reset code
+npm run preflight                                          # is it safe to deploy?
 ```
 
-Both print SQL for review rather than writing to the database.
+The first two print SQL for review rather than writing to the database.
+
+**Deploys are automatic via Cloudflare Workers Builds** — Cloudflare pulls the
+repository, runs `npm run reader && npm run status`, and ships on every push.
+**No API token exists anywhere**: not in this repository, not in a GitHub secret,
+not handed to anyone. `npm run status` runs the full suite plus `preflight` and
+exits non-zero on failure, so a red suite or a broken deploy config fails the
+deploy rather than shipping.
+
+Preflight guards the failure that is otherwise silent: `run_worker_first` is one
+line in `wrangler.toml`, and dropping it makes the asset server answer before the
+login gate — every page goes public and nothing reports an error.
 
 ## The loop
 

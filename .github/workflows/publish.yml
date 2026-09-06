@@ -9,10 +9,16 @@
 # private Pages requires GitHub Enterprise Cloud, so on this account Pages can
 # only ever be public.
 #
-# Requires one repository secret, CLOUDFLARE_API_TOKEN, scoped to
-# "Edit Cloudflare Workers" for this account only. Add it under
-# Settings → Secrets and variables → Actions. It is never printed, never
-# committed, and wrangler reads it from the environment.
+# THIS IS THE FALLBACK PATH. The preferred one is Cloudflare Workers Builds:
+# connect this repository to the Worker in the Cloudflare dashboard and every
+# push deploys automatically, with no API token existing anywhere. See
+# wrangler.toml and docs/15-access.md.
+#
+# This workflow exists for the case where deploys must be driven from GitHub.
+# It requires one repository secret, CLOUDFLARE_API_TOKEN, scoped to
+# "Edit Cloudflare Workers" for this account only, added under
+# Settings → Secrets and variables → Actions. It is never printed and never
+# committed; wrangler reads it from the environment.
 name: publish
 
 on:
@@ -71,16 +77,15 @@ jobs:
 
       - name: Refuse to deploy an unconfigured database binding
         run: |
-          if grep -q 'REPLACE_WITH_ID' worker/wrangler.toml; then
-            echo "worker/wrangler.toml still has a placeholder database_id." >&2
-            echo "Run: npx wrangler d1 create open-hermeneutics, then commit the id." >&2
+          if grep -q 'REPLACE_WITH_ID' wrangler.toml; then
+            echo "wrangler.toml still has a placeholder database_id." >&2
             exit 1
           fi
 
       - name: Deploy the Worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: npx --yes wrangler@4 deploy --config worker/wrangler.toml
+        run: npx --yes wrangler@4 deploy
 
       - name: Report what was deployed
         run: |

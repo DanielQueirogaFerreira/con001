@@ -1,0 +1,44 @@
+# Cloudflare Worker for the private alpha.
+#
+# This file is at the repository ROOT on purpose: Cloudflare Workers Builds —
+# the Git integration that gives us automatic deploys — looks for the config
+# here by default. Worker source stays in worker/.
+#
+# AUTOMATIC DEPLOY, with no credential anywhere:
+#   Cloudflare dashboard -> Workers & Pages -> con001 -> Settings -> Build
+#   -> Connect to Git -> this repository, branch
+#      claude/layered-text-interpretation-7kn6jd
+#
+# Cloudflare then pulls, runs the build command below, and deploys on every
+# push. No API token in this repository, none in GitHub Actions, and none
+# handed to anyone. That is why this is the preferred path over the workflow in
+# .github/workflows/publish.yml, which needs a token to exist.
+
+name = "con001"
+main = "worker/index.mjs"
+compatibility_date = "2025-09-01"
+
+# web/ is generated and untracked, so the build must produce it before the
+# assets are uploaded. `npm run status` runs the full test suite and exits
+# non-zero if it fails, so a red suite fails the deploy rather than shipping.
+[build]
+command = "npm run reader && npm run status"
+
+# The Worker runs BEFORE static assets. Without run_worker_first the asset
+# server answers first and the login gate is decorative — there is a test in
+# tools/test-auth.mjs asserting an unauthenticated request never reaches the
+# asset binding at all.
+[assets]
+directory = "web"
+binding = "ASSETS"
+run_worker_first = true
+
+# Created 2026-09-06. The id is not a secret: reaching this database still
+# requires account credentials.
+[[d1_databases]]
+binding = "DB"
+database_name = "con001-access"
+database_id = "781433b9-9053-4823-b1bf-0ee64daa598a"
+
+[observability]
+enabled = true

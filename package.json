@@ -15,9 +15,10 @@
     "build:alpha": "node tools/build-prod.mjs --hold-excluded",
     "advisory": "node tools/advisory.mjs",
     "version": "node tools/version.mjs",
-    "status": "node tools/build-status.mjs",
+    "status": "node tools/build-status.mjs && node tools/preflight.mjs",
     "next-prompt": "node tools/next-prompt.mjs",
-    "user": "node tools/user-admin.mjs"
+    "user": "node tools/user-admin.mjs",
+    "preflight": "node tools/preflight.mjs"
   },
   "engines": {
     "node": ">=20"

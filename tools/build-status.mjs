@@ -66,6 +66,7 @@ const milestones = [
   ['Evaluation loop', has('evaluations/README.md'), 'UI → team → prompt → UI', 'evaluations/README.md'],
   ['Access gate', has('worker/index.mjs') && has('worker/schema.sql'), 'private alpha behind email/password on a Worker', 'docs/15-access.md'],
   ['Password change + reset', has('worker/index.mjs') && read('package.json').scripts.user !== undefined, 'rotation, out-of-band reset codes, revoke-all', 'docs/15-access.md'],
+  ['Deploy pipeline', has('wrangler.toml') && has('tools/preflight.mjs'), 'D1 provisioned, preflight gates the build', 'docs/15-access.md'],
 ];
 
 // Ahead. These are in the SAME table as the shipped milestones on purpose: a
@@ -78,6 +79,7 @@ const ahead = [
   ['Resonance view in the UI', 'The map exists as a tool; the reader does not show it.', 'docs/10-resonance.md', ''],
   ['Generation', 'The compiler emits payloads. Nothing is wired to a model.', 'docs/13-studio-compiler.md', 'gated on seats'],
   ['Fiscal sponsor', 'Entity named with a placeholder until one is engaged.', 'LICENSING.md', ''],
+  ['Connect Git to the Worker', 'One dashboard action; then every push deploys itself.', 'docs/15-access.md', 'last manual step'],
   ['Session list', 'A count and revoke-all exist; per-device detail does not.', 'docs/15-access.md', ''],
   ['SSO', 'Schema is provider-ready; the routes are not written.', 'docs/15-access.md', ''],
 ];

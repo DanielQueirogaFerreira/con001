@@ -167,33 +167,64 @@ When SSO arrives, the parts that change are the login route and a new callback
 route. Sessions, cookies, lockout, revocation and the gate itself are already
 provider-agnostic.
 
-## Deploying
+## Deploying automatically
 
-Nothing here needs a credential in the repository, and none should ever be
-pasted into a chat.
+**The chosen path is Cloudflare Workers Builds**, the Git integration:
+Cloudflare pulls the repository itself, runs the build, and deploys on every
+push. **No API token exists anywhere** — not in this repository, not in a GitHub
+Actions secret, not handed to anyone. That is why it is preferred over the
+workflow described below, which cannot work without a token existing.
 
-```bash
-npm run reader && npm run status                 # build the assets
-npx wrangler login                               # browser OAuth, no token to store
-npx wrangler d1 create open-hermeneutics         # once — put the id in wrangler.toml
-npx wrangler d1 execute open-hermeneutics --remote --file worker/schema.sql
-npx wrangler deploy --config worker/wrangler.toml
+`wrangler.toml` is at the repository root because Workers Builds looks there by
+default, and its build command is:
+
+```
+npm run reader && npm run status
 ```
 
-Then add the first person:
+`npm run status` runs the whole test suite and the deploy preflight, and exits
+non-zero on failure — so **a red suite or a broken deploy config fails the
+deploy** rather than shipping.
+
+### Already provisioned
+
+| | |
+|---|---|
+| Worker | `con001` |
+| D1 database | `con001-access` (`781433b9-…`), schema applied |
+| First account | seeded, active, password identity |
+
+### The one remaining step
+
+Cloudflare dashboard → **Workers & Pages → `con001` → Settings → Build →
+Connect to Git**, pointing at this repository and branch. After that every push
+deploys by itself.
+
+### Preflight
+
+`npm run preflight` checks what a deploy needs and, importantly, what fails
+*silently*: `run_worker_first` is one line, and dropping it makes the asset
+server answer before the login gate — every page becomes public and nothing
+reports an error. Preflight fails the build instead.
+
+### Fallback: GitHub Actions
+
+`.github/workflows/publish.yml` deploys from CI instead. It needs a
+`CLOUDFLARE_API_TOKEN` repository secret scoped to *Edit Cloudflare Workers*
+and nothing else, refuses without it, refuses without a typed `DEPLOY`, and
+refuses while `wrangler.toml` holds a placeholder id. Use it only if deploys
+must be driven from GitHub; the Git integration is safer because there is no
+token to leak.
+
+### Adding people
 
 ```bash
 npm run user -- --email you@example.org --name "Your Name" --generate
-npx wrangler d1 execute open-hermeneutics --remote --command "<the SQL it printed>"
+npm run user -- --reset --email you@example.org
 ```
 
-Send the credential over a **different channel** than the URL, and have them
-change it after first sign-in.
-
-For CI deploys, `CLOUDFLARE_API_TOKEN` goes in a GitHub Actions secret, scoped
-to *Edit Cloudflare Workers* and nothing else. `publish.yml` refuses to run
-without it, refuses without a typed `DEPLOY`, and refuses while
-`wrangler.toml` still holds a placeholder database id.
+Both print SQL. Apply it with `npx wrangler d1 execute con001-access --remote
+--command "<sql>"`. Send credentials over a **different channel** than the URL.
 
 ## Still to do
 
