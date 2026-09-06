@@ -19,12 +19,20 @@ for (const f of ['web/reader.html', 'web/status.html'])
   }
 
 // Only the closing tag can end a script element; escaping it is the whole trick.
-const carry = (f) => readFileSync(f, 'utf8').replaceAll('</script', '<\\/script');
+// The <base> matters as much: a srcdoc document's base URL is about:srcdoc, so
+// the reader's relative fetch of a book of the Bible would resolve to nothing.
+const carry = (f) =>
+  '<base href="/">\n' + readFileSync(f, 'utf8').replaceAll('</script', '<\\/script');
 
 const commit = execSync('git rev-parse --short HEAD').toString().trim();
 const dated = execSync('git show -s --format=%cs HEAD').toString().trim();
 
-const html = `<title>Open Hermeneutics Console</title>
+// Charset is declared by the page, not left to the server's Content-Type. These
+// pages are served raw by the asset server and framed inside srcdoc documents
+// that carry no header at all; a page whose encoding depends on how it was
+// delivered renders "Gītā" as "GÄ«tÄ" wherever the header goes missing.
+const html = `<meta charset="utf-8">
+<title>Open Hermeneutics Console</title>
 <style>
   :root {
     --bg:#faf8f4; --panel:#fffefb; --ink:#1d1a16; --muted:#6b6459;

@@ -24,6 +24,10 @@ const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt
 const v = versionInfo('.');
 const works = read('data/works/works.json');
 const units = read('data/editions/text-units.json');
+// The ingested editions are stored per book and expanded on read, so their size
+// is counted from the index rather than by loading four megabytes to length it.
+const ingested = existsSync('data/editions/bible-kjv/index.json')
+  ? read('data/editions/bible-kjv/index.json') : { units: 0, books: [] };
 const editions = read('data/editions/editions.json');
 const layers = read('data/layers/layers.json');
 const interps = read('data/interpretations/interpretations.json');
@@ -75,7 +79,7 @@ const milestones = [
 // progress bar computed only over finished work always reads 100%, which is the
 // most common way a status page lies without anyone intending it to.
 const ahead = [
-  ['Text ingestion', 'No source text is verified. Every unit is hand-entered.', 'docs/09-ingestion.md', 'blocks advisory review'],
+  ['Text ingestion', `One work ingested (${ingested.units.toLocaleString()} units, machine-fetched and checksummed); six to go, and no unit is curator-verified.`, 'docs/09-ingestion.md', 'blocks advisory review'],
   ['Advisory seats', 'No scholars seated. rfc:001 open with zero sign-offs.', 'advisory/README.md', 'blocks production'],
   ['Annotation + accounts', 'Readers cannot yet write, fork, or save a lens.', 'docs/02-layers.md', ''],
   ['Resonance view in the UI', 'The map exists as a tool; the reader does not show it.', 'docs/10-resonance.md', ''],
@@ -106,7 +110,8 @@ const bar = (n, d) => {
   return `<div class="bar"><i style="width:${pct}%"></i></div>`;
 };
 
-const html = `<title>Open Hermeneutics — Build Status</title>
+const html = `<meta charset="utf-8">
+<title>Open Hermeneutics — Build Status</title>
 <style>
   :root {
     --bg:#faf8f4; --panel:#fffefb; --ink:#1d1a16; --muted:#6b6459; --line:#e3ddd2;
@@ -202,20 +207,29 @@ const html = `<title>Open Hermeneutics — Build Status</title>
   </div>
 
   <div class="card">
-    <h2>Corpus — ${units.length} units seeded, ${verified} verified</h2>
+    <h2>Corpus — ${(units.length + ingested.units).toLocaleString()} units, ${verified} verified</h2>
     <table>
       <tr><th>Work</th><th>Tradition</th><th class="num">Units</th><th class="num">Of</th><th class="num">Layers</th><th class="num">Readings</th></tr>
-      ${perWork.map((w) => `<tr>
+      ${perWork.map((w) => {
+        // The ingested edition belongs to the row for its work, not to a
+        // separate table: a reader does not care which pipeline a verse came in
+        // through, only how much of the work is actually there.
+        const held = w.units + (w.title === 'Bible' ? ingested.units : 0);
+        return `<tr>
         <td>${esc(w.title)}</td><td class="dim">${esc(w.tradition)}</td>
-        <td class="num">${w.units}</td><td class="num dim">${w.total.toLocaleString()}</td>
-        <td class="num">${w.layers}</td><td class="num">${w.interps}</td></tr>`).join('')}
+        <td class="num">${held.toLocaleString()}</td><td class="num dim">${w.total.toLocaleString()}</td>
+        <td class="num">${w.layers}</td><td class="num">${w.interps}</td></tr>`;
+      }).join('')}
     </table>
     <div class="note warn" style="margin-top:14px">
-      <strong>${verified} of ${units.length} text units are verified.</strong>
-      Every passage in this build was hand-entered to demonstrate the data format. Unverified units are
-      not authoritative editions of anyone's scripture and must not be displayed to readers as such.
-      Ingestion from authoritative editions is unstarted work, and it blocks advisory review regardless
-      of whether scholars are seated. See <code>docs/09-ingestion.md</code>.
+      <strong>${verified} of ${(units.length + ingested.units).toLocaleString()} text units are verified.</strong>
+      ${ingested.units.toLocaleString()} of them are the King James Version, machine-ingested from a
+      digital edition, normalised once to NFC and checksummed per book and per unit — the pipeline in
+      <code>docs/09-ingestion.md</code> run for real, up to but not including the last step. That step is a
+      curator reading the text against a printed edition and signing for it, which no program does. The
+      remaining ${units.length} units were hand-entered to demonstrate the data format.
+      Unverified units are not authoritative editions of anyone's scripture and must not be displayed to
+      readers as such — which is why every one of them carries the word <em>unverified</em> in the reader.
     </div>
   </div>
 

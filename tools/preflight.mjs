@@ -54,6 +54,10 @@ for (const page of ['reader.html', 'status.html', 'console.html'])
 check('npm run status builds the console', /build-console/.test(pkg.scripts?.status ?? ''),
   'console.html would go stale while reader and status moved on');
 
+check('the Bible corpus was built into the assets',
+  !!assetsDir && existsSync(`${assetsDir}/corpus/bible/index.json`),
+  'the reader fetches books from here; without them the Bible panel is empty');
+
 check('a D1 binding is configured', /\[\[d1_databases\]\]/.test(cfg));
 check('the database id is real', !/REPLACE_WITH_ID|placeholder/i.test(cfg),
   'wrangler.toml still holds a placeholder');

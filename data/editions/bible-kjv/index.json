@@ -1,0 +1,403 @@
+{
+ "edition": "ed:bible.en.kjv",
+ "source": "King James Version via github.com/aruljohn/Bible-kjv, retrieved 2026-09-06",
+ "books": [
+  {
+   "usfm": "GEN",
+   "name": "Genesis",
+   "chapters": 50,
+   "units": 1533
+  },
+  {
+   "usfm": "EXO",
+   "name": "Exodus",
+   "chapters": 40,
+   "units": 1213
+  },
+  {
+   "usfm": "LEV",
+   "name": "Leviticus",
+   "chapters": 27,
+   "units": 859
+  },
+  {
+   "usfm": "NUM",
+   "name": "Numbers",
+   "chapters": 36,
+   "units": 1288
+  },
+  {
+   "usfm": "DEU",
+   "name": "Deuteronomy",
+   "chapters": 34,
+   "units": 959
+  },
+  {
+   "usfm": "JOS",
+   "name": "Joshua",
+   "chapters": 24,
+   "units": 658
+  },
+  {
+   "usfm": "JDG",
+   "name": "Judges",
+   "chapters": 21,
+   "units": 618
+  },
+  {
+   "usfm": "RUT",
+   "name": "Ruth",
+   "chapters": 4,
+   "units": 85
+  },
+  {
+   "usfm": "1SA",
+   "name": "1 Samuel",
+   "chapters": 31,
+   "units": 810
+  },
+  {
+   "usfm": "2SA",
+   "name": "2 Samuel",
+   "chapters": 24,
+   "units": 695
+  },
+  {
+   "usfm": "1KI",
+   "name": "1 Kings",
+   "chapters": 22,
+   "units": 816
+  },
+  {
+   "usfm": "2KI",
+   "name": "2 Kings",
+   "chapters": 25,
+   "units": 719
+  },
+  {
+   "usfm": "1CH",
+   "name": "1 Chronicles",
+   "chapters": 29,
+   "units": 942
+  },
+  {
+   "usfm": "2CH",
+   "name": "2 Chronicles",
+   "chapters": 36,
+   "units": 822
+  },
+  {
+   "usfm": "EZR",
+   "name": "Ezra",
+   "chapters": 10,
+   "units": 280
+  },
+  {
+   "usfm": "NEH",
+   "name": "Nehemiah",
+   "chapters": 13,
+   "units": 406
+  },
+  {
+   "usfm": "EST",
+   "name": "Esther",
+   "chapters": 10,
+   "units": 167
+  },
+  {
+   "usfm": "JOB",
+   "name": "Job",
+   "chapters": 42,
+   "units": 1070
+  },
+  {
+   "usfm": "PSA",
+   "name": "Psalms",
+   "chapters": 150,
+   "units": 2461
+  },
+  {
+   "usfm": "PRO",
+   "name": "Proverbs",
+   "chapters": 31,
+   "units": 915
+  },
+  {
+   "usfm": "ECC",
+   "name": "Ecclesiastes",
+   "chapters": 12,
+   "units": 222
+  },
+  {
+   "usfm": "SNG",
+   "name": "Song of Solomon",
+   "chapters": 8,
+   "units": 117
+  },
+  {
+   "usfm": "ISA",
+   "name": "Isaiah",
+   "chapters": 66,
+   "units": 1292
+  },
+  {
+   "usfm": "JER",
+   "name": "Jeremiah",
+   "chapters": 52,
+   "units": 1364
+  },
+  {
+   "usfm": "LAM",
+   "name": "Lamentations",
+   "chapters": 5,
+   "units": 154
+  },
+  {
+   "usfm": "EZK",
+   "name": "Ezekiel",
+   "chapters": 48,
+   "units": 1273
+  },
+  {
+   "usfm": "DAN",
+   "name": "Daniel",
+   "chapters": 12,
+   "units": 357
+  },
+  {
+   "usfm": "HOS",
+   "name": "Hosea",
+   "chapters": 14,
+   "units": 197
+  },
+  {
+   "usfm": "JOL",
+   "name": "Joel",
+   "chapters": 3,
+   "units": 73
+  },
+  {
+   "usfm": "AMO",
+   "name": "Amos",
+   "chapters": 9,
+   "units": 146
+  },
+  {
+   "usfm": "OBA",
+   "name": "Obadiah",
+   "chapters": 1,
+   "units": 21
+  },
+  {
+   "usfm": "JON",
+   "name": "Jonah",
+   "chapters": 4,
+   "units": 48
+  },
+  {
+   "usfm": "MIC",
+   "name": "Micah",
+   "chapters": 7,
+   "units": 105
+  },
+  {
+   "usfm": "NAM",
+   "name": "Nahum",
+   "chapters": 3,
+   "units": 47
+  },
+  {
+   "usfm": "HAB",
+   "name": "Habakkuk",
+   "chapters": 3,
+   "units": 56
+  },
+  {
+   "usfm": "ZEP",
+   "name": "Zephaniah",
+   "chapters": 3,
+   "units": 53
+  },
+  {
+   "usfm": "HAG",
+   "name": "Haggai",
+   "chapters": 2,
+   "units": 38
+  },
+  {
+   "usfm": "ZEC",
+   "name": "Zechariah",
+   "chapters": 14,
+   "units": 211
+  },
+  {
+   "usfm": "MAL",
+   "name": "Malachi",
+   "chapters": 4,
+   "units": 55
+  },
+  {
+   "usfm": "MAT",
+   "name": "Matthew",
+   "chapters": 28,
+   "units": 1071
+  },
+  {
+   "usfm": "MRK",
+   "name": "Mark",
+   "chapters": 16,
+   "units": 678
+  },
+  {
+   "usfm": "LUK",
+   "name": "Luke",
+   "chapters": 24,
+   "units": 1151
+  },
+  {
+   "usfm": "JHN",
+   "name": "John",
+   "chapters": 21,
+   "units": 879
+  },
+  {
+   "usfm": "ACT",
+   "name": "Acts",
+   "chapters": 28,
+   "units": 1007
+  },
+  {
+   "usfm": "ROM",
+   "name": "Romans",
+   "chapters": 16,
+   "units": 433
+  },
+  {
+   "usfm": "1CO",
+   "name": "1 Corinthians",
+   "chapters": 16,
+   "units": 437
+  },
+  {
+   "usfm": "2CO",
+   "name": "2 Corinthians",
+   "chapters": 13,
+   "units": 257
+  },
+  {
+   "usfm": "GAL",
+   "name": "Galatians",
+   "chapters": 6,
+   "units": 149
+  },
+  {
+   "usfm": "EPH",
+   "name": "Ephesians",
+   "chapters": 6,
+   "units": 155
+  },
+  {
+   "usfm": "PHP",
+   "name": "Philippians",
+   "chapters": 4,
+   "units": 104
+  },
+  {
+   "usfm": "COL",
+   "name": "Colossians",
+   "chapters": 4,
+   "units": 95
+  },
+  {
+   "usfm": "1TH",
+   "name": "1 Thessalonians",
+   "chapters": 5,
+   "units": 89
+  },
+  {
+   "usfm": "2TH",
+   "name": "2 Thessalonians",
+   "chapters": 3,
+   "units": 47
+  },
+  {
+   "usfm": "1TI",
+   "name": "1 Timothy",
+   "chapters": 6,
+   "units": 113
+  },
+  {
+   "usfm": "2TI",
+   "name": "2 Timothy",
+   "chapters": 4,
+   "units": 83
+  },
+  {
+   "usfm": "TIT",
+   "name": "Titus",
+   "chapters": 3,
+   "units": 46
+  },
+  {
+   "usfm": "PHM",
+   "name": "Philemon",
+   "chapters": 1,
+   "units": 25
+  },
+  {
+   "usfm": "HEB",
+   "name": "Hebrews",
+   "chapters": 13,
+   "units": 303
+  },
+  {
+   "usfm": "JAS",
+   "name": "James",
+   "chapters": 5,
+   "units": 108
+  },
+  {
+   "usfm": "1PE",
+   "name": "1 Peter",
+   "chapters": 5,
+   "units": 105
+  },
+  {
+   "usfm": "2PE",
+   "name": "2 Peter",
+   "chapters": 3,
+   "units": 61
+  },
+  {
+   "usfm": "1JN",
+   "name": "1 John",
+   "chapters": 5,
+   "units": 105
+  },
+  {
+   "usfm": "2JN",
+   "name": "2 John",
+   "chapters": 1,
+   "units": 13
+  },
+  {
+   "usfm": "3JN",
+   "name": "3 John",
+   "chapters": 1,
+   "units": 14
+  },
+  {
+   "usfm": "JUD",
+   "name": "Jude",
+   "chapters": 1,
+   "units": 25
+  },
+  {
+   "usfm": "REV",
+   "name": "Revelation",
+   "chapters": 22,
+   "units": 404
+  }
+ ],
+ "units": 31102
+}

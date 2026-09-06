@@ -28,7 +28,9 @@ const SECURITY_HEADERS = {
     // frame-src covers the console's two srcdoc frames, which hold the status
     // page and the reader as separate documents so their stylesheets cannot
     // collide. Still no remote origin anywhere in this policy.
-    "img-src 'self' data:; frame-src 'self'; form-action 'self'; " +
+    // connect-src is for the reader fetching /corpus/bible/<BOOK>.json — its own
+    // origin, one book at a time. Still no remote origin in this policy.
+    "img-src 'self' data:; connect-src 'self'; frame-src 'self'; form-action 'self'; " +
     "frame-ancestors 'none'; base-uri 'none'",
 };
 

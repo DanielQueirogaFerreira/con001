@@ -8,7 +8,7 @@
 //   node tools/build-reader.mjs            all data
 //   node tools/build-reader.mjs --prod     production set only (held items excluded)
 
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, cpSync } from 'node:fs';
 import { map } from './resonance.mjs';
 import { versionInfo } from './version.mjs';
 
@@ -31,8 +31,14 @@ const questions = read('data/questions/questions.json');
 const m = map('.');
 const set = prod ? m.productionSet() : { positions: m.positions, resonances: m.resonances, held: [] };
 
-// Only the anchors the prototype opens on, to keep the file small.
-const ANCHORS = ['gita:2.47', 'dhammapada:1', 'upanishad:ISH.1', 'daodejing:1', 'quran:2:1'];
+// The anchors the prototype opens on. Everything for these is inlined; the
+// Bible's 31,102 verses are not — they are fetched a book at a time from
+// /corpus/bible, which is why the whole edition can be here without the page
+// weighing four megabytes.
+const ANCHORS = ['bible:GEN.1.1', 'bible:JHN.1.1', 'bible:JHN.3.16',
+                 'gita:2.47', 'dhammapada:1', 'upanishad:ISH.1', 'daodejing:1', 'quran:2:1'];
+
+const bibleIndex = read('data/editions/bible-kjv/index.json');
 
 const version = versionInfo('.');
 const corpus = {
@@ -49,9 +55,11 @@ const corpus = {
   questions,
   positions: set.positions,
   resonances: set.resonances,
+  bible: { books: bibleIndex.books, units: bibleIndex.units, source: bibleIndex.source },
 };
 
-const html = `<title>Open Hermeneutics Reader</title>
+const html = `<meta charset="utf-8">
+<title>Open Hermeneutics Reader</title>
 <style>
   :root {
     --bg: #faf8f4; --panel: #fffefb; --ink: #1d1a16; --muted: #6b6459;
@@ -126,6 +134,17 @@ const html = `<title>Open Hermeneutics Reader</title>
   .chip { font-size: 11px; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; color: var(--muted); }
   .split { border-left: 3px solid var(--hot); padding-left: 10px; font-size: 12px; margin-bottom: 12px; }
   a { color: var(--accent); }
+  select { font: inherit; font-size: 12.5px; color: var(--ink); background: var(--panel);
+           border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+  .verses { margin-top: 12px; max-height: 340px; overflow-y: auto; }
+  .verse { display: flex; gap: 10px; align-items: baseline; width: 100%; text-align: left;
+           background: none; border: 0; border-radius: 6px; padding: 5px 7px; cursor: pointer;
+           font-family: var(--font-read); font-size: 14px; color: var(--ink); line-height: 1.55; }
+  .verse:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  .verse[aria-current="true"] { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  .verse b { font-family: var(--font-ui); font-size: 10.5px; color: var(--muted);
+             min-width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
+  .verse .has { color: var(--accent); }
 </style>
 
 <div class="wrap">
@@ -133,7 +152,8 @@ const html = `<title>Open Hermeneutics Reader</title>
   <div class="sub">
     Seven works. Layered reading, the contestation slider, and the Director Lens Hook.
     <span class="mono" style="color:var(--accent)">${version.build}</span> · <span id="mode"></span> ·
-    <strong>no source text here is verified</strong> — every passage was hand-entered to demonstrate the format.
+    <strong>no source text here is verified</strong> — the King James Version below is machine-ingested
+    and checksummed but not curator-signed; the sample passages in other works were hand-entered.
     &nbsp;·&nbsp; <a href="/status">Build status</a>
   </div>
 
@@ -148,6 +168,16 @@ const html = `<title>Open Hermeneutics Reader</title>
       <div class="card">
         <h2>Layers on this anchor</h2>
         <div id="glosses"></div>
+      </div>
+
+      <div class="card">
+        <h2>Bible — the whole text</h2>
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <select id="bkBook"></select>
+          <select id="bkChapter"></select>
+          <span class="dim" id="bkNote"></span>
+        </div>
+        <div id="bkVerses" class="verses"></div>
       </div>
     </div>
 
@@ -258,8 +288,14 @@ function highlightsFor(unitEdition, ids) {
     .map(i => i.anchor.span).sort((a, b) => a.start - b.start);
 }
 
+// Units inlined at build time, plus any verse fetched since. A verse the
+// reader opened from the Bible panel behaves exactly like one that shipped
+// with the page — same highlighting, same layers, same everything.
+const fetched = new Map();
+const unitsAt = cr => [...C.units, ...fetched.values()].filter(u => u.cr === cr);
+
 function renderText(ids) {
-  const us = C.units.filter(u => u.cr === anchor);
+  const us = unitsAt(anchor);
   const el = document.getElementById('text');
   el.innerHTML = '';
   for (const u of us) {
@@ -467,13 +503,102 @@ document.getElementById('slider').addEventListener('input', e => {
 document.getElementById('studioToggle').addEventListener('click', () => {
   studioOpen = !studioOpen; if (!studioOpen) soloLens = null; render();
 });
+/* ------------------------------------------------------- the Bible panel */
+
+// Books arrive one at a time, on demand. The whole edition is four megabytes;
+// no reader should wait for Leviticus to read John.
+const books = new Map();
+let openBook = null, openChapter = 1;
+
+const anchorsWithLayers = new Set(C.interps.map(i => i.anchor.cr));
+
+async function loadBook(usfm) {
+  if (books.has(usfm)) return books.get(usfm);
+  const note = document.getElementById('bkNote');
+  note.textContent = 'loading…';
+  try {
+    // Relative on purpose: the page is served at / and at /reader.html, and
+    // this resolves against either.
+    const res = await fetch(\`corpus/bible/\${usfm}.json\`);
+    if (!res.ok) throw new Error(res.status);
+    const book = await res.json();
+    books.set(usfm, book);
+    note.textContent = \`\${book.book.units} verses · King James Version · unverified\`;
+    return book;
+  } catch {
+    note.textContent = 'the full text is not available from here';
+    return null;
+  }
+}
+
+function renderVerses() {
+  const el = document.getElementById('bkVerses');
+  const book = books.get(openBook);
+  el.innerHTML = '';
+  if (!book) return;
+  const verses = book.chapters[openChapter - 1] ?? [];
+  verses.forEach((text, i) => {
+    const cr = \`bible:\${openBook}.\${openChapter}.\${i + 1}\`;
+    const b = document.createElement('button');
+    b.className = 'verse';
+    b.setAttribute('aria-current', String(cr === anchor));
+    const layered = anchorsWithLayers.has(cr);
+    b.innerHTML = \`<b class="\${layered ? 'has' : ''}">\${openChapter}:\${i + 1}</b><span></span>\`;
+    b.lastChild.textContent = text;
+    b.addEventListener('click', () => {
+      // A fetched verse becomes a first-class unit, so the rest of the reader
+      // needs no notion of where it came from.
+      fetched.set(cr, {
+        type: 'TextUnit', edition: book.edition, cr, label: \`\${openChapter}:\${i + 1}\`,
+        text, provenance: book.provenance,
+      });
+      anchor = cr; manual.clear(); soloLens = null;
+      render(); renderVerses();
+    });
+    el.appendChild(b);
+  });
+}
+
+async function showBook(usfm, chapter = 1) {
+  openBook = usfm; openChapter = chapter;
+  const book = await loadBook(usfm);
+  const sel = document.getElementById('bkChapter');
+  sel.innerHTML = book
+    ? Array.from({ length: book.chapters.length }, (_, i) =>
+        \`<option value="\${i + 1}"\${i + 1 === chapter ? ' selected' : ''}>chapter \${i + 1}</option>\`).join('')
+    : '';
+  renderVerses();
+}
+
+document.getElementById('bkBook').innerHTML =
+  C.bible.books.map(b => \`<option value="\${b.usfm}">\${b.name}</option>\`).join('');
+document.getElementById('bkBook').addEventListener('change', e => showBook(e.target.value));
+document.getElementById('bkChapter').addEventListener('change', e => {
+  openChapter = Number(e.target.value); renderVerses();
+});
+
 render();
+
+// Open on the book the current anchor is in, so the panel starts somewhere
+// meaningful rather than at Genesis 1 every time.
+{
+  const [work, ref] = anchor.split(':');
+  const usfm = work === 'bible' ? ref.split('.')[0] : 'JHN';
+  const chapter = work === 'bible' ? Number(ref.split('.')[1]) : 1;
+  document.getElementById('bkBook').value = usfm;
+  showBook(usfm, chapter);
+}
 </script>
 `;
 
 mkdirSync('web', { recursive: true });
 writeFileSync('web/reader.html', html);
+
+// The edition ships beside the page rather than inside it. Behind the same
+// gate as everything else — the Worker answers before the asset server.
+cpSync('data/editions/bible-kjv', 'web/corpus/bible', { recursive: true });
 console.log(
   `build-reader: web/reader.html (${(html.length / 1024).toFixed(0)} KB, ${corpus.mode})` +
+  ` + web/corpus/bible (${bibleIndex.books.length} books, ${bibleIndex.units} verses)` +
   (corpus.held.length ? `, ${corpus.held.length} item(s) excluded as held: ${corpus.held.join(', ')}` : '')
 );
