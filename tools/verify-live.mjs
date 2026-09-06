@@ -41,7 +41,7 @@ check('it redirects to the login page', (root.headers?.get('Location') ?? '') ==
 
 // 2. THE test. Named assets must not be reachable by going straight at them —
 // this is what fails if the Worker is not running first.
-for (const asset of ['/reader.html', '/status.html', '/index.html']) {
+for (const asset of ['/reader.html', '/status.html', '/console.html', '/index.html']) {
   const res = await get(asset);
   const leaked = res.status === 200;
   check(`${asset} is not served without a session`, !leaked,

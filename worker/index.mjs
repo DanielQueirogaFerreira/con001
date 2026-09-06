@@ -25,7 +25,11 @@ const SECURITY_HEADERS = {
   // and style; there is no remote origin in this policy at all.
   'Content-Security-Policy':
     "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; " +
-    "img-src 'self' data:; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
+    // frame-src covers the console's two srcdoc frames, which hold the status
+    // page and the reader as separate documents so their stylesheets cannot
+    // collide. Still no remote origin anywhere in this policy.
+    "img-src 'self' data:; frame-src 'self'; form-action 'self'; " +
+    "frame-ancestors 'none'; base-uri 'none'",
 };
 
 const html = (body, status = 200, headers = {}) =>
@@ -398,7 +402,10 @@ export default {
       return new Response(null, { status: 303, headers: { Location: '/login', ...SECURITY_HEADERS } });
     }
 
-    const asset = await env.ASSETS.fetch(request);
+    // The site root is the console: progress and the running reader in one
+    // page, so a signed-in reader lands on something rather than a 404.
+    const target = url.pathname === '/' ? new URL('/console.html', url) : request;
+    const asset = await env.ASSETS.fetch(target);
     const res = new Response(asset.body, asset);
     for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.headers.set(k, v);
     // Signed-in pages must never be cached by a shared proxy.

@@ -46,8 +46,13 @@ const assetsDir = (cfg.match(/\[assets\][\s\S]*?directory\s*=\s*"([^"]+)"/) ?? [
 check('assets directory is declared', !!assetsDir);
 check('assets directory has been built', !!assetsDir && existsSync(assetsDir),
   `${assetsDir ?? 'web'} is generated — run npm run reader && npm run status`);
-for (const page of ['reader.html', 'status.html'])
+for (const page of ['reader.html', 'status.html', 'console.html'])
   check(`${page} is built`, !!assetsDir && existsSync(`${assetsDir}/${page}`));
+
+// `npm run status` is what the deploy scripts call, so the console is only
+// guaranteed to be rebuilt if that script builds it.
+check('npm run status builds the console', /build-console/.test(pkg.scripts?.status ?? ''),
+  'console.html would go stale while reader and status moved on');
 
 check('a D1 binding is configured', /\[\[d1_databases\]\]/.test(cfg));
 check('the database id is real', !/REPLACE_WITH_ID|placeholder/i.test(cfg),
