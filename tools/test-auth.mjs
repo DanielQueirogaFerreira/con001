@@ -11,7 +11,7 @@ import {
   DUMMY_RECORD, LOCKOUT, LOGIN_FAILED, PBKDF2_ITERATIONS, RESET_GROUPS,
   RESET_TTL_SECONDS, SESSION_COOKIE, credentialBits, generateCredential,
   hashPassword, hashToken, isLockedOut, looksLikeEmail, newSessionToken,
-  normaliseCode, normaliseEmail, passwordProblem, readCookie, serializeCookie,
+  normaliseCode, normaliseEmail, passwordProblem, readCookie, resetCodeHash, serializeCookie,
   timingSafeEqual, verifyPassword,
 } from '../worker/auth.mjs';
 import worker from '../worker/index.mjs';
@@ -394,8 +394,14 @@ await t('sign out everywhere else leaves exactly one session', async () => {
   assert(res.status === 303 && env._db.sessions.length === 1, 'only the acting session should remain');
 });
 
+// Seeds a code the way the ISSUER does, not the way the redeemer reads it.
+// Those were once different expressions in different files — the issuer hashed
+// the grouped code it printed, the Worker hashed the normalised one — and no
+// test noticed, because the tests hashed it themselves and agreed with the
+// Worker by construction. The end-to-end test below closes that gap; this
+// helper goes through the shared function so it cannot drift again.
 function withCode(env, { code, minutesLeft = 60, used = false, userId = 'u1' }) {
-  return hashToken(normaliseCode(code)).then((h) => {
+  return resetCodeHash(code).then((h) => {
     env._db.resets.push({
       code_hash: h, user_id: userId, created_at: Date.now(),
       expires_at: Date.now() + minutesLeft * 60_000, used_at: used ? Date.now() : null,
@@ -405,6 +411,37 @@ function withCode(env, { code, minutesLeft = 60, used = false, userId = 'u1' }) 
 }
 const doReset = (email, code, next, confirm = next) =>
   req('/reset', { method: 'POST', body: new URLSearchParams({ email, code, next, confirm }) });
+
+// THE test the issuer/redeemer split needed: run the real admin tool, take the
+// code it prints and the hash it puts in its SQL, and redeem that code through
+// the Worker. Nothing here recomputes a hash, so a disagreement between the two
+// halves fails rather than cancelling out.
+await t('a code from tools/user-admin.mjs can actually be redeemed', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const out = execFileSync('node', ['tools/user-admin.mjs', '--reset', '--email', 'a@b.org'],
+    { encoding: 'utf8' });
+
+  const printedHash = (out.match(/VALUES \('([A-Za-z0-9_-]{43})'/) ?? [])[1];
+  const printedCode = (out.match(/^--\s+([0-9A-Z]{5}(?:-[0-9A-Z]{5})+)$/m) ?? [])[1];
+  assert(printedHash, 'the tool must print an INSERT carrying a code hash');
+  assert(printedCode, 'the tool must print the code itself, exactly once');
+
+  const env = makeEnv({
+    users: [{ id: 'u1', email: 'a@b.org', display_name: 'A', status: 'active', created_at: 1 }],
+    identities: [{ user_id: 'u1', provider: 'password', secret: await hashPassword('the old password') }],
+  });
+  env._db.resets.push({
+    code_hash: printedHash, user_id: 'u1', created_at: Date.now(),
+    expires_at: Date.now() + 3_600_000, used_at: null,
+  });
+
+  // Typed back the way it was printed — grouped, with dashes.
+  const res = await worker.fetch(doReset('a@b.org', printedCode, 'a brand new password'), env);
+  assert(res.status === 303,
+    `a code straight from the issuer must be redeemable, got ${res.status} ` +
+    '(the issuer and the Worker are hashing different strings)');
+  assert(env._db.resets[0].used_at, 'the code must be marked spent');
+});
 
 await t('reset codes carry real entropy and tolerate how people type them', () => {
   assert(credentialBits(RESET_GROUPS) >= 100, `reset codes must be strong, got ${credentialBits(RESET_GROUPS)} bits`);

@@ -11,7 +11,7 @@
 import {
   DUMMY_RECORD, LOGIN_FAILED, PASSWORD_MIN, SESSION_COOKIE, SESSION_TTL_SECONDS,
   hashPassword, hashToken, isLockedOut, looksLikeEmail, newSessionToken,
-  normaliseCode, normaliseEmail, passwordProblem, readCookie, serializeCookie,
+  normaliseCode, normaliseEmail, passwordProblem, readCookie, resetCodeHash, serializeCookie,
   verifyPassword,
 } from './auth.mjs';
 
@@ -336,7 +336,7 @@ async function handleReset(request, env) {
     `SELECT r.code_hash, r.user_id, r.expires_at, r.used_at, u.email, u.status
        FROM password_resets r JOIN users u ON u.id = r.user_id
       WHERE r.code_hash = ?1`
-  ).bind(await hashToken(code)).first();
+  ).bind(await resetCodeHash(code)).first();
 
   const usable = row && !row.used_at && row.expires_at > Date.now()
     && row.email === email && row.status === 'active';

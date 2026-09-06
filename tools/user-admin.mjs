@@ -15,7 +15,7 @@
 
 import {
   RESET_GROUPS, RESET_TTL_SECONDS, credentialBits, generateCredential,
-  hashPassword, hashToken, looksLikeEmail, normaliseEmail,
+  hashPassword, looksLikeEmail, normaliseEmail, resetCodeHash,
 } from '../worker/auth.mjs';
 
 const arg = (name, fallback = null) => {
@@ -49,11 +49,14 @@ if (flag('reset')) {
   // token sitting in a URL where Referer headers and browser history find it.
   const code = generateCredential(RESET_GROUPS);
   const now = Date.now();
+  // resetCodeHash is shared with the Worker on purpose: see its comment. This
+  // file used to hash the grouped code it prints, which no redemption can ever
+  // match.
   console.log(`
 -- Reset code for ${email}. Supersedes any code already outstanding.
 DELETE FROM password_resets WHERE user_id = (SELECT id FROM users WHERE email = ${q(email)}) AND used_at IS NULL;
 INSERT INTO password_resets (code_hash, user_id, created_at, expires_at, used_at)
-VALUES (${q(await hashToken(code))}, (SELECT id FROM users WHERE email = ${q(email)}),
+VALUES (${q(await resetCodeHash(code))}, (SELECT id FROM users WHERE email = ${q(email)}),
         ${now}, ${now + RESET_TTL_SECONDS * 1000}, NULL);
 `);
   console.log(`-- Code (${credentialBits(RESET_GROUPS)} bits), valid ${RESET_TTL_SECONDS / 60} minutes, single use.`);

@@ -146,6 +146,19 @@ export function normaliseCode(code) {
   return String(code ?? '').toUpperCase().replace(/[^0-9A-Z]/g, '');
 }
 
+/**
+ * The ONE way a reset code becomes a database key — used both when issuing a
+ * code and when redeeming one.
+ *
+ * These were once two expressions in two files, and they disagreed: the issuer
+ * hashed the grouped code it had just printed, the Worker hashed what the
+ * person typed after normalisation. The dashes are the whole difference, and
+ * the symptom is silent and total — every code issued is refused as invalid,
+ * with no way to tell that from a mistyped one, because the failure message is
+ * deliberately the same for both.
+ */
+export const resetCodeHash = (code) => hashToken(normaliseCode(code));
+
 /* ---------------------------------------------------------------- policy */
 
 export const SESSION_TTL_SECONDS = 12 * 60 * 60;
