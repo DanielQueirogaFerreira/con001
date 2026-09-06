@@ -336,7 +336,14 @@ in front, the deploy still succeeds and every page is simply public:
 - `npm run preflight` — the config, before deploying. `run_worker_first` is one
   line, and dropping it makes the asset server answer before the login gate.
 - `npm run verify -- <url>` — the running site, after deploying. Asks for
-  `reader.html` with no credentials and fails if it comes back.
+  `reader.html` with no credentials and fails if it comes back. Run it from a
+  machine with ordinary network access; the build sandbox cannot reach
+  `*.workers.dev`.
+
+Production deploys only from the **production branch**. A push to any other
+branch runs `wrangler versions upload`, which uploads a version and does **not**
+promote it — the live URL keeps serving the previous deployment even though the
+Worker script store already holds the new code.
 
 ## The loop
 

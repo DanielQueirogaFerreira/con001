@@ -223,17 +223,34 @@ repository or in GitHub.
 Two settings still need attention:
 
 1. **Build command is empty.** See above; without it nothing builds.
-2. **Production branch is `main`, which does not exist in this repository.** The
-   default branch is `claude/layered-text-interpretation-7kn6jd`. Production
-   builds therefore never fire. Pushes to the working branch do produce
-   *preview versions* via `wrangler versions upload`, and a preview version is
-   **not** promoted to production — so the live Worker keeps serving whatever
-   was deployed last until a production branch exists or a version is promoted.
+2. **Production branch.** It was `main`, which does not exist in this
+   repository — the default branch is the working branch. Decided: point the
+   production branch at `claude/layered-text-interpretation-7kn6jd`.
+
+   This distinction caused real confusion once, so it is worth stating plainly:
+
+   | Branch | Command Workers Builds runs | Effect |
+   |---|---|---|
+   | production | `npx wrangler deploy` | **goes live** |
+   | any other | `npx wrangler versions upload` | uploads a version, **does not promote it** |
+
+   A non-production build that succeeds still leaves the URL serving the
+   previous production deployment. The Worker script store will show the new
+   code while the live site shows the old — which looks exactly like a failed
+   deploy and is not one. Check **Deployments**, not the script, to see what is
+   actually serving.
 
 ### Certifying a deployment
 
 `npm run verify -- https://<the deployed url>` asks the running site, without
-credentials, for the things that must not be there:
+credentials, for the things that must not be there.
+
+**Run it from your own machine.** The development sandbox this was built in
+cannot reach `*.workers.dev` — its egress proxy refuses the connection — so the
+deployed site cannot be checked from there. The verification has to happen
+somewhere with ordinary network access.
+
+It checks:
 
 - the root redirects to `/login`
 - `reader.html`, `status.html` and `index.html` are **not** served directly —
