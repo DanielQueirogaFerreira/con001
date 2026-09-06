@@ -5,6 +5,13 @@
 # that SQL against the production D1 database using the same repository secret
 # the publish workflow uses.
 #
+# REQUIRES A TOKEN SCOPE THE PUBLISH WORKFLOW DOES NOT. CLOUDFLARE_API_TOKEN was
+# created for deploys, so it carries "Workers Scripts: Edit" alone and D1 refuses
+# it with `code: 7403 — the given account is not valid or is not authorized to
+# access this service`. Add "D1: Edit" to the same token for this workflow to
+# run. That error names the account, not the permission, which is why it reads
+# like a broken token rather than a missing scope.
+#
 # NOTHING SECRET IS TYPED INTO THIS WORKFLOW, and nothing secret is printed by
 # it. A reset code is generated wherever the administrator is, and only its
 # SHA-256 (`hashToken`, base64url) is passed in — which is exactly what the
