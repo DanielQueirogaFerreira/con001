@@ -1,0 +1,99 @@
+# Administers the access gate's accounts, from the cloud.
+#
+# tools/user-admin.mjs prints the SQL for these operations but cannot run them —
+# it deliberately holds no credential. This workflow is the other half: it runs
+# that SQL against the production D1 database using the same repository secret
+# the publish workflow uses.
+#
+# NOTHING SECRET IS TYPED INTO THIS WORKFLOW, and nothing secret is printed by
+# it. A reset code is generated wherever the administrator is, and only its
+# SHA-256 (`hashToken`, base64url) is passed in — which is exactly what the
+# database stores. The code itself never reaches GitHub, so it is not in the
+# dispatch record and not in the run log, which both outlive the code's hour.
+name: account
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'What to do'
+        required: true
+        type: choice
+        options: [issue-reset, clear-lockout]
+      email:
+        description: 'Account address'
+        required: true
+      code_hash:
+        description: 'Hash of the reset code (issue-reset only) — NOT the code'
+        required: false
+        default: ''
+      minutes:
+        description: 'Minutes the code stays valid'
+        required: false
+        default: '60'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: account-admin
+
+jobs:
+  administer:
+    runs-on: ubuntu-latest
+    steps:
+      # These values are interpolated into SQL, so they are checked against a
+      # shape first rather than trusted for being a dispatch input.
+      - name: Check the inputs are the shape they claim
+        env:
+          EMAIL: ${{ inputs.email }}
+          CODE_HASH: ${{ inputs.code_hash }}
+          MINUTES: ${{ inputs.minutes }}
+        run: |
+          set -eu
+          printf '%s' "$EMAIL" | grep -Eq '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' \
+            || { echo "email is not an address" >&2; exit 1; }
+          printf '%s' "$MINUTES" | grep -Eq '^[0-9]{1,4}$' \
+            || { echo "minutes must be a number" >&2; exit 1; }
+          if [ "${{ inputs.action }}" = "issue-reset" ]; then
+            # hashToken returns base64url of a SHA-256 digest: 43 characters.
+            printf '%s' "$CODE_HASH" | grep -Eq '^[A-Za-z0-9_-]{43}$' \
+              || { echo "code_hash is not a base64url SHA-256 digest" >&2; exit 1; }
+          fi
+
+      - uses: actions/checkout@v4
+
+      - name: Run it
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          EMAIL: ${{ inputs.email }}
+          CODE_HASH: ${{ inputs.code_hash }}
+          MINUTES: ${{ inputs.minutes }}
+        run: |
+          set -eu
+          NOW=$(date +%s000)
+          if [ "${{ inputs.action }}" = "issue-reset" ]; then
+            EXP=$(( NOW + MINUTES * 60000 ))
+            SQL="DELETE FROM password_resets
+                  WHERE user_id = (SELECT id FROM users WHERE email = '$EMAIL')
+                    AND used_at IS NULL;
+                 INSERT INTO password_resets (code_hash, user_id, created_at, expires_at, used_at)
+                 SELECT '$CODE_HASH', id, $NOW, $EXP, NULL FROM users WHERE email = '$EMAIL';
+                 DELETE FROM login_attempts WHERE email = '$EMAIL';"
+          else
+            SQL="DELETE FROM login_attempts WHERE email = '$EMAIL';"
+          fi
+          npx --yes wrangler@4 d1 execute con001-access --remote --command "$SQL"
+
+      - name: Confirm what changed
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          EMAIL: ${{ inputs.email }}
+        run: |
+          # Counts and timestamps only. No hash, no code, no address beyond the
+          # one dispatched.
+          npx --yes wrangler@4 d1 execute con001-access --remote --command \
+            "SELECT (SELECT COUNT(*) FROM password_resets r JOIN users u ON u.id = r.user_id
+                      WHERE u.email = '$EMAIL' AND r.used_at IS NULL
+                        AND r.expires_at > strftime('%s','now') * 1000) AS live_codes,
+                    (SELECT COUNT(*) FROM login_attempts WHERE email = '$EMAIL') AS recent_failures;"
