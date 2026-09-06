@@ -16,6 +16,12 @@ here follows from those two.
 `npm run version` prints it, and it is stamped into every artefact — the reader
 header, the status page, `dist/version.json`, `dist/manifest.json`.
 
+`web/` and `dist/` are generated and **not tracked in git**. They embed the
+commit they were built from, so committing them would mean embedding a sha that
+does not yet exist, and every rebuild would dirty the tree — which would leave
+the `.dirty` warning permanently on and therefore meaningless. Build them with
+`npm run reader` and `npm run status`, or take them from a CI run.
+
 The `.dirty` suffix is not decoration. It means the working tree had
 uncommitted changes, so the build **cannot be reproduced from git** — and an
 evaluation written against something nobody can rebuild is not actionable. The

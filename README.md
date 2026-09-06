@@ -69,9 +69,15 @@ Full reasoning, alternatives considered, and source/licence notes: [`docs/03-cor
 schema/     JSON Schema for every core entity
 data/       Worked samples — real passages, real commentators, all seven books
 tools/      validate, salience, resonance, the builds, and their tests
-web/        reader.html — the prototype (built, self-contained, no server)
+web/        built artefacts — reader.html and status.html (generated, not tracked)
 docs/       The specification
 ```
+
+`web/` and `dist/` are **generated and untracked**. Run `npm run reader` and
+`npm run status` to produce them, or take them from a CI run. They embed the
+commit they were built from, so committing them would mean embedding a sha that
+does not exist yet — and every rebuild would dirty the tree, making the `.dirty`
+warning on the build id meaningless.
 
 Licensed in four parts — AGPL-3.0 for code, CC BY-SA 4.0 for the interpretation
 corpus, CC0 for anchoring data, nothing claimed over source texts. See
