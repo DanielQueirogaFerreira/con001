@@ -45,11 +45,28 @@ confirm none of them is a way in.
 
 ## Decisions worth knowing
 
-**PBKDF2-HMAC-SHA256, 210,000 iterations.** Argon2id would be the better choice
-and is not available in the Workers runtime; PBKDF2 is the strongest option
-there. The iteration count is stored inside each hash
-(`pbkdf2$sha256$210000$salt$hash`), so the cost can be raised later and old
-records still verify — tested.
+**PBKDF2-HMAC-SHA256, 100,000 iterations — the runtime's ceiling, not a
+choice.** Argon2id would be the better algorithm and is not available in the
+Workers runtime; PBKDF2 is the strongest option there. Workers then caps the
+cost:
+
+> `NotSupportedError: Pbkdf2 failed: iteration counts above 100000 are not supported (requested 210000).`
+
+This was set to the OWASP figure of 210,000, which Node's WebCrypto runs
+happily and Workers refuses outright. The whole gate was unopenable: setting a
+password threw, and verifying one hit the same error inside a `catch` that
+returned `false` — reported to the person as "Email or password is incorrect".
+A correct password looked wrong, and no message anywhere named the real cause.
+
+Two things came out of it. `verifyPassword` now **throws** on a record whose
+cost this runtime cannot run, because that is not a wrong password and must
+never be reported as one. And the constraint is asserted directly in the tests:
+no hash-then-verify test can catch it, since both halves agree in Node.
+
+The iteration count is stored inside each hash
+(`pbkdf2$sha256$100000$salt$hash`), so it can be raised if the runtime ever
+allows more, and old records are re-hashed on the owner's next password change
+rather than migrated.
 
 **Only the hash of a session token is stored.** A database leak then yields no
 usable sessions, for the same reason passwords are not stored either.

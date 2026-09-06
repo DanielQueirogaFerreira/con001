@@ -9,6 +9,7 @@
 
 import {
   DUMMY_RECORD, LOCKOUT, LOGIN_FAILED, PBKDF2_ITERATIONS, RESET_GROUPS,
+  RUNTIME_MAX_PBKDF2_ITERATIONS,
   RESET_TTL_SECONDS, SESSION_COOKIE, credentialBits, generateCredential,
   hashPassword, hashToken, isLockedOut, looksLikeEmail, newSessionToken,
   normaliseCode, normaliseEmail, passwordProblem, readCookie, resetCodeHash, serializeCookie,
@@ -49,6 +50,29 @@ await t('the hash records its own cost, so it can be raised later', async () => 
   assert(now.includes(`$${PBKDF2_ITERATIONS}$`), 'new hashes must use the current cost');
 });
 
+// The bug that made the whole gate unopenable: Workers refuses PBKDF2 above
+// 100,000 iterations, Node does not, so a cost the deployed runtime could not
+// execute passed every test here. Nothing in a hash-then-verify test can catch
+// that — the two halves agree in Node — so the constraint is asserted directly.
+await t('the iteration count is one the Workers runtime will actually run', () => {
+  assert(PBKDF2_ITERATIONS <= RUNTIME_MAX_PBKDF2_ITERATIONS,
+    `Workers refuses PBKDF2 above ${RUNTIME_MAX_PBKDF2_ITERATIONS} iterations; ` +
+    `${PBKDF2_ITERATIONS} would throw NotSupportedError in production and pass here`);
+  assert(DUMMY_RECORD.split('$')[2] <= RUNTIME_MAX_PBKDF2_ITERATIONS,
+    'the dummy record is hashed on every unknown-address login and must be runnable too');
+});
+
+// Reporting an unusable record as a wrong password is how a correct password
+// looked incorrect for an entire day.
+await t('a record this runtime cannot run is an error, not a wrong password', async () => {
+  let message = '';
+  try {
+    await verifyPassword(PASSWORD, `pbkdf2$sha256$210000$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=`);
+  } catch (err) { message = String(err.message); }
+  assert(/210000/.test(message) && /re-hashed/.test(message),
+    `an unrunnable record must say so, got: ${message || 'a silent false'}`);
+});
+
 await t('short passwords are refused at the point of hashing', async () => {
   let threw = false;
   try { await hashPassword('short'); } catch { threw = true; }
@@ -57,7 +81,7 @@ await t('short passwords are refused at the point of hashing', async () => {
 
 await t('a malformed stored record fails closed', async () => {
   for (const bad of ['', 'nonsense', 'pbkdf2$sha256$0$a$b', 'md5$x$1$a$b', null, undefined,
-                     'pbkdf2$sha256$210000$!!!$!!!'])
+                     'pbkdf2$sha256$100000$!!!$!!!'])
     assert(!(await verifyPassword(PASSWORD, bad)), `"${bad}" must not verify`);
 });
 

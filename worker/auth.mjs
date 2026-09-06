@@ -10,10 +10,24 @@ const enc = new TextEncoder();
 /* ------------------------------------------------------------- passwords */
 
 // PBKDF2-HMAC-SHA256 is the strongest password KDF available in the Workers
-// runtime — Argon2id and scrypt are not. 210,000 iterations is the OWASP
-// figure for this construction. The iteration count is stored IN the hash, so
-// it can be raised later and old records still verify.
-export const PBKDF2_ITERATIONS = 210_000;
+// runtime — Argon2id and scrypt are not.
+//
+// THE ITERATION COUNT IS CAPPED BY THE RUNTIME, NOT CHOSEN FREELY. Workers
+// refuses anything above 100,000:
+//
+//   NotSupportedError: Pbkdf2 failed: iteration counts above 100000 are not
+//   supported (requested 210000).
+//
+// This was set to the OWASP figure of 210,000 and passed every test, because
+// Node's WebCrypto has no such cap — so the tests hashed and verified happily
+// while the deployed Worker could do neither. Nothing about the failure named
+// the cause: verifyPassword caught the error and returned false, which the
+// login route reports as "Email or password is incorrect", so every correct
+// password looked wrong. Setting a password threw outright.
+//
+// The count is stored IN each hash, so raising it later re-hashes nobody.
+export const RUNTIME_MAX_PBKDF2_ITERATIONS = 100_000;
+export const PBKDF2_ITERATIONS = RUNTIME_MAX_PBKDF2_ITERATIONS;
 
 const b64 = {
   encode: (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))),
@@ -49,6 +63,13 @@ export async function verifyPassword(password, stored) {
   if (parts.length !== 5 || parts[0] !== 'pbkdf2' || parts[1] !== 'sha256') return false;
   const iterations = Number(parts[2]);
   if (!Number.isInteger(iterations) || iterations < 1000) return false;
+  // A record this runtime cannot even attempt is NOT a wrong password, and
+  // must not be reported as one. Returning false here is how a whole account
+  // became unopenable while every message said the password was incorrect.
+  if (iterations > RUNTIME_MAX_PBKDF2_ITERATIONS)
+    throw new Error(
+      `stored hash uses ${iterations} PBKDF2 iterations; this runtime supports at ` +
+      `most ${RUNTIME_MAX_PBKDF2_ITERATIONS}. The record must be re-hashed.`);
   try {
     const salt = b64.decode(parts[3]);
     const expected = b64.decode(parts[4]);
