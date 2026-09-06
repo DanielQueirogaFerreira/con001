@@ -18,7 +18,10 @@
     "status": "node tools/build-status.mjs && node tools/preflight.mjs",
     "next-prompt": "node tools/next-prompt.mjs",
     "user": "node tools/user-admin.mjs",
-    "preflight": "node tools/preflight.mjs"
+    "preflight": "node tools/preflight.mjs",
+    "deploy": "npm run reader && npm run status && npx --yes wrangler@4 deploy",
+    "deploy:preview": "npm run reader && npm run status && npx --yes wrangler@4 versions upload",
+    "verify": "node tools/verify-live.mjs"
   },
   "engines": {
     "node": ">=20"

@@ -29,8 +29,14 @@ check('main entry point is declared', !!main);
 check('main entry point exists', !!main && existsSync(main), main ?? '');
 
 check('a Worker name is set', !!field('name'), field('name') ?? '');
-check('a build command is set', /^\s*command\s*=/m.test(cfg),
-  'web/ is generated and untracked, so the build must produce it');
+// Workers Builds ignores wrangler's [build] section, so the check that matters
+// is that a script exists which builds before deploying — and that whatever the
+// dashboard is set to points at one of them.
+const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+for (const s of ['deploy', 'deploy:preview'])
+  check(`npm run ${s} builds before shipping`,
+    /reader/.test(pkg.scripts?.[s] ?? '') && /status/.test(pkg.scripts?.[s] ?? ''),
+    'web/ is generated and untracked; a deploy that skips the build has no assets');
 
 // THE check. Without it the gate is decorative.
 check('assets run the Worker first', /run_worker_first\s*=\s*true/.test(cfg),

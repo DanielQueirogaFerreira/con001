@@ -176,15 +176,33 @@ Actions secret, not handed to anyone. That is why it is preferred over the
 workflow described below, which cannot work without a token existing.
 
 `wrangler.toml` is at the repository root because Workers Builds looks there by
-default, and its build command is:
+default.
 
-```
-npm run reader && npm run status
-```
+**The build command must be set in the dashboard, not in `wrangler.toml`.**
+Cloudflare's documentation is explicit: *"Workers Builds does not honor the
+configurations set in Custom Builds within your Wrangler configuration file."*
+A `[build]` section in the config is honoured by a local `wrangler deploy` and
+**ignored** by Workers Builds, so relying on it means `web/` is never built —
+and because `web/` is generated and untracked, that is a deploy with no assets
+at all. There is deliberately no `[build]` section in this repository, so
+nothing there can be mistaken for a working build step.
 
-`npm run status` runs the whole test suite and the deploy preflight, and exits
-non-zero on failure — so **a red suite or a broken deploy config fails the
-deploy** rather than shipping.
+Set **one** of these in Settings → Build:
+
+| Field | Value |
+|---|---|
+| Build command | `npm run reader && npm run status` |
+
+or, equivalently, point the deploy commands at scripts that build first:
+
+| Field | Value |
+|---|---|
+| Deploy command | `npm run deploy` |
+| Version command | `npm run deploy:preview` |
+
+Either way the build runs `npm run status`, which runs the whole test suite and
+the deploy preflight and exits non-zero on failure — so **a red suite or a
+broken deploy config fails the deploy** rather than shipping.
 
 ### Already provisioned
 
@@ -194,11 +212,42 @@ deploy** rather than shipping.
 | D1 database | `con001-access` (`781433b9-…`), schema applied |
 | First account | seeded, active, password identity |
 
-### The one remaining step
+### Connected already
 
-Cloudflare dashboard → **Workers & Pages → `con001` → Settings → Build →
-Connect to Git**, pointing at this repository and branch. After that every push
-deploys by itself.
+The repository is connected: `DanielQueirogaFerreira/con001`, root directory
+`/`, deploy `npx wrangler deploy`, version `npx wrangler versions upload`,
+non-production branch builds enabled, and Cloudflare holds its own build token
+(`con001 build token`) — which is why no API token needs to exist in this
+repository or in GitHub.
+
+Two settings still need attention:
+
+1. **Build command is empty.** See above; without it nothing builds.
+2. **Production branch is `main`, which does not exist in this repository.** The
+   default branch is `claude/layered-text-interpretation-7kn6jd`. Production
+   builds therefore never fire. Pushes to the working branch do produce
+   *preview versions* via `wrangler versions upload`, and a preview version is
+   **not** promoted to production — so the live Worker keeps serving whatever
+   was deployed last until a production branch exists or a version is promoted.
+
+### Certifying a deployment
+
+`npm run verify -- https://<the deployed url>` asks the running site, without
+credentials, for the things that must not be there:
+
+- the root redirects to `/login`
+- `reader.html`, `status.html` and `index.html` are **not** served directly —
+  this is the check that fails if the Worker is not running first
+- the login page exists, asks for a password, and offers no registration link
+- the security headers are present and the CSP names no remote origin
+- a bad sign-in returns 401, sets no cookie, and does not reveal whether the
+  account exists
+- `/healthz` returns exactly `ok` and nothing else
+
+Preflight checks the configuration before a deploy; this checks the running
+thing after one. Both exist because the failure they guard against is silent:
+a deploy with the gate disabled succeeds, looks healthy, and serves every page
+to anyone.
 
 ### Preflight
 

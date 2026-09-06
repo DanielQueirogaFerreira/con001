@@ -318,16 +318,25 @@ npm run preflight                                          # is it safe to deplo
 
 The first two print SQL for review rather than writing to the database.
 
-**Deploys are automatic via Cloudflare Workers Builds** — Cloudflare pulls the
-repository, runs `npm run reader && npm run status`, and ships on every push.
-**No API token exists anywhere**: not in this repository, not in a GitHub secret,
-not handed to anyone. `npm run status` runs the full suite plus `preflight` and
-exits non-zero on failure, so a red suite or a broken deploy config fails the
-deploy rather than shipping.
+**Deploys run through Cloudflare Workers Builds** — Cloudflare pulls the
+repository and ships on push. **No API token exists anywhere**: not in this
+repository, not in a GitHub secret, not handed to anyone; Cloudflare holds its
+own build token.
 
-Preflight guards the failure that is otherwise silent: `run_worker_first` is one
-line in `wrangler.toml`, and dropping it makes the asset server answer before the
-login gate — every page goes public and nothing reports an error.
+The build command has to be set **in the dashboard**. Cloudflare's docs are
+explicit that Workers Builds *"does not honor the configurations set in Custom
+Builds within your Wrangler configuration file"*, so a `[build]` section would
+be ignored — and since `web/` is generated and untracked, an unbuilt deploy has
+no assets at all. Set Build command to `npm run reader && npm run status`, or
+point Deploy/Version at `npm run deploy` / `npm run deploy:preview`.
+
+Two checks guard the failure that is otherwise **silent** — if the gate is not
+in front, the deploy still succeeds and every page is simply public:
+
+- `npm run preflight` — the config, before deploying. `run_worker_first` is one
+  line, and dropping it makes the asset server answer before the login gate.
+- `npm run verify -- <url>` — the running site, after deploying. Asks for
+  `reader.html` with no credentials and fails if it comes back.
 
 ## The loop
 

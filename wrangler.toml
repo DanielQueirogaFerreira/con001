@@ -18,11 +18,21 @@ name = "con001"
 main = "worker/index.mjs"
 compatibility_date = "2025-09-01"
 
-# web/ is generated and untracked, so the build must produce it before the
-# assets are uploaded. `npm run status` runs the full test suite and exits
-# non-zero if it fails, so a red suite fails the deploy rather than shipping.
-[build]
-command = "npm run reader && npm run status"
+# NO [build] SECTION ON PURPOSE. Wrangler's custom-build config is honoured by a
+# local `wrangler deploy`, but Cloudflare's own docs state that Workers Builds
+# "does not honor the configurations set in Custom Builds within your Wrangler
+# configuration file". Leaving one here would read as though the build were
+# handled when it is not — and since web/ is generated and untracked, an
+# unbuilt deploy has no assets at all.
+#
+# The build therefore lives where Workers Builds will actually run it. Either:
+#   Build command   = npm run reader && npm run status
+# or point the deploy commands at the scripts that build first:
+#   Deploy command  = npm run deploy
+#   Version command = npm run deploy:preview
+#
+# Both run the full test suite and the deploy preflight, so a red suite or a
+# broken config fails the deploy instead of shipping.
 
 # The Worker runs BEFORE static assets. Without run_worker_first the asset
 # server answers first and the login gate is decorative — there is a test in
