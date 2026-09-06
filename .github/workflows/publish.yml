@@ -1,48 +1,61 @@
-# Publishes the alpha site to GitHub Pages.
+# Deploys the private alpha to a Cloudflare Worker.
 #
-# MANUAL TRIGGER ONLY. There is deliberately no `on: push` here: this project
-# publishes readings of other people's scripture, and nothing should reach the
-# public because someone merged a branch. A person decides, every time.
+# MANUAL TRIGGER ONLY. There is deliberately no `on: push`: this project serves
+# readings of other people's scripture, and nothing should be deployed because
+# someone merged a branch. A person decides, every time.
 #
-# Before the first run, a repository admin must set
-# Settings → Pages → Source to "GitHub Actions". Until then this workflow fails
-# at the deploy step and publishes nothing.
+# The site is NOT public. The Worker requires an email/password session before
+# any asset is served — see docs/15-access.md. GitHub Pages is not used at all:
+# private Pages requires GitHub Enterprise Cloud, so on this account Pages can
+# only ever be public.
 #
-# No secrets are required. Deployment runs under the repository's own
-# GITHUB_TOKEN, so no API token for any third-party host needs to exist.
+# Requires one repository secret, CLOUDFLARE_API_TOKEN, scoped to
+# "Edit Cloudflare Workers" for this account only. Add it under
+# Settings → Secrets and variables → Actions. It is never printed, never
+# committed, and wrangler reads it from the environment.
 name: publish
 
 on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: 'Type PUBLISH to confirm this goes public'
+        description: 'Type DEPLOY to confirm'
         required: true
         default: ''
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: worker-deploy
   cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Check the confirmation
         run: |
-          if [ "${{ inputs.confirm }}" != "PUBLISH" ]; then
-            echo "Confirmation not given. Type PUBLISH to publish." >&2
+          if [ "${{ inputs.confirm }}" != "DEPLOY" ]; then
+            echo "Confirmation not given. Type DEPLOY to deploy." >&2
             exit 1
           fi
 
+      - name: Check the deploy credential exists
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "CLOUDFLARE_API_TOKEN is not set on this repository." >&2
+            echo "Add it under Settings -> Secrets and variables -> Actions." >&2
+            echo "Scope it to 'Edit Cloudflare Workers' and nothing else." >&2
+            exit 1
+          fi
+          echo "credential present"
+
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0   # tools/version.mjs needs real history for the build id
 
       - uses: actions/setup-node@v4
         with:
@@ -51,31 +64,26 @@ jobs:
       - run: npm test
 
       # build:alpha ships without high-tier items awaiting advisory sign-off and
-      # names them in dist/manifest.json. To refuse to publish at all while
+      # names them in dist/manifest.json. To refuse to deploy at all while
       # anything is held, change this to `npm run build:prod`.
       - run: npm run build:alpha
       - run: npm run status
 
-      - name: Assemble the site
+      - name: Refuse to deploy an unconfigured database binding
         run: |
-          mkdir -p _site
-          cp web/reader.html _site/index.html
-          cp web/reader.html _site/reader.html
-          cp web/status.html _site/status.html
-          cp dist/manifest.json _site/manifest.json
-          cp dist/version.json _site/version.json
-          echo "Published build: $(node -e "console.log(require('./dist/version.json').build)")"
+          if grep -q 'REPLACE_WITH_ID' worker/wrangler.toml; then
+            echo "worker/wrangler.toml still has a placeholder database_id." >&2
+            echo "Run: npx wrangler d1 create open-hermeneutics, then commit the id." >&2
+            exit 1
+          fi
 
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
+      - name: Deploy the Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx --yes wrangler@4 deploy --config worker/wrangler.toml
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Report what was deployed
+        run: |
+          node -e "console.log('deployed build:', require('./dist/version.json').build)"
+          echo 'Held from this build:'
+          node -e "for (const h of require('./dist/manifest.json').held) console.log(' -', h.id, '·', h.rfc, h.rfc_status)"

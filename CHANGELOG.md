@@ -7,6 +7,13 @@ specific build. See [`docs/14-loop.md`](docs/14-loop.md).
 Build ids look like `0.1.0-alpha.1+d52ed9f`. A `.dirty` suffix means the tree
 had uncommitted changes and the build cannot be reproduced from git.
 
+## Unreleased
+
+- Access gate: the alpha is private, served by a Cloudflare Worker behind
+  email/password. Not GitHub Pages — private Pages needs Enterprise Cloud.
+- `users` / `identities` split so SSO can be added without reshaping accounts.
+- `publish.yml` now deploys the Worker, still manual-trigger only.
+
 ## 0.1.0-alpha.1 — 2026-09-06
 
 First versioned build. Public Alpha via the `--hold-excluded` gate.

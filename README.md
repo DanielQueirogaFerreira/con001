@@ -58,6 +58,7 @@ Full reasoning, alternatives considered, and source/licence notes: [`docs/03-cor
 - [`docs/12-reader-prototype.md`](docs/12-reader-prototype.md) — the Reader / Studio prototype and what it demonstrates
 - [`docs/13-studio-compiler.md`](docs/13-studio-compiler.md) — the prompt compiler, and why it refuses to merge contending readings
 - [`docs/14-loop.md`](docs/14-loop.md) — versioning, the status page, and the evaluate → prompt cycle
+- [`docs/15-access.md`](docs/15-access.md) — the private alpha: email/password on a Cloudflare Worker, and the path to SSO
 - [`advisory/README.md`](advisory/README.md) — scholar sign-off, managed in git
 - [`evaluations/README.md`](evaluations/README.md) — how a team member files a UI finding
 - [`CHANGELOG.md`](CHANGELOG.md) — what shipped in each build
@@ -70,6 +71,7 @@ schema/     JSON Schema for every core entity
 data/       Worked samples — real passages, real commentators, all seven books
 tools/      validate, salience, resonance, the builds, and their tests
 web/        built artefacts — reader.html and status.html (generated, not tracked)
+worker/     the Cloudflare Worker that serves the site behind a login
 docs/       The specification
 ```
 
@@ -261,6 +263,42 @@ read.
 > Note: `npm run build:prod --hold-excluded` does **not** work — npm swallows the
 > flag as its own config. Use `npm run build:alpha`, or
 > `npm run build:prod -- --hold-excluded`.
+
+## Access — the alpha is private
+
+GitHub holds the source and runs CI; a **Cloudflare Worker** serves the built
+site and will not serve a byte of it without a session.
+
+Not GitHub Pages: **private Pages requires GitHub Enterprise Cloud**, so on a
+personal account Pages can only ever be public. The Worker is better anyway —
+the gate is per-person, revocable, and extends to SSO.
+
+The Worker runs *before* static assets (`run_worker_first`), so an
+unauthenticated request never touches the asset binding — there is a test
+asserting exactly that. Other decisions worth knowing:
+
+- **PBKDF2-HMAC-SHA256, 210k iterations** — the strongest KDF the Workers
+  runtime has. The cost is stored inside each hash so it can be raised later.
+- **Only the hash of a session token is stored**, so a database leak yields no
+  usable sessions.
+- **An unknown email and a wrong password return byte-identical responses** — a
+  real verification runs against a dummy record when no account exists. For a
+  platform whose account list is a list of people interested in particular
+  scripture, "does this address have an account here?" is not a harmless
+  question.
+- **Failures are logged, successes are not.** There is deliberately no table of
+  who read which passage and when.
+- No self-registration, `__Host-` cookie, `SameSite=Strict`, no `?next=`
+  redirect across the login boundary, CSP with no remote origin.
+
+**SSO later, structure now**: `users` is the person, `identities` is one way of
+proving you are them (`password | google | github | oidc`). Adding SSO is an
+extra identities row per person, not a migration — and someone can hold both, so
+nobody gets cut off. Sessions, lockout and revocation are already
+provider-agnostic.
+
+Add someone: `npm run user -- --email a@b.org --name "A B" --generate`. It
+prints SQL for review rather than writing to the database.
 
 ## The loop
 
