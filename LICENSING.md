@@ -3,8 +3,7 @@
 This project is open source, and the different parts of it need different
 licences. Reasoning: [`docs/08-open-source-and-cost.md`](docs/08-open-source-and-cost.md).
 
-**Copyright (c) 2026 The Open Hermeneutics Project Contributors.** See
-[`COPYRIGHT`](COPYRIGHT).
+**Copyright (c) 2026 The Open Hermeneutics Project, a fiscally sponsored project of [Fiscal Sponsor].** See [`COPYRIGHT`](COPYRIGHT).
 
 | Part | Licence | File |
 |---|---|---|
@@ -43,15 +42,32 @@ on each commit. Deliberately *not* a copyright-assignment CLA: on a philanthropi
 religious project a CLA reads as a land grab and costs more in trust than it
 returns.
 
-## Still open
+## The holding entity
 
-**Where copyright sits.** "The Open Hermeneutics Project Contributors" is the
-notice, which is correct and sufficient for now — but it is not a legal entity.
-A dual-licence arrangement later is impossible without copyright held somewhere
-that can grant one, and the same body is what accepts donations and holds
-liability when someone objects to a layer. A church body, a foundation, or a
-fiscal host such as Software Freedom Conservancy. This needs counsel, not an
-engineering decision.
+**Decided: a 501(c)(3) fiscal sponsor**, on the Open Source Collective /
+Software Freedom Conservancy model. The notice reads *The Open Hermeneutics
+Project, a fiscally sponsored project of [Fiscal Sponsor]* — the bracket is a
+placeholder until one is engaged, and it is deliberately visible rather than
+quietly omitted.
+
+Why this rather than custom incorporation: liability protection, donation
+compliance and non-partisan standing across faith communities, available in
+weeks rather than a year. The last of those is not a side benefit. A platform
+hosting seven traditions' scripture will be asked who owns it, early and in
+public, and "a fiscally sponsored project of a neutral 501(c)(3)" is a far
+better answer than the name of any one faith community's legal entity.
+
+Two things to settle with the sponsor when engaging:
+
+1. **Whether the sponsor holds copyright or merely sponsors.** Under most
+   models contributors retain copyright and licence in under the DCO, which is
+   what the notice above assumes. If a future dual-licence is wanted, that needs
+   an assignment path agreed at the outset — retrofitting one across many
+   contributors is close to impossible.
+2. **Who can accept or refuse a corpus.** Advisory seats govern claims
+   ([`advisory/`](advisory/README.md)); the sponsor governs the entity. Where
+   those two could collide — a community formally objecting to their scripture
+   being hosted at all — should be written down before it happens, not during.
 
 One consequence already accepted: AGPL will deter some commercial contributors
 and some hosting partners. For this project that is closer to a feature than a

@@ -72,10 +72,13 @@ of magnitude, and it is the part most often forgotten.
 Open source without governance is a project waiting for its first crisis. Three
 things are worth settling early.
 
-1. **Where copyright sits.** A church body, a foundation, or an existing home
-   like Software Freedom Conservancy. It matters for dual-licensing, for
-   accepting donations, and for who is liable when someone objects to a layer.
-   This is a decision for you and your church's counsel, not one I should make.
+1. **Where copyright sits — decided: a 501(c)(3) fiscal sponsor.** On the Open
+   Source Collective / Software Freedom Conservancy model. The notice reads
+   *The Open Hermeneutics Project, a fiscally sponsored project of [Fiscal
+   Sponsor]*, with the bracket visible until one is engaged. This buys liability
+   protection, donation compliance and non-partisan standing across faith
+   communities in weeks rather than a year. See [`LICENSING.md`](../LICENSING.md)
+   for the two questions to settle when engaging one.
 
 2. **Per-corpus stewardship, structurally.** From
    [`07-studio.md`](07-studio.md): nobody administers all six traditions. Each

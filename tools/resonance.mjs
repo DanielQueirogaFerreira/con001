@@ -23,6 +23,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { loadAdvisory } from './advisory.mjs';
 
 // A resonance whose weakest position is less confident than this is not shown
 // at all — not shown faintly, not shown with a caveat. Below the floor there is
@@ -39,6 +40,7 @@ export function map(root = '.') {
   const positions = read('data/positions/positions.json');
   const resonances = read('data/resonances/resonances.json');
   const interps = read('data/interpretations/interpretations.json');
+  const advisory = loadAdvisory(root);
 
   const posOf = new Map(positions.map((p) => [p.id, p]));
   const qOf = new Map(questions.map((q) => [q.id, q]));
@@ -106,6 +108,12 @@ export function map(root = '.') {
     return out;
   }
 
+  // Malformed advisory records are structural errors: a review system nobody
+  // can parse is worse than none.
+  function advisoryErrors() {
+    return advisory.problems.map((m) => ({ severity: 'error', id: 'advisory', code: 'bad-record', message: m }));
+  }
+
   // Integrity checks the schema cannot express.
   //
   // Findings carry a severity, because two different things are being checked.
@@ -113,13 +121,22 @@ export function map(root = '.') {
   // STAGING findings mean the data is fine but not yet cleared by the people
   // who must clear it — those warn in development and block in production.
   // See docs/11-guardrails.md.
-  // A placeholder entry such as "advisory:hindu (pending)" is not a sign-off.
-  // Without this, a review gate is satisfied by writing the word "pending".
-  const signedOff = (list) =>
-    (list ?? []).filter((r) => typeof r === 'string' && !/pending|tbd|todo/i.test(r));
+  // A sign-off is a REFERENCE to an approved advisory RFC that actually covers
+  // this claim and carries the seats its question requires. Everything else —
+  // a placeholder, a free-text note, a reference to an open or unrelated RFC —
+  // is not a sign-off. See advisory/README.md.
+  const cleared = (list, targetId, seats) =>
+    (list ?? [])
+      .map((ref) => ({ ref, ...advisory.clearance(ref, targetId, seats) }))
+      .filter((c) => c.ok);
+
+  const clearanceProblems = (list, targetId, seats) =>
+    (list ?? [])
+      .map((ref) => ({ ref, ...advisory.clearance(ref, targetId, seats) }))
+      .filter((c) => !c.ok);
 
   function audit({ strict = false } = {}) {
-    const found = [];
+    const found = [...advisoryErrors()];
     const err = (id, code, message) => found.push({ severity: 'error', id, code, message });
     const hold = (id, code, message) =>
       found.push({ severity: strict ? 'error' : 'warn', id, code, message, staging: true });
@@ -129,8 +146,14 @@ export function map(root = '.') {
         if (!interpIds.has(e)) err(p.id, 'missing-evidence', `evidence ${e} does not exist`);
       if (!qOf.has(p.question)) err(p.id, 'unknown-question', `unknown question ${p.question}`);
       const q = qOf.get(p.question);
-      if (q?.consequence_tier === 'high' && !signedOff(p.reviewed_by).length)
-        hold(p.id, 'awaiting-advisory', 'sits on a high-consequence question with no advisory review');
+      if (q?.consequence_tier === 'high') {
+        const seats = [p.tradition];
+        if (!cleared(p.reviewed_by, p.id, seats).length) {
+          const why = clearanceProblems(p.reviewed_by, p.id, seats).map((c) => c.why).join('; ');
+          hold(p.id, 'awaiting-advisory',
+            'sits on a high-consequence question with no advisory review' + (why ? ` (${why})` : ''));
+        }
+      }
     }
 
     for (const r of resonances) {
@@ -155,12 +178,17 @@ export function map(root = '.') {
         err(r.id, 'claim-geometry', `claims "answers-oppositely" but the positions span only ${spread.toFixed(2)}`);
 
       if (r.consequence_tier === 'high') {
-        const signed = signedOff(r.review?.signed_off_by).length > 0;
+        const seats = [...new Set(ps.map((p) => p.tradition))];
+        const ok = cleared(r.review?.signed_off_by, r.id, seats);
+        const signed = ok.length > 0;
         if (r.review?.status === 'published' && !signed)
           err(r.id, 'published-unsigned', 'published at high consequence with no sign-off');
-        if (r.review?.status !== 'published' || !signed)
+        if (r.review?.status !== 'published' || !signed) {
+          const why = clearanceProblems(r.review?.signed_off_by, r.id, seats).map((c) => c.why).join('; ');
           hold(r.id, 'awaiting-advisory',
-            `high-tier resonance at "${r.review?.status ?? 'draft'}" — needs ${(r.review?.required_from ?? ['advisory sign-off']).join(' + ')}`);
+            `high-tier resonance at "${r.review?.status ?? 'draft'}" — needs ${seats.map((s2) => s2 + ' seat').join(' + ')}` +
+            (why ? ` (${why})` : ''));
+        }
       }
     }
     return found;
@@ -179,7 +207,7 @@ export function map(root = '.') {
     };
   }
 
-  return { questions, positions, resonances, qOf, posOf, forQuestion, internalSpread, withContext, profile, audit, productionSet };
+  return { questions, positions, resonances, advisory, qOf, posOf, forQuestion, internalSpread, withContext, profile, audit, productionSet };
 }
 
 /* ------------------------------------------------------------------ report */

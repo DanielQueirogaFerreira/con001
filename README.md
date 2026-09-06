@@ -56,6 +56,8 @@ Full reasoning, alternatives considered, and source/licence notes: [`docs/03-cor
 - [`docs/10-resonance.md`](docs/10-resonance.md) — **the alignment map**: comparing positions on questions, never traditions, and where a reader's worldview profile lives
 - [`docs/11-guardrails.md`](docs/11-guardrails.md) — thresholds, consequence tiers, the staging rule, and the line between the platform asserting and a person expressing
 - [`docs/12-reader-prototype.md`](docs/12-reader-prototype.md) — the Reader / Studio prototype and what it demonstrates
+- [`docs/13-studio-compiler.md`](docs/13-studio-compiler.md) — the prompt compiler, and why it refuses to merge contending readings
+- [`advisory/README.md`](advisory/README.md) — scholar sign-off, managed in git
 - [`LICENSING.md`](LICENSING.md) — the four-licence split, awaiting confirmation
 
 ## Repository layout
@@ -207,22 +209,40 @@ Driven in Chromium and checked: five anchors render, Devanāgarī and Arabic
 display correctly, Arabic is RTL, the slider works, the block fires, no console
 errors.
 
-## The advisory gate, staged
+## The advisory gate
 
-`npm run build:prod` **currently refuses to build.** Three high-consequence
-claims — including *sabbe dhammā anattā* set against Śaṅkara on the self — await
-sign-off from Hindu and Buddhist advisory groups. That is the gate working.
+A claim never carries its own approval. It carries a **reference to an RFC**
+anyone can open and read — `advisory/rfc/NNN-slug.md`, one markdown file whose
+human argument is the document and whose machine-readable record is a fenced
+` ```json record ` block, so the two cannot drift.
 
-Enforcement is scoped by target, so the gate never blocks development:
-
-| Target | Behaviour |
+| Target | High-tier claim awaiting sign-off |
 |---|---|
 | `npm test`, `npm run resonance` | Structured warning table; schema and integrity pass |
-| `npm run build:prod` | Build refused; cannot reach the production CDN |
-| `--hold-excluded` | Ships without them, named in `dist/manifest.json` — never silently downgraded |
+| `npm run build:prod` | **Build refused** — cannot reach the production CDN |
+| `npm run build:alpha` | Ships without it, named in `dist/manifest.json` |
 
-A placeholder is not a sign-off: an entry containing "pending" does not satisfy a
-gate, and there is a test for it.
+Six things do not count as a sign-off, all tested: a placeholder containing
+"pending"; a reference to an RFC that does not exist; one that is not
+`approved`; one that does not cover this claim; one missing a seat the question
+requires; and one with a standing objection.
+
+**`advisory/rfc/001-anatta-vs-atman.md` is open with zero sign-offs**, which is
+the honest state — no advisory groups are seated, and no scholar approval has
+been invented to unblock a build. The approved path is proven by fixtures inside
+`tools/test-advisory.mjs`, where they are obviously fixtures.
+
+## Alpha release
+
+`npm run build:alpha` ships the production bundle without the held items and
+names them in `dist/manifest.json`, which doubles as the public transparency log
+and the **scholar recruitment agenda** — each held claim carries the RFC that
+would clear it, the seats it needs, and the document a prospective reviewer can
+read.
+
+> Note: `npm run build:prod --hold-excluded` does **not** work — npm swallows the
+> flag as its own config. Use `npm run build:alpha`, or
+> `npm run build:prod -- --hold-excluded`.
 
 ## Status
 

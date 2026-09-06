@@ -11,6 +11,12 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { map } from './resonance.mjs';
 
+// The prompt compiler is inlined verbatim rather than reimplemented, so the
+// browser runs exactly the module Node tests. It is written import-free for
+// this reason; `export` is the only thing stripped.
+const COMPILER = readFileSync('tools/prompt-compiler.mjs', 'utf8')
+  .replace(/^export (const|function) /gm, '$1 ');
+
 const read = (p) => JSON.parse(readFileSync(p, 'utf8'));
 const prod = process.argv.includes('--prod');
 
@@ -106,6 +112,16 @@ const html = `<title>Open Hermeneutics Reader</title>
   .warn { border-left: 3px solid var(--hot); padding-left: 10px; font-size: 12px; margin-top: 10px; }
   .block { border: 1px solid var(--blocked); color: var(--blocked); border-radius: 6px; padding: 9px 11px; font-size: 12px; margin-bottom: 10px; }
   .scroll { overflow-x: auto; }
+  .link { background: none; border: 0; font: inherit; font-size: 12px; color: var(--accent); cursor: pointer; padding: 0; text-decoration: underline; }
+  .pay { border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+  .pay h3 { font-size: 12.5px; margin: 0 0 8px; font-weight: 600; }
+  .fld { font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin: 10px 0 3px; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+  .neg { color: var(--hot); }
+  .lock { color: var(--blocked); font-weight: 600; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip { font-size: 11px; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; color: var(--muted); }
+  .split { border-left: 3px solid var(--hot); padding-left: 10px; font-size: 12px; margin-bottom: 12px; }
   a { color: var(--accent); }
 </style>
 
@@ -153,12 +169,24 @@ const html = `<title>Open Hermeneutics Reader</title>
       <div class="card">
         <h2>Director lens — composed visual directive</h2>
         <div id="director"></div>
+        <div class="note" style="display:flex;justify-content:space-between;align-items:center">
+          <button class="link" id="studioToggle">Open Studio — compile prompts &rarr;</button>
+          <span class="dim" id="studioHint"></span>
+        </div>
+      </div>
+
+      <div class="card" id="studio" hidden>
+        <h2>Studio — compiled generation payload</h2>
+        <div id="payloads"></div>
       </div>
     </div>
   </div>
 </div>
 
 <script id="corpus" type="application/json">${JSON.stringify(corpus).replace(/</g, '\\u003c')}</script>
+<script>
+${COMPILER}
+</script>
 <script>
 const C = JSON.parse(document.getElementById('corpus').textContent);
 document.getElementById('built').textContent = C.built;
@@ -170,6 +198,8 @@ const cps = s => [...s];
 
 let anchor = C.anchors[0];
 let openness = 1;                 // the contestation slider, 0..1
+let studioOpen = false;
+let soloLens = null;              // compile one lens alone
 const manual = new Map();         // explicit per-layer overrides
 
 const forAnchor = cr => C.interps.filter(i => i.anchor.cr === cr);
@@ -276,12 +306,16 @@ function renderStack(ids) {
   el.innerHTML = forAnchor(anchor).sort((a, b) => weightOf(b) - weightOf(a)).map(i => {
     const l = layerOf[i.layer];
     return \`<label class="tog"><input type="checkbox" data-id="\${i.id}" \${ids.has(i.id) ? 'checked' : ''}>
-      <span><strong>\${l.title.en ?? l.id}</strong>
+      <span><strong data-lens="\${l.id}">\${l.title.en ?? l.id}</strong>
         \${l.kind === 'machine' ? '<span class="tag machine">machine</span>' : ''}
         <br><span class="dim">\${l.stance ?? l.kind} · canonical weight \${(l.canonical?.weight ?? 0).toFixed(2)}</span></span></label>\`;
   }).join('');
   el.querySelectorAll('input').forEach(b =>
     b.addEventListener('change', e => { manual.set(e.target.dataset.id, e.target.checked); render(); }));
+  el.querySelectorAll('strong[data-lens]').forEach(n => {
+    n.style.cursor = 'pointer'; n.title = 'Compile this lens alone';
+    n.addEventListener('click', () => { soloLens = n.dataset.lens; studioOpen = true; render(); });
+  });
 }
 
 // The Director Lens Hook. Active layers compose a visual directive, and where
@@ -339,6 +373,68 @@ function renderDirector(ids) {
       its lens, so the output is attributed to a <em>reading</em> and never to the text.</div>\`;
 }
 
+// The Studio drawer. Runs the SAME compiler module the Node tests run.
+function renderStudio(ids) {
+  const card = document.getElementById('studio');
+  const hint = document.getElementById('studioHint');
+  const btn = document.getElementById('studioToggle');
+  card.hidden = !studioOpen;
+  btn.textContent = studioOpen ? 'Close Studio' : 'Open Studio — compile prompts \u2192';
+  if (!studioOpen) { hint.textContent = ''; return; }
+
+  const active = soloLens
+    ? [layerOf[soloLens]].filter(Boolean)
+    : [...new Set(forAnchor(anchor).filter(i => ids.has(i.id)).map(i => i.layer))].map(id => layerOf[id]);
+
+  const result = compile({
+    anchor,
+    lenses: active,
+    oppositions: soloLens ? [] : oppositionsAt(C.interps, anchor),
+  });
+
+  hint.textContent = soloLens ? 'one lens \u00b7 ' + (layerOf[soloLens].author.display) : active.length + ' lens(es)';
+
+  const el = document.getElementById('payloads');
+  if (result.decision !== 'compiled') {
+    el.innerHTML = \`<div class="block"><strong>\${result.decision}</strong><br>\${result.note ?? result.reason ?? ''}</div>\`;
+    return;
+  }
+
+  const esc = t => String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  el.innerHTML =
+    (soloLens ? \`<div class="note" style="margin:0 0 12px;border:0;padding:0">
+        Compiling one lens. <button class="link" id="allLenses">Use the whole active stack instead</button></div>\` : '') +
+    (result.contending ? \`<div class="split"><strong>These readings are in recorded opposition, so they were not merged.</strong>
+        One payload per reading, and the choice is yours \u2014 a blend represents none of them.<br><br>
+        \${result.conflicts.map(c => esc(c.note)).join('<br>')}</div>\` : '') +
+    (result.blocks.length ? \`<div class="block"><strong>\${esc(result.blocks[0].rule)}</strong> \u2014
+        \${esc(result.blocks[0].note ?? '')} Its negatives are locked and cannot be removed.</div>\` : '') +
+    result.payloads.map(p => \`<div class="pay">
+      <h3>\${p.lenses.map(id => esc(layerOf[id].author.display)).join(' + ')}</h3>
+      <div class="fld">positive</div><div class="mono">\${esc(p.positive)}</div>
+      <div class="fld">negative</div><div class="mono neg">\${p.negative.map(n =>
+        p.locked_negative.includes(n) ? '<span class="lock">\u{1F512} ' + esc(n) + '</span>' : esc(n)).join('\\n')}</div>
+      \${p.dropped_from_positive.length ? \`<div class="fld">dropped \u2014 excluded by an active lens</div>
+        <div class="mono dim">\${p.dropped_from_positive.map(esc).join('\\n')}</div>\` : ''}
+      <div class="chips"><span class="chip">\${esc(p.camera)}</span><span class="chip">\${esc(p.lighting)}</span>
+        <span class="chip">\${esc(p.aspect)}</span><span class="chip">\${esc(p.id)}</span></div>
+      <div class="note" style="display:flex;gap:12px">
+        <button class="link" data-copy="\${esc(p.id)}">Copy payload JSON</button>
+        <span class="dim">carries its lens, so the output is attributed to a reading</span>
+      </div></div>\`).join('');
+
+  const solo = document.getElementById('allLenses');
+  if (solo) solo.addEventListener('click', () => { soloLens = null; render(); });
+  el.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', () => {
+    const p = result.payloads.find(x => x.id === b.dataset.copy);
+    const text = JSON.stringify(p, null, 2);
+    (navigator.clipboard?.writeText(text) ?? Promise.reject()).then(
+      () => { b.textContent = 'Copied'; setTimeout(() => (b.textContent = 'Copy payload JSON'), 1200); },
+      () => { b.textContent = 'Copy blocked \u2014 select the JSON below'; }
+    );
+  }));
+}
+
 function render() {
   const { on, floor, leading, others } = visible();
   const c = contestation(anchor);
@@ -352,7 +448,7 @@ function render() {
       : \`Leading: <strong>\${leading}</strong>. Diversity floor active — at least one reading from outside it is always carried.\`);
   document.querySelectorAll('#anchors button').forEach(b =>
     b.setAttribute('aria-pressed', String(b.dataset.cr === anchor)));
-  renderText(on); renderGlosses(on); renderStack(on); renderDirector(on);
+  renderText(on); renderGlosses(on); renderStack(on); renderDirector(on); renderStudio(on);
 }
 
 document.getElementById('anchors').innerHTML = C.anchors.map(cr => {
@@ -360,9 +456,12 @@ document.getElementById('anchors').innerHTML = C.anchors.map(cr => {
   return \`<button class="anchor" data-cr="\${cr}">\${(w?.title.en ?? '?')} \${cr.split(':').slice(1).join(':')}</button>\`;
 }).join('');
 document.querySelectorAll('#anchors button').forEach(b =>
-  b.addEventListener('click', () => { anchor = b.dataset.cr; manual.clear(); render(); }));
+  b.addEventListener('click', () => { anchor = b.dataset.cr; manual.clear(); soloLens = null; render(); }));
 document.getElementById('slider').addEventListener('input', e => {
-  openness = e.target.value / 100; manual.clear(); render();
+  openness = e.target.value / 100; manual.clear(); soloLens = null; render();
+});
+document.getElementById('studioToggle').addEventListener('click', () => {
+  studioOpen = !studioOpen; if (!studioOpen) soloLens = null; render();
 });
 render();
 </script>

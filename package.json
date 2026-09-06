@@ -11,7 +11,9 @@
     "reader": "node tools/build-reader.mjs",
     "build:prod": "node tools/build-prod.mjs",
     "resolve-spans": "node tools/resolve-spans.mjs",
-    "test": "node tools/validate.mjs && node tools/test-validate.mjs && node tools/test-salience.mjs && node tools/test-resonance.mjs"
+    "test": "node tools/validate.mjs && node tools/test-validate.mjs && node tools/test-salience.mjs && node tools/test-resonance.mjs && node tools/test-advisory.mjs && node tools/test-prompt-compiler.mjs",
+    "build:alpha": "node tools/build-prod.mjs --hold-excluded",
+    "advisory": "node tools/advisory.mjs"
   },
   "engines": {
     "node": ">=20"

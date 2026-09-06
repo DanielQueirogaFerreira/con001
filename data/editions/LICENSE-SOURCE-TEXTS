@@ -32,5 +32,5 @@ and a `verified` flag. Units marked `verified: false` were entered by hand to
 demonstrate the data format and are NOT authoritative editions of anyone's
 scripture. They must not be displayed to readers. See ../../docs/09-ingestion.md.
 
-Copyright (c) 2026 The Open Hermeneutics Project Contributors — as to the
-project's own materials only, and released as stated above.
+Copyright (c) 2026 The Open Hermeneutics Project, a fiscally sponsored project of [Fiscal Sponsor]
+— as to the project's own materials only, and released as stated above.

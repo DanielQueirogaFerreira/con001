@@ -69,15 +69,43 @@ step('reader bundle', () =>
   execFileSync(process.execPath, ['tools/build-reader.mjs', '--prod'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }));
 
 mkdirSync('dist', { recursive: true });
+// The manifest is the public transparency log AND the scholar recruitment
+// agenda, so each held item names the RFC that would clear it, the seats it
+// needs, and the document a prospective reviewer can open and read.
+const rfcFor = (id) => m.advisory.rfcs.find((r) => (r.targets ?? []).includes(id));
+const seatsWanted = new Set();
+for (const h of held) for (const s2 of rfcFor(h.id)?.seats_required ?? []) seatsWanted.add(s2);
+
 const manifest = {
   built: new Date().toISOString(),
   mode: 'production',
   published: { positions: set.positions.length, resonances: set.resonances.length },
-  held: held.map((h) => ({ id: h.id, code: h.code, reason: h.message })),
+  held: held.map((h) => {
+    const r = rfcFor(h.id);
+    return {
+      id: h.id,
+      code: h.code,
+      reason: h.message,
+      rfc: r?.id ?? null,
+      rfc_status: r?.status ?? 'no RFC opened',
+      seats_required: r?.seats_required ?? [],
+      document: r?._file ?? null,
+      title: r?.title ?? null,
+    };
+  }),
+  recruiting: {
+    seats: [...seatsWanted],
+    note:
+      seatsWanted.size
+        ? `Advisory seats currently sought: ${[...seatsWanted].join(', ')}. Each named RFC ` +
+          'states what that seat is being asked to decide. Withdrawing the claim entirely ' +
+          'is one of the options every RFC puts to its reviewers.'
+        : 'No seats outstanding.',
+  },
   note:
     'Held items are excluded from this bundle, not downgraded. They remain in the ' +
     'repository at their true consequence tier and become publishable when the ' +
-    'named advisory groups sign off.',
+    'named advisory groups sign off. No sign-off has been invented to unblock a build.',
 };
 writeFileSync('dist/manifest.json', JSON.stringify(manifest, null, 2) + '\n');
 step('manifest', () => manifest);
