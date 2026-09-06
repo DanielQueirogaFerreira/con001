@@ -13,6 +13,12 @@ had uncommitted changes and the build cannot be reproduced from git.
   email/password. Not GitHub Pages — private Pages needs Enterprise Cloud.
 - `users` / `identities` split so SSO can be added without reshaping accounts.
 - `publish.yml` now deploys the Worker, still manual-trigger only.
+- Password change at `/account`: re-authenticates, rotates the acting session
+  and signs out every other one.
+- Password reset at `/reset` by administrator-issued single-use code, delivered
+  out of band. No emailed link, so no email provider secret, no enumeration
+  oracle, and no token in a URL.
+- "Sign out everywhere else".
 
 ## 0.1.0-alpha.1 — 2026-09-06
 

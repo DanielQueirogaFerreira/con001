@@ -7,13 +7,16 @@
 //
 //   node tools/user-admin.mjs --email a@b.org --name "A B" --generate
 //   node tools/user-admin.mjs --email a@b.org --name "A B" --password '...'
+//   node tools/user-admin.mjs --reset   --email a@b.org
 //   node tools/user-admin.mjs --suspend --email a@b.org
 //
 // Apply with:
 //   npx wrangler d1 execute open-hermeneutics --remote --command "<sql>"
 
-import { hashPassword } from '../worker/auth.mjs';
-import { normaliseEmail, looksLikeEmail } from '../worker/auth.mjs';
+import {
+  RESET_GROUPS, RESET_TTL_SECONDS, credentialBits, generateCredential,
+  hashPassword, hashToken, looksLikeEmail, normaliseEmail,
+} from '../worker/auth.mjs';
 
 const arg = (name, fallback = null) => {
   const i = process.argv.indexOf('--' + name);
@@ -26,6 +29,7 @@ const q = (s) => `'${String(s).replace(/'/g, "''")}'`;
 const email = normaliseEmail(arg('email'));
 if (!looksLikeEmail(email)) {
   console.error('Usage: node tools/user-admin.mjs --email <address> --name "<display name>" [--generate | --password <pw>]');
+  console.error('       node tools/user-admin.mjs --reset --email <address>');
   console.error('       node tools/user-admin.mjs --suspend --email <address>');
   process.exit(1);
 }
@@ -38,30 +42,39 @@ if (flag('suspend')) {
   process.exit(0);
 }
 
+if (flag('reset')) {
+  // Issue a single-use code, delivered out of band and typed in by the person.
+  // Deliberately not an emailed link: no email provider to hold a secret for,
+  // no address enumeration through a "we sent you a mail" response, and no
+  // token sitting in a URL where Referer headers and browser history find it.
+  const code = generateCredential(RESET_GROUPS);
+  const now = Date.now();
+  console.log(`
+-- Reset code for ${email}. Supersedes any code already outstanding.
+DELETE FROM password_resets WHERE user_id = (SELECT id FROM users WHERE email = ${q(email)}) AND used_at IS NULL;
+INSERT INTO password_resets (code_hash, user_id, created_at, expires_at, used_at)
+VALUES (${q(await hashToken(code))}, (SELECT id FROM users WHERE email = ${q(email)}),
+        ${now}, ${now + RESET_TTL_SECONDS * 1000}, NULL);
+`);
+  console.log(`-- Code (${credentialBits(RESET_GROUPS)} bits), valid ${RESET_TTL_SECONDS / 60} minutes, single use.`);
+  console.log(`-- Shown once. Deliver it over a different channel than the site URL:`);
+  console.log(`--\n--     ${code}\n--`);
+  console.log('-- Only the hash of the code is in the SQL above.');
+  console.log('-- The person enters it at /reset. Using it signs out all their sessions.');
+  process.exit(0);
+}
+
 const name = arg('name');
 if (!name) { console.error('--name is required'); process.exit(1); }
 
 // A generated credential beats a chosen one for an invite: the person has not
-// used it anywhere else. It must also be strong OFFLINE — the login lockout
+// used it anywhere else, and it must be strong OFFLINE — the login lockout
 // stops online guessing, but if the database ever leaks, only the PBKDF2 cost
-// and this entropy stand between an attacker and the account.
-//
-// Crockford-style base32, minus the characters people mistranscribe (I, L, O,
-// U). 32 symbols is exactly 5 bits each with no modulo bias from a byte, and
-// grouping keeps it readable enough to type once.
-const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+// and this entropy stand between an attacker and the account. The generator
+// lives in worker/auth.mjs so it is covered by the auth tests.
 const GROUPS = 5;
-const PER_GROUP = 5;
-const CREDENTIAL_BITS = GROUPS * PER_GROUP * Math.log2(ALPHABET.length);
 
-function generateCredential() {
-  const bytes = crypto.getRandomValues(new Uint8Array(GROUPS * PER_GROUP));
-  const chars = [...bytes].map((b) => ALPHABET[b % ALPHABET.length]);
-  return Array.from({ length: GROUPS }, (_, i) =>
-    chars.slice(i * PER_GROUP, (i + 1) * PER_GROUP).join('')).join('-');
-}
-
-const password = flag('generate') ? generateCredential() : arg('password');
+const password = flag('generate') ? generateCredential(GROUPS) : arg('password');
 if (!password) { console.error('Pass --generate or --password <pw>'); process.exit(1); }
 if (password.length < 12) { console.error('Password must be at least 12 characters.'); process.exit(1); }
 
@@ -81,7 +94,7 @@ ON CONFLICT(user_id, provider) DO UPDATE SET secret = excluded.secret;
 `);
 
 if (flag('generate')) {
-  console.log(`-- Generated credential (${CREDENTIAL_BITS} bits). Shown once. Send it over a different channel`);
+  console.log(`-- Generated credential (${credentialBits(GROUPS)} bits). Shown once. Send it over a different channel`);
   console.log(`-- than the one carrying the URL, and have them change it after first sign-in:`);
   console.log(`--\n--     ${password}\n--`);
 }

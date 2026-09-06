@@ -297,8 +297,25 @@ extra identities row per person, not a migration — and someone can hold both, 
 nobody gets cut off. Sessions, lockout and revocation are already
 provider-agnostic.
 
-Add someone: `npm run user -- --email a@b.org --name "A B" --generate`. It
-prints SQL for review rather than writing to the database.
+**Rotation and recovery.** `/account` changes a password: it re-authenticates
+with the current one (which is also the CSRF defence for that route), then
+deletes *every* session including the acting one and issues the acting browser a
+fresh token — so you stay signed in, every other browser does not, and the
+credential in play afterwards is not the one that leaked.
+
+`/reset` redeems an administrator-issued code. **No emailed link**: no email
+provider secret, no *"if that address exists we've sent a mail"* enumeration
+oracle, and no token in a URL for `Referer` headers, history and proxy logs to
+copy. Codes are 100 bits, single-use, one hour, stored only as a hash; redeeming
+one revokes every session and deliberately does *not* sign you in — you then
+sign in with the password you just set.
+
+```
+npm run user -- --email a@b.org --name "A B" --generate   # invite
+npm run user -- --reset --email a@b.org                   # reset code
+```
+
+Both print SQL for review rather than writing to the database.
 
 ## The loop
 

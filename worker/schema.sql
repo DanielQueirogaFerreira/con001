@@ -41,3 +41,19 @@ CREATE TABLE IF NOT EXISTS login_attempts (
   at            INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS login_attempts_at ON login_attempts (at);
+
+-- Reset codes are issued by an administrator and delivered out of band, then
+-- typed in by the person. There is deliberately no emailed link: no email
+-- provider to hold a secret for, no address enumeration through a "we sent you
+-- a mail" response, and no token sitting in a URL where Referer headers,
+-- browser history and proxy logs can find it.
+--
+-- Only the hash of a code is stored, as with sessions and passwords.
+CREATE TABLE IF NOT EXISTS password_resets (
+  code_hash     TEXT PRIMARY KEY,
+  user_id       TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at    INTEGER NOT NULL,
+  expires_at    INTEGER NOT NULL,
+  used_at       INTEGER                        -- non-NULL means spent; codes are single-use
+);
+CREATE INDEX IF NOT EXISTS password_resets_user ON password_resets (user_id);

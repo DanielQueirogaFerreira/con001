@@ -33,6 +33,8 @@ touches the asset binding at all.
 |---|---|
 | `/login` | The sign-in form; `POST` authenticates |
 | `/logout` | `POST` only; revokes the session **server-side** |
+| `/account` | Change password, sign out everywhere else. Session required |
+| `/reset` | Redeem an administrator-issued reset code |
 | `/healthz` | Liveness, unauthenticated, returns nothing about the site |
 | everything else | Session required, or 303 to `/login` |
 
@@ -81,6 +83,68 @@ attacker-supplied destination through sign-in is how open redirects get built.
 **CSP with no remote origin at all.** The built pages are self-contained —
 `default-src 'none'`, no external script, style, font or image host in the
 policy.
+
+## Changing a password
+
+`/account` asks for the current password, the new one, and a confirmation.
+
+**Requiring the current password is also the CSRF defence** for this route: an
+attacker who could forge the request still cannot supply it. `SameSite=Strict`
+sits underneath as a second layer.
+
+On success:
+
+- every session for that account is deleted, **including the acting one**;
+- the acting browser is immediately issued a **new** token.
+
+So the person changing their password stays signed in, every other browser is
+signed out, and the credential in play afterwards is not the one that existed
+before. If the change is happening because the old password leaked, leaving the
+other sessions alive would defeat the entire exercise.
+
+Any outstanding reset code is also destroyed — a code issued before the change
+must not still be able to take the account over afterwards.
+
+`/account/revoke-all` does the session half alone, for "I left myself signed in
+somewhere".
+
+## Resetting a forgotten password
+
+**There is no emailed reset link.** An administrator issues a code, delivers it
+out of band, and the person types it at `/reset`.
+
+That is not a shortcut around building email. For an invite-only allowlist it is
+the better design:
+
+- no email provider, and therefore no third-party secret to hold;
+- no *"if that address exists we've sent a mail"* response, which is an
+  enumeration oracle however carefully it is worded;
+- **no token in a URL**, where `Referer` headers, browser history, bookmarks and
+  proxy logs all get a copy. A code that is typed leaves none of those traces.
+
+```bash
+npm run user -- --reset --email person@example.org
+```
+
+prints the SQL and shows the code once: 100 bits, single use, one hour.
+Only its hash is stored, as with sessions and passwords.
+
+Redeeming it sets the password, marks the code spent, and **revokes every
+session for the account**. It deliberately does **not** sign the person in — they
+must then sign in with the password they just set, which proves they hold it
+rather than merely holding a code somebody handed them.
+
+Four properties, each tested:
+
+- **Single use.** A spent code is refused, and the row records *when* it was
+  spent rather than vanishing.
+- **Bound to one account.** A code for one person cannot be redeemed against
+  another's address.
+- **A typo does not burn it.** The new password and its confirmation are checked
+  *before* the code is spent, so a mistyped confirmation does not cost a second
+  trip to the administrator.
+- **Same throttling as login.** Bad codes count towards the same lockout, and
+  an unknown address and a wrong code produce the same response.
 
 ## Structure first, SSO after
 
@@ -133,11 +197,10 @@ without it, refuses without a typed `DEPLOY`, and refuses while
 
 ## Still to do
 
-- **Password change and reset.** There is no way for a user to rotate their own
-  credential yet, which is why invites say to change it after first sign-in —
-  advice that currently cannot be followed. This is the first gap to close.
-- **Session list and "sign out everywhere."** Revocation works per-session;
-  there is no UI for it.
-- **Audit trail for grants.** `npm run user` prints SQL so the grant is
-  reviewable, but nothing records who ran it.
+- **A session *list*.** `/account` shows a count and can revoke all; it cannot
+  show you which devices, when, or from where. The data is in the table.
+- **Audit trail for grants and resets.** `npm run user` prints SQL so the act is
+  reviewable, but nothing records who ran it or when.
+- **Expired-row cleanup.** Nothing sweeps spent reset codes, dead sessions or old
+  `login_attempts`. Harmless at this scale, and a cron trigger later.
 - **SSO.** The schema is ready; the routes are not.

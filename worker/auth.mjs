@@ -119,9 +119,48 @@ export function isLockedOut(failures, now = Date.now()) {
   return failures.filter((t) => now - t < LOCKOUT.windowMs).length >= LOCKOUT.attempts;
 }
 
+/* ------------------------------------------------------------ credentials */
+
+// Crockford-style base32 minus the characters people mistranscribe (I, L, O,
+// U). 32 symbols is exactly 5 bits each, so a byte modulo 32 carries no bias.
+export const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+export const PER_GROUP = 5;
+
+/** Grouped, readable, and strong enough to survive a database leak. */
+export function generateCredential(groups = 5) {
+  const bytes = crypto.getRandomValues(new Uint8Array(groups * PER_GROUP));
+  const chars = [...bytes].map((b) => ALPHABET[b % ALPHABET.length]);
+  return Array.from({ length: groups }, (_, i) =>
+    chars.slice(i * PER_GROUP, (i + 1) * PER_GROUP).join('')).join('-');
+}
+
+export const credentialBits = (groups = 5) => groups * PER_GROUP * Math.log2(ALPHABET.length);
+
+// Reset codes are single-use and short-lived, so they need less entropy than a
+// standing password — but they are still a full credential while they live.
+export const RESET_GROUPS = 4;
+export const RESET_TTL_SECONDS = 60 * 60;
+
+/** Codes are typed by a person, so accept any case and any grouping. */
+export function normaliseCode(code) {
+  return String(code ?? '').toUpperCase().replace(/[^0-9A-Z]/g, '');
+}
+
 /* ---------------------------------------------------------------- policy */
 
 export const SESSION_TTL_SECONDS = 12 * 60 * 60;
+export const PASSWORD_MIN = 12;
+
+/** Returns a reason string, or null when the password is acceptable. */
+export function passwordProblem(password, { current = null } = {}) {
+  const pw = String(password ?? '');
+  if (pw.length < PASSWORD_MIN) return `Password must be at least ${PASSWORD_MIN} characters.`;
+  if (pw.length > 512) return 'Password is too long.';
+  // Re-hashing a very long string is a cheap way to make the server work hard;
+  // the cap above is the defence. This one is about the user, not the server:
+  if (current !== null && pw === current) return 'New password must be different from the current one.';
+  return null;
+}
 
 export function normaliseEmail(email) {
   return String(email ?? '').trim().toLowerCase();

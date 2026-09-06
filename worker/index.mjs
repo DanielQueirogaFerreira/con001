@@ -9,9 +9,10 @@
 // is a new identities row, not a migration of users.
 
 import {
-  DUMMY_RECORD, LOGIN_FAILED, SESSION_COOKIE, SESSION_TTL_SECONDS,
-  hashToken, isLockedOut, looksLikeEmail, newSessionToken, normaliseEmail,
-  readCookie, serializeCookie, verifyPassword,
+  DUMMY_RECORD, LOGIN_FAILED, PASSWORD_MIN, SESSION_COOKIE, SESSION_TTL_SECONDS,
+  hashPassword, hashToken, isLockedOut, looksLikeEmail, newSessionToken,
+  normaliseCode, normaliseEmail, passwordProblem, readCookie, serializeCookie,
+  verifyPassword,
 } from './auth.mjs';
 
 const SECURITY_HEADERS = {
@@ -35,14 +36,16 @@ const html = (body, status = 200, headers = {}) =>
 
 const clientIp = (request) => request.headers.get('CF-Connecting-IP') ?? 'unknown';
 
-/* ------------------------------------------------------------- login page */
+/* ------------------------------------------------------------------ pages */
 
-function loginPage({ error = '', email = '' } = {}) {
-  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  return html(`<!doctype html><html lang="en"><head><meta charset="utf-8">
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+const shell = (title, body, status = 200) => html(`<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Open Hermeneutics — sign in</title>
-<style>
+<title>Open Hermeneutics — ${esc(title)}</title>
+<style>${PAGE_CSS}</style></head><body><main class="card">${body}</main></body></html>`, status);
+
+const PAGE_CSS = `
   :root{--bg:#faf8f4;--panel:#fffefb;--ink:#1d1a16;--muted:#6b6459;--line:#e3ddd2;--accent:#7a5c3e;--hot:#a3402f;color-scheme:light}
   @media(prefers-color-scheme:dark){:root{--bg:#16140f;--panel:#1e1b16;--ink:#ece6dc;--muted:#9b9285;--line:#332e26;--accent:#c9a173;--hot:#e08a76;color-scheme:dark}}
   *{box-sizing:border-box}
@@ -58,21 +61,75 @@ function loginPage({ error = '', email = '' } = {}) {
   button{width:100%;margin-top:20px;font:inherit;font-size:14px;font-weight:600;padding:10px;border:0;border-radius:7px;
          background:var(--accent);color:var(--panel);cursor:pointer}
   .err{border-left:3px solid var(--hot);color:var(--hot);padding-left:10px;font-size:12.5px;margin:16px 0 0}
+  .ok{border-left:3px solid var(--accent);color:var(--accent);padding-left:10px;font-size:12.5px;margin:0 0 16px}
+  button.ghost{background:none;border:1px solid var(--line);color:var(--ink);font-weight:500;margin-top:0}
+  a{color:var(--accent)}
   .note{color:var(--muted);font-size:11.5px;border-top:1px dashed var(--line);margin-top:20px;padding-top:12px}
-</style></head><body>
-<main class="card">
+`;
+
+function loginPage({ error = '', email = '', notice = '' } = {}) {
+  return shell('sign in', `
   <h1>Open Hermeneutics</h1>
   <p class="sub">Private alpha. Access is by invitation.</p>
+  ${notice ? `<p class="ok">${esc(notice)}</p>` : ''}
   <form method="POST" action="/login" autocomplete="on">
     <label for="email">Email</label>
     <input id="email" name="email" type="email" required autocomplete="username" value="${esc(email)}" autofocus>
     <label for="password">Password</label>
-    <input id="password" name="password" type="password" required autocomplete="current-password" minlength="12">
+    <input id="password" name="password" type="password" required autocomplete="current-password" minlength="${PASSWORD_MIN}">
     <button type="submit">Sign in</button>
     ${error ? `<p class="err">${esc(error)}</p>` : ''}
   </form>
-  <p class="note">There is no self-registration. If you need access, ask the project lead to add you.</p>
-</main></body></html>`, error ? 401 : 200);
+  <p class="note">No self-registration. Lost your password? Ask the project lead for a
+    reset code, then <a href="/reset">enter it here</a>.</p>`, error ? 401 : 200);
+}
+
+function accountPage(user, { error = '', notice = '', sessions = 1 } = {}) {
+  return shell('account', `
+  <h1>Account</h1>
+  <p class="sub">Signed in as ${esc(user.email)}</p>
+  ${notice ? `<p class="ok">${esc(notice)}</p>` : ''}
+  ${error ? `<p class="err">${esc(error)}</p>` : ''}
+  <form method="POST" action="/account/password" autocomplete="on">
+    <input type="hidden" name="username" value="${esc(user.email)}" autocomplete="username">
+    <label for="current">Current password</label>
+    <input id="current" name="current" type="password" required autocomplete="current-password">
+    <label for="next">New password</label>
+    <input id="next" name="next" type="password" required autocomplete="new-password" minlength="${PASSWORD_MIN}">
+    <label for="confirm">Confirm new password</label>
+    <input id="confirm" name="confirm" type="password" required autocomplete="new-password" minlength="${PASSWORD_MIN}">
+    <button type="submit">Change password</button>
+  </form>
+  <p class="note">Changing your password signs out every other session. At least
+    ${sessions} session${sessions === 1 ? ' is' : 's are'} currently active.</p>
+  <form method="POST" action="/account/revoke-all" style="margin-top:14px">
+    <button type="submit" class="ghost">Sign out everywhere else</button>
+  </form>
+  <form method="POST" action="/logout" style="margin-top:10px">
+    <button type="submit" class="ghost">Sign out</button>
+  </form>
+  <p class="note"><a href="/">Back to the reader</a></p>`);
+}
+
+function resetPage({ error = '', email = '' } = {}) {
+  return shell('reset password', `
+  <h1>Reset password</h1>
+  <p class="sub">Enter the reset code you were given, and choose a new password.</p>
+  <form method="POST" action="/reset" autocomplete="on">
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" required autocomplete="username" value="${esc(email)}" autofocus>
+    <label for="code">Reset code</label>
+    <input id="code" name="code" type="text" required autocomplete="one-time-code"
+           spellcheck="false" placeholder="XXXXX-XXXXX-XXXXX-XXXXX">
+    <label for="next">New password</label>
+    <input id="next" name="next" type="password" required autocomplete="new-password" minlength="${PASSWORD_MIN}">
+    <label for="confirm">Confirm new password</label>
+    <input id="confirm" name="confirm" type="password" required autocomplete="new-password" minlength="${PASSWORD_MIN}">
+    <button type="submit">Set new password</button>
+    ${error ? `<p class="err">${esc(error)}</p>` : ''}
+  </form>
+  <p class="note">Codes are issued by the project lead and delivered out of band. They
+    expire in an hour and work once. <a href="/login">Back to sign in</a></p>`, error ? 400 : 200);
 }
 
 /* ------------------------------------------------------------- data layer */
@@ -96,6 +153,31 @@ async function recentFailures(env, email, ip) {
 const recordFailure = (env, email, ip) =>
   env.DB.prepare(`INSERT INTO login_attempts (email, ip, at) VALUES (?1, ?2, ?3)`)
     .bind(email, ip, Date.now()).run();
+
+const countSessions = async (env, userId) =>
+  (await env.DB.prepare(`SELECT COUNT(*) AS n FROM sessions WHERE user_id = ?1`).bind(userId).first())?.n ?? 1;
+
+async function setPassword(env, userId, password) {
+  const secret = await hashPassword(password);
+  await env.DB.prepare(
+    `UPDATE identities SET secret = ?1 WHERE user_id = ?2 AND provider = 'password'`
+  ).bind(secret, userId).run();
+  // Every session dies on a password change. If the change is happening because
+  // the old one leaked, leaving other sessions alive defeats the whole point.
+  await env.DB.prepare(`DELETE FROM sessions WHERE user_id = ?1`).bind(userId).run();
+  // Outstanding reset codes die too: a code issued before the change must not
+  // still be able to take the account over afterwards.
+  await env.DB.prepare(`DELETE FROM password_resets WHERE user_id = ?1 AND used_at IS NULL`)
+    .bind(userId).run();
+}
+
+async function issueSession(env, userId, ip) {
+  const token = newSessionToken();
+  await env.DB.prepare(
+    `INSERT INTO sessions (token_hash, user_id, created_at, expires_at, ip) VALUES (?1, ?2, ?3, ?4, ?5)`
+  ).bind(await hashToken(token), userId, Date.now(), Date.now() + SESSION_TTL_SECONDS * 1000, ip).run();
+  return token;
+}
 
 async function currentUser(env, request) {
   const token = readCookie(request.headers.get('Cookie'), SESSION_COOKIE);
@@ -175,6 +257,107 @@ async function handleLogout(request, env) {
   });
 }
 
+async function handleChangePassword(request, env, user) {
+  const form = await request.formData();
+  const current = String(form.get('current') ?? '');
+  const next = String(form.get('next') ?? '');
+  const confirm = String(form.get('confirm') ?? '');
+  const sessions = await countSessions(env, user.id);
+  const fail = (error) => accountPage(user, { error, sessions });
+
+  const identity = await findIdentity(env, user.email);
+  // Re-authentication. This is also what makes the route CSRF-proof on its own
+  // merits: an attacker who can forge the request still cannot supply this.
+  if (!identity || !(await verifyPassword(current, identity.secret ?? DUMMY_RECORD)))
+    return fail('Current password is incorrect.');
+
+  if (next !== confirm) return fail('The new passwords do not match.');
+  const problem = passwordProblem(next, { current });
+  if (problem) return fail(problem);
+
+  await setPassword(env, user.id, next);
+  const token = await issueSession(env, user.id, clientIp(request));
+
+  // The acting browser gets a NEW token rather than keeping the old one, so the
+  // credential in play after the change is not the one that existed before it.
+  return new Response(null, {
+    status: 303,
+    headers: {
+      Location: '/account?changed=1',
+      'Set-Cookie': serializeCookie(SESSION_COOKIE, token, { maxAge: SESSION_TTL_SECONDS }),
+      ...SECURITY_HEADERS,
+    },
+  });
+}
+
+async function handleRevokeAll(request, env, user) {
+  await env.DB.prepare(`DELETE FROM sessions WHERE user_id = ?1`).bind(user.id).run();
+  const token = await issueSession(env, user.id, clientIp(request));
+  return new Response(null, {
+    status: 303,
+    headers: {
+      Location: '/account?revoked=1',
+      'Set-Cookie': serializeCookie(SESSION_COOKIE, token, { maxAge: SESSION_TTL_SECONDS }),
+      ...SECURITY_HEADERS,
+    },
+  });
+}
+
+// One message for every reset failure. An unknown address, a wrong code, an
+// expired code and a spent code are all the same sentence — otherwise the form
+// answers "does this person have an account, and is their code still live?".
+const RESET_FAILED = 'That reset code is not valid. Ask for a new one.';
+
+async function handleReset(request, env) {
+  const form = await request.formData();
+  const email = normaliseEmail(form.get('email'));
+  const code = normaliseCode(form.get('code'));
+  const next = String(form.get('next') ?? '');
+  const confirm = String(form.get('confirm') ?? '');
+  const ip = clientIp(request);
+
+  if (!looksLikeEmail(email)) return resetPage({ error: RESET_FAILED });
+
+  if (isLockedOut(await recentFailures(env, email, ip)))
+    return resetPage({ error: 'Too many attempts. Try again in 15 minutes.', email });
+
+  // Check the new password BEFORE spending the code, so a mistyped confirmation
+  // does not burn a single-use credential and force a second round trip to the
+  // administrator.
+  if (next !== confirm) return resetPage({ error: 'The new passwords do not match.', email });
+  const problem = passwordProblem(next);
+  if (problem) return resetPage({ error: problem, email });
+
+  const row = await env.DB.prepare(
+    `SELECT r.code_hash, r.user_id, r.expires_at, r.used_at, u.email, u.status
+       FROM password_resets r JOIN users u ON u.id = r.user_id
+      WHERE r.code_hash = ?1`
+  ).bind(await hashToken(code)).first();
+
+  const usable = row && !row.used_at && row.expires_at > Date.now()
+    && row.email === email && row.status === 'active';
+
+  if (!usable) {
+    await recordFailure(env, email, ip);
+    return resetPage({ error: RESET_FAILED, email });
+  }
+
+  // Mark the code spent BEFORE setting the password. setPassword deletes every
+  // UNUSED code for the account, so doing it the other way round deletes the
+  // code now being redeemed and destroys the record that it was ever used. The
+  // outcome would still be safe — a deleted code cannot be replayed — but
+  // "spent" and "never existed" should not look the same in the table.
+  await env.DB.prepare(`UPDATE password_resets SET used_at = ?1 WHERE code_hash = ?2`)
+    .bind(Date.now(), row.code_hash).run();
+  await setPassword(env, row.user_id, next);
+  await env.DB.prepare(`DELETE FROM login_attempts WHERE email = ?1`).bind(email).run();
+
+  // No session is issued here. Whoever used the code must now sign in with the
+  // password they just set, which proves they hold it rather than merely
+  // holding a code that was handed to them.
+  return new Response(null, { status: 303, headers: { Location: '/login?reset=1', ...SECURITY_HEADERS } });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -183,11 +366,32 @@ export default {
       return new Response('ok', { headers: { 'Content-Type': 'text/plain', ...SECURITY_HEADERS } });
 
     if (url.pathname === '/login')
-      return request.method === 'POST' ? handleLogin(request, env) : loginPage();
+      return request.method === 'POST'
+        ? handleLogin(request, env)
+        : loginPage({ notice: url.searchParams.has('reset') ? 'Password set. Sign in with it now.' : '' });
+
+    if (url.pathname === '/reset')
+      return request.method === 'POST' ? handleReset(request, env) : resetPage();
 
     if (url.pathname === '/logout' && request.method === 'POST') return handleLogout(request, env);
 
     const user = await currentUser(env, request);
+
+    if (url.pathname.startsWith('/account')) {
+      if (!user) return new Response(null, { status: 303, headers: { Location: '/login', ...SECURITY_HEADERS } });
+      if (url.pathname === '/account' && request.method === 'GET')
+        return accountPage(user, {
+          sessions: await countSessions(env, user.id),
+          notice: url.searchParams.has('changed') ? 'Password changed. Every other session was signed out.'
+                : url.searchParams.has('revoked') ? 'Signed out everywhere else.' : '',
+        });
+      if (url.pathname === '/account/password' && request.method === 'POST')
+        return handleChangePassword(request, env, user);
+      if (url.pathname === '/account/revoke-all' && request.method === 'POST')
+        return handleRevokeAll(request, env, user);
+      return new Response('Not found', { status: 404, headers: SECURITY_HEADERS });
+    }
+
     if (!user) {
       // No redirect parameter is carried across the login boundary — an
       // attacker-supplied `?next=` is how open redirects get built.

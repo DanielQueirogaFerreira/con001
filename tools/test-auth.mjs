@@ -8,9 +8,11 @@
 // Usage: node tools/test-auth.mjs
 
 import {
-  DUMMY_RECORD, LOCKOUT, LOGIN_FAILED, PBKDF2_ITERATIONS, SESSION_COOKIE,
+  DUMMY_RECORD, LOCKOUT, LOGIN_FAILED, PBKDF2_ITERATIONS, RESET_GROUPS,
+  RESET_TTL_SECONDS, SESSION_COOKIE, credentialBits, generateCredential,
   hashPassword, hashToken, isLockedOut, looksLikeEmail, newSessionToken,
-  normaliseEmail, readCookie, serializeCookie, timingSafeEqual, verifyPassword,
+  normaliseCode, normaliseEmail, passwordProblem, readCookie, serializeCookie,
+  timingSafeEqual, verifyPassword,
 } from '../worker/auth.mjs';
 import worker from '../worker/index.mjs';
 
@@ -124,8 +126,8 @@ await t('emails normalise before comparison', () => {
 
 /* ---------------------------------------------- the handler, with stubs */
 
-function makeEnv({ users = [], identities = [], sessions = [], attempts = [] } = {}) {
-  const db = { users, identities, sessions, attempts };
+function makeEnv({ users = [], identities = [], sessions = [], attempts = [], resets = [] } = {}) {
+  const db = { users, identities, sessions, attempts, resets };
   const run = (sql, args) => {
     if (sql.includes('FROM users u JOIN identities i')) {
       const u = db.users.find((x) => x.email === args[0]);
@@ -150,8 +152,36 @@ function makeEnv({ users = [], identities = [], sessions = [], attempts = [] } =
     if (sql.includes('INSERT INTO sessions')) {
       return { run: () => db.sessions.push({ token_hash: args[0], user_id: args[1], created_at: args[2], expires_at: args[3], ip: args[4] }) };
     }
+    if (sql.includes('DELETE FROM sessions WHERE user_id')) {
+      return { run: () => (db.sessions = db.sessions.filter((s) => s.user_id !== args[0])) };
+    }
     if (sql.includes('DELETE FROM sessions')) {
       return { run: () => (db.sessions = db.sessions.filter((s) => s.token_hash !== args[0])) };
+    }
+    if (sql.includes('COUNT(*) AS n FROM sessions')) {
+      return { first: () => ({ n: db.sessions.filter((s) => s.user_id === args[0]).length }) };
+    }
+    if (sql.includes('UPDATE identities SET secret')) {
+      return { run: () => {
+        const i = db.identities.find((x) => x.user_id === args[1] && x.provider === 'password');
+        if (i) i.secret = args[0];
+      } };
+    }
+    if (sql.includes('FROM password_resets r JOIN users u')) {
+      const r = db.resets.find((x) => x.code_hash === args[0]);
+      const u = r && db.users.find((x) => x.id === r.user_id);
+      return { first: () => (r && u
+        ? { code_hash: r.code_hash, user_id: r.user_id, expires_at: r.expires_at, used_at: r.used_at, email: u.email, status: u.status }
+        : null) };
+    }
+    if (sql.includes('UPDATE password_resets SET used_at')) {
+      return { run: () => {
+        const r = db.resets.find((x) => x.code_hash === args[1]);
+        if (r) r.used_at = args[0];
+      } };
+    }
+    if (sql.includes('DELETE FROM password_resets')) {
+      return { run: () => (db.resets = db.resets.filter((r) => !(r.user_id === args[0] && !r.used_at))) };
     }
     throw new Error('unstubbed query: ' + sql.slice(0, 60));
   };
@@ -284,6 +314,176 @@ await t('there is no self-registration route', async () => {
     assert(res.status === 303 && res.headers.get('Location') === '/login',
       `${path} must not be a way in`);
   }
+});
+
+/* ------------------------------------------------- password change / reset */
+
+const changePw = (jar, current, next, confirm = next) =>
+  req('/account/password', {
+    method: 'POST', headers: { Cookie: jar },
+    body: new URLSearchParams({ current, next, confirm }),
+  });
+
+async function signedIn() {
+  const env = await seeded();
+  const jar = (await worker.fetch(login('reader@example.com', PASSWORD), env))
+    .headers.get('Set-Cookie').split(';')[0];
+  return { env, jar };
+}
+
+await t('the account page needs a session', async () => {
+  const env = await seeded();
+  const res = await worker.fetch(req('/account'), env);
+  assert(res.status === 303 && res.headers.get('Location') === '/login', `got ${res.status}`);
+});
+
+await t('changing the password requires the current one', async () => {
+  const { env, jar } = await signedIn();
+  const res = await worker.fetch(changePw(jar, 'not the password', 'a brand new password'), env);
+  assert((await res.text()).includes('Current password is incorrect'), 'must re-authenticate');
+  const identity = env._db.identities[0].secret;
+  assert(await verifyPassword(PASSWORD, identity), 'the stored password must be untouched');
+});
+
+await t('a mistyped confirmation is caught before anything changes', async () => {
+  const { env, jar } = await signedIn();
+  const res = await worker.fetch(changePw(jar, PASSWORD, 'a brand new password', 'a different one'), env);
+  assert((await res.text()).includes('do not match'), 'must report the mismatch');
+  assert(await verifyPassword(PASSWORD, env._db.identities[0].secret), 'password must be unchanged');
+});
+
+await t('the new password must meet policy and differ from the old', async () => {
+  const { env, jar } = await signedIn();
+  const short = await worker.fetch(changePw(jar, PASSWORD, 'short'), env);
+  assert((await short.text()).includes('at least 12'), 'length is enforced server-side too');
+  const same = await worker.fetch(changePw(jar, PASSWORD, PASSWORD), env);
+  assert((await same.text()).includes('different from the current'), 'reuse must be refused');
+});
+
+await t('a successful change rotates the acting session and kills the others', async () => {
+  const { env, jar } = await signedIn();
+  // A second browser, signed in as the same person.
+  const other = (await worker.fetch(login('reader@example.com', PASSWORD), env))
+    .headers.get('Set-Cookie').split(';')[0];
+  assert(env._db.sessions.length === 2, 'two sessions should exist');
+
+  const NEW = 'an entirely new password';
+  const res = await worker.fetch(changePw(jar, PASSWORD, NEW), env);
+  assert(res.status === 303, `expected redirect, got ${res.status}`);
+
+  assert(await verifyPassword(NEW, env._db.identities[0].secret), 'the new password must be stored');
+  assert(!(await verifyPassword(PASSWORD, env._db.identities[0].secret)), 'the old one must not verify');
+  assert(env._db.sessions.length === 1, 'exactly one session should survive — the fresh one');
+
+  const rotated = res.headers.get('Set-Cookie').split(';')[0];
+  assert(rotated !== jar, 'the acting browser must receive a NEW token, not keep the old one');
+  assert((await worker.fetch(req('/', { headers: { Cookie: rotated } }), env)).status === 200,
+    'the acting browser stays signed in');
+  assert((await worker.fetch(req('/', { headers: { Cookie: other } }), env)).status === 303,
+    'the other browser must be signed out — the point of changing a leaked password');
+  assert((await worker.fetch(req('/', { headers: { Cookie: jar } }), env)).status === 303,
+    'and the pre-change token must be dead too');
+});
+
+await t('sign out everywhere else leaves exactly one session', async () => {
+  const { env, jar } = await signedIn();
+  await worker.fetch(login('reader@example.com', PASSWORD), env);
+  await worker.fetch(login('reader@example.com', PASSWORD), env);
+  assert(env._db.sessions.length === 3, 'three sessions should exist');
+  const res = await worker.fetch(req('/account/revoke-all', { method: 'POST', headers: { Cookie: jar } }), env);
+  assert(res.status === 303 && env._db.sessions.length === 1, 'only the acting session should remain');
+});
+
+function withCode(env, { code, minutesLeft = 60, used = false, userId = 'u1' }) {
+  return hashToken(normaliseCode(code)).then((h) => {
+    env._db.resets.push({
+      code_hash: h, user_id: userId, created_at: Date.now(),
+      expires_at: Date.now() + minutesLeft * 60_000, used_at: used ? Date.now() : null,
+    });
+    return env;
+  });
+}
+const doReset = (email, code, next, confirm = next) =>
+  req('/reset', { method: 'POST', body: new URLSearchParams({ email, code, next, confirm }) });
+
+await t('reset codes carry real entropy and tolerate how people type them', () => {
+  assert(credentialBits(RESET_GROUPS) >= 100, `reset codes must be strong, got ${credentialBits(RESET_GROUPS)} bits`);
+  const c = generateCredential(RESET_GROUPS);
+  assert(normaliseCode(c.toLowerCase()) === normaliseCode(c), 'case must not matter');
+  assert(normaliseCode(' 67zap 6d25y ') === '67ZAP6D25Y', 'spacing and dashes must not matter');
+  assert(RESET_TTL_SECONDS <= 60 * 60, 'a reset code must be short-lived');
+});
+
+await t('a valid code sets the password, spends itself, and signs everything out', async () => {
+  const env = await withCode(await seeded(), { code: 'AAAAA-BBBBB-CCCCC-DDDDD' });
+  await worker.fetch(login('reader@example.com', PASSWORD), env);
+  assert(env._db.sessions.length === 1, 'a session should exist before the reset');
+
+  const NEW = 'password set by reset';
+  const res = await worker.fetch(doReset('reader@example.com', 'aaaaa bbbbb ccccc ddddd', NEW), env);
+  assert(res.status === 303 && res.headers.get('Location') === '/login?reset=1', `got ${res.status}`);
+  assert(!res.headers.get('Set-Cookie'), 'a reset must NOT sign the user in — they must prove they hold the new password');
+  assert(await verifyPassword(NEW, env._db.identities[0].secret), 'the new password must be stored');
+  assert(env._db.sessions.length === 0, 'every session must be revoked by a reset');
+  assert(env._db.resets[0].used_at, 'the code must be marked spent');
+});
+
+await t('a spent code cannot be used again', async () => {
+  const env = await withCode(await seeded(), { code: 'AAAAA-BBBBB-CCCCC-DDDDD', used: true });
+  const res = await worker.fetch(doReset('reader@example.com', 'AAAAA-BBBBB-CCCCC-DDDDD', 'another new password'), env);
+  assert((await res.text()).includes('not valid'), 'single use must mean single use');
+  assert(await verifyPassword(PASSWORD, env._db.identities[0].secret), 'the password must be unchanged');
+});
+
+await t('an expired code is refused', async () => {
+  const env = await withCode(await seeded(), { code: 'AAAAA-BBBBB-CCCCC-DDDDD', minutesLeft: -1 });
+  const res = await worker.fetch(doReset('reader@example.com', 'AAAAA-BBBBB-CCCCC-DDDDD', 'another new password'), env);
+  assert((await res.text()).includes('not valid'), 'expiry must be enforced');
+  assert(await verifyPassword(PASSWORD, env._db.identities[0].secret), 'the password must be unchanged');
+});
+
+await t('a code cannot be redeemed against a different account', async () => {
+  const env = await withCode(await seeded(), { code: 'AAAAA-BBBBB-CCCCC-DDDDD' });
+  env._db.users.push({ id: 'u2', email: 'other@example.com', display_name: 'Other', status: 'active' });
+  const res = await worker.fetch(doReset('other@example.com', 'AAAAA-BBBBB-CCCCC-DDDDD', 'another new password'), env);
+  assert((await res.text()).includes('not valid'), 'the code must be bound to its own account');
+});
+
+await t('an unknown address and a wrong code look the same', async () => {
+  const env = await withCode(await seeded(), { code: 'AAAAA-BBBBB-CCCCC-DDDDD' });
+  const a = await worker.fetch(doReset('nobody@example.com', 'ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ', 'another new password'), env);
+  const b = await worker.fetch(doReset('reader@example.com', 'ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ', 'another new password'), env);
+  assert(a.status === b.status, `status differed: ${a.status} vs ${b.status}`);
+  // The form echoes whatever address was typed, which the sender already knows.
+  // Everything else about the two responses must be identical.
+  const strip = (t, email) => t.split(email).join('<TYPED>');
+  assert(strip(await a.text(), 'nobody@example.com') === strip(await b.text(), 'reader@example.com'),
+    'apart from the echoed input, the reset form must not reveal who has an account');
+});
+
+await t('a bad confirmation does not burn the code', async () => {
+  const env = await withCode(await seeded(), { code: 'AAAAA-BBBBB-CCCCC-DDDDD' });
+  const res = await worker.fetch(
+    doReset('reader@example.com', 'AAAAA-BBBBB-CCCCC-DDDDD', 'a new password here', 'mistyped confirmation'), env);
+  assert((await res.text()).includes('do not match'), 'must report the mismatch');
+  assert(!env._db.resets[0].used_at, 'a typo must not cost a trip back to the administrator');
+});
+
+await t('repeated bad codes lock the reset form too', async () => {
+  const env = await withCode(await seeded(), { code: 'AAAAA-BBBBB-CCCCC-DDDDD' });
+  for (let i = 0; i < LOCKOUT.attempts; i++)
+    await worker.fetch(doReset('reader@example.com', 'ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ', 'another new password'), env);
+  const res = await worker.fetch(doReset('reader@example.com', 'AAAAA-BBBBB-CCCCC-DDDDD', 'another new password'), env);
+  assert((await res.text()).includes('Too many attempts'), 'the reset form must be throttled like login');
+});
+
+await t('changing a password invalidates any outstanding reset code', async () => {
+  const env = await withCode(await seeded(), { code: 'AAAAA-BBBBB-CCCCC-DDDDD' });
+  const jar = (await worker.fetch(login('reader@example.com', PASSWORD), env))
+    .headers.get('Set-Cookie').split(';')[0];
+  await worker.fetch(changePw(jar, PASSWORD, 'a password chosen by me'), env);
+  assert(env._db.resets.length === 0,
+    'a code issued before the change must not still be able to take the account over');
 });
 
 console.log(failed ? `\n${failed} auth test(s) failed` : `\nall auth tests pass`);
