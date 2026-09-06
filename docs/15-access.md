@@ -167,13 +167,36 @@ When SSO arrives, the parts that change are the login route and a new callback
 route. Sessions, cookies, lockout, revocation and the gate itself are already
 provider-agnostic.
 
-## Deploying automatically
+## Deploying
 
-**The chosen path is Cloudflare Workers Builds**, the Git integration:
+### What is actually live
+
+The site was deployed by the **publish workflow** (`.github/workflows/publish.yml`),
+dispatched from GitHub, and certified immediately afterwards by the **verify
+workflow** running `tools/verify-live.mjs` against the public URL:
+
+| | |
+|---|---|
+| URL | <https://con001.daniel-queiroga.workers.dev> |
+| Build | `0.1.0-alpha.1+ee18d4c` |
+| Certified | 18/18 checks, from a GitHub runner with no credentials |
+
+This is the path that works today, and it works with nobody at a terminal: the
+workflow is dispatched, it runs the suite, builds `web/`, deploys, and then asks
+the live site whether it is gated. `CLOUDFLARE_API_TOKEN` is present as a
+repository secret; it is never printed and never leaves Actions.
+
+The workflow is **manual on purpose** — there is no `on: push`. This project
+serves readings of other people's scripture, and nothing goes live because a
+branch moved. A person dispatches it, typing `DEPLOY`, every time.
+
+### The token-free alternative
+
+**Cloudflare Workers Builds**, the Git integration, remains configured:
 Cloudflare pulls the repository itself, runs the build, and deploys on every
-push. **No API token exists anywhere** — not in this repository, not in a GitHub
-Actions secret, not handed to anyone. That is why it is preferred over the
-workflow described below, which cannot work without a token existing.
+push, with **no API token in this repository** — Cloudflare holds its own build
+token instead. It is the better shape if it can be made to fire reliably; the
+workflow above is what proved able to put the site live.
 
 `wrangler.toml` is at the repository root because Workers Builds looks there by
 default.
@@ -220,12 +243,16 @@ non-production branch builds enabled, and Cloudflare holds its own build token
 (`con001 build token`) — which is why no API token needs to exist in this
 repository or in GitHub.
 
-Two settings still need attention:
+Two settings still need attention before that path can deploy on its own:
 
 1. **Build command is empty.** See above; without it nothing builds.
 2. **Production branch.** It was `main`, which does not exist in this
    repository — the default branch is the working branch. Decided: point the
    production branch at `claude/layered-text-interpretation-7kn6jd`.
+
+   Until both are set, a push produces at most an un-promoted version. That is
+   what happened before the publish workflow was used: the full Worker code sat
+   in the script store while the URL still served the old deployment.
 
    This distinction caused real confusion once, so it is worth stating plainly:
 
@@ -245,9 +272,12 @@ Two settings still need attention:
 `npm run verify -- https://<the deployed url>` asks the running site, without
 credentials, for the things that must not be there.
 
-**Run it from your own machine.** The development sandbox this was built in
-cannot reach `*.workers.dev` — its egress proxy refuses the connection — so the
-deployed site cannot be checked from there. The verification has to happen
+**It runs in CI.** The verify workflow (`.github/workflows/verify.yml`) runs it
+on a GitHub runner, on every publish and on demand, which is where it belongs:
+outside, with no credentials. The development sandbox this was built in cannot
+reach `*.workers.dev` at all — its egress proxy refuses the connection, and
+refuses it with a 403 that some of these checks would read as a pass — so a
+verification run from there proves nothing. The verification has to happen
 somewhere with ordinary network access.
 
 It checks:
