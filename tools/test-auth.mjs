@@ -126,8 +126,8 @@ await t('emails normalise before comparison', () => {
 
 /* ---------------------------------------------- the handler, with stubs */
 
-function makeEnv({ users = [], identities = [], sessions = [], attempts = [], resets = [] } = {}) {
-  const db = { users, identities, sessions, attempts, resets };
+function makeEnv({ users = [], identities = [], sessions = [], attempts = [], resets = [], errors = [] } = {}) {
+  const db = { users, identities, sessions, attempts, resets, errors };
   const run = (sql, args) => {
     if (sql.includes('FROM users u JOIN identities i')) {
       const u = db.users.find((x) => x.email === args[0]);
@@ -183,11 +183,29 @@ function makeEnv({ users = [], identities = [], sessions = [], attempts = [], re
     if (sql.includes('DELETE FROM password_resets')) {
       return { run: () => (db.resets = db.resets.filter((r) => !(r.user_id === args[0] && !r.used_at))) };
     }
+    if (sql.includes('INSERT INTO worker_errors')) {
+      return { run: () => db.errors.push({ id: args[0], route: args[2], method: args[3], message: args[4] }) };
+    }
     throw new Error('unstubbed query: ' + sql.slice(0, 60));
   };
   return {
     _db: db,
-    DB: { prepare: (sql) => ({ bind: (...args) => run(sql, args) }) },
+    DB: {
+      prepare: (sql) => ({ bind: (...args) => run(sql, args) }),
+      // D1 runs a batch as one transaction: all of it lands or none of it does.
+      // The stub keeps that promise, because the tests below depend on it.
+      batch: async (statements) => {
+        const undo = { users: [...db.users], identities: db.identities.map((i) => ({ ...i })),
+                       sessions: [...db.sessions], attempts: [...db.attempts],
+                       resets: db.resets.map((r) => ({ ...r })) };
+        try {
+          return statements.map((st) => st.run());
+        } catch (err) {
+          Object.assign(db, undo);
+          throw err;
+        }
+      },
+    },
     ASSETS: { fetch: async () => new Response('<h1>the reader</h1>', { headers: { 'Content-Type': 'text/html' } }) },
   };
 }
@@ -441,6 +459,46 @@ await t('a code from tools/user-admin.mjs can actually be redeemed', async () =>
     `a code straight from the issuer must be redeemable, got ${res.status} ` +
     '(the issuer and the Worker are hashing different strings)');
   assert(env._db.resets[0].used_at, 'the code must be marked spent');
+});
+
+// The live failure this pair of tests exists for: the code was found and marked
+// spent, then setting the password threw, and the person was left holding a
+// dead code, the old password, and no way in without an administrator.
+await t('a reset that cannot be completed does not burn the code', async () => {
+  const env = await seeded();
+  const code = generateCredential(RESET_GROUPS);
+  await withCode(env, { code });
+
+  // Anything failing after the code is found: here, the write itself.
+  const realBatch = env.DB.batch;
+  env.DB.batch = async () => { throw new Error('D1 said no'); };
+  const res = await worker.fetch(doReset('reader@example.com', code, 'a brand new password'), env);
+  env.DB.batch = realBatch;
+
+  assert(res.status === 500, `a failed write must not look like success, got ${res.status}`);
+  assert(!env._db.resets[0].used_at,
+    'the code must still be usable — spending it for an attempt that failed locks the person out');
+  assert(env._db.identities[0].secret !== undefined, 'the old password must still stand');
+
+  // And the code still works once whatever broke is fixed.
+  const ok = await worker.fetch(doReset('reader@example.com', code, 'a brand new password'), env);
+  assert(ok.status === 303, `the code must survive to be redeemed, got ${ok.status}`);
+});
+
+await t('an unhandled failure answers the visitor and records itself', async () => {
+  const env = await seeded();
+  const jar = (await worker.fetch(login('reader@example.com', PASSWORD), env))
+    .headers.get('Set-Cookie').split(';')[0];
+  env.ASSETS = { fetch: async () => { throw new Error('assets are down'); } };
+
+  const res = await worker.fetch(req('/', { headers: { Cookie: jar } }), env);
+  assert(res.status === 500, `an exception must become a 500, not a hang, got ${res.status}`);
+  const body = await res.text();
+  assert(!/assets are down/.test(body), 'the visitor must not be shown the internals');
+  assert(env._db.errors.length === 1, 'the failure must be recorded');
+  assert(/assets are down/.test(env._db.errors[0].message), 'the record must carry what actually broke');
+  assert(env._db.errors[0].route === '/', 'the record must carry the route');
+  assert(body.includes(env._db.errors[0].id), 'the visitor must get the reference that finds it');
 });
 
 await t('reset codes carry real entropy and tolerate how people type them', () => {

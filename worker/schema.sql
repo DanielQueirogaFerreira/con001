@@ -57,3 +57,18 @@ CREATE TABLE IF NOT EXISTS password_resets (
   used_at       INTEGER                        -- non-NULL means spent; codes are single-use
 );
 CREATE INDEX IF NOT EXISTS password_resets_user ON password_resets (user_id);
+
+-- A Worker that throws returns Cloudflare's error 1101 page: no message, no
+-- route, and nothing anywhere in the account unless log collection happens to
+-- be enabled. This project has no observability of its own, so it keeps the
+-- minimum: what broke and where. Never a request body, an address, or a
+-- credential — a table of failures must not become a table of who was doing
+-- what when they failed.
+CREATE TABLE IF NOT EXISTS worker_errors (
+  id            TEXT PRIMARY KEY,
+  at            INTEGER NOT NULL,
+  route         TEXT NOT NULL,
+  method        TEXT NOT NULL,
+  message       TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS worker_errors_at ON worker_errors (at);

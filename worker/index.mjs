@@ -161,18 +161,29 @@ const recordFailure = (env, email, ip) =>
 const countSessions = async (env, userId) =>
   (await env.DB.prepare(`SELECT COUNT(*) AS n FROM sessions WHERE user_id = ?1`).bind(userId).first())?.n ?? 1;
 
-async function setPassword(env, userId, password) {
+/**
+ * The statements that set a password — built, not run, so a caller can commit
+ * them in one transaction with whatever else must happen at the same moment.
+ *
+ * The hashing happens here too, and that ordering is the point: it is the only
+ * expensive, throwing step, so it must complete before anything is written.
+ */
+async function passwordStatements(env, userId, password) {
   const secret = await hashPassword(password);
-  await env.DB.prepare(
-    `UPDATE identities SET secret = ?1 WHERE user_id = ?2 AND provider = 'password'`
-  ).bind(secret, userId).run();
-  // Every session dies on a password change. If the change is happening because
-  // the old one leaked, leaving other sessions alive defeats the whole point.
-  await env.DB.prepare(`DELETE FROM sessions WHERE user_id = ?1`).bind(userId).run();
-  // Outstanding reset codes die too: a code issued before the change must not
-  // still be able to take the account over afterwards.
-  await env.DB.prepare(`DELETE FROM password_resets WHERE user_id = ?1 AND used_at IS NULL`)
-    .bind(userId).run();
+  return [
+    env.DB.prepare(`UPDATE identities SET secret = ?1 WHERE user_id = ?2 AND provider = 'password'`)
+      .bind(secret, userId),
+    // Every session dies on a password change. If the change is happening because
+    // the old one leaked, leaving other sessions alive defeats the whole point.
+    env.DB.prepare(`DELETE FROM sessions WHERE user_id = ?1`).bind(userId),
+    // Outstanding reset codes die too: a code issued before the change must not
+    // still be able to take the account over afterwards.
+    env.DB.prepare(`DELETE FROM password_resets WHERE user_id = ?1 AND used_at IS NULL`).bind(userId),
+  ];
+}
+
+async function setPassword(env, userId, password) {
+  await env.DB.batch(await passwordStatements(env, userId, password));
 }
 
 async function issueSession(env, userId, ip) {
@@ -346,15 +357,23 @@ async function handleReset(request, env) {
     return resetPage({ error: RESET_FAILED, email });
   }
 
-  // Mark the code spent BEFORE setting the password. setPassword deletes every
-  // UNUSED code for the account, so doing it the other way round deletes the
-  // code now being redeemed and destroys the record that it was ever used. The
-  // outcome would still be safe — a deleted code cannot be replayed — but
-  // "spent" and "never existed" should not look the same in the table.
-  await env.DB.prepare(`UPDATE password_resets SET used_at = ?1 WHERE code_hash = ?2`)
-    .bind(Date.now(), row.code_hash).run();
-  await setPassword(env, row.user_id, next);
-  await env.DB.prepare(`DELETE FROM login_attempts WHERE email = ?1`).bind(email).run();
+  // Hash the new password BEFORE anything is written. Hashing is the expensive
+  // step and the one that can throw, and a code must never be spent for an
+  // attempt that then fails: the person would be left holding a dead code, no
+  // password, and no way back in without an administrator.
+  const setting = await passwordStatements(env, row.user_id, next);
+
+  // One transaction. Marking the code spent comes first because the third
+  // statement deletes every UNUSED code for the account — the other order
+  // deletes the code being redeemed and destroys the record that it was ever
+  // used. Safe either way (a deleted code cannot be replayed) but "spent" and
+  // "never existed" should not look the same in the table.
+  await env.DB.batch([
+    env.DB.prepare(`UPDATE password_resets SET used_at = ?1 WHERE code_hash = ?2`)
+      .bind(Date.now(), row.code_hash),
+    ...setting,
+    env.DB.prepare(`DELETE FROM login_attempts WHERE email = ?1`).bind(email),
+  ]);
 
   // No session is issued here. Whoever used the code must now sign in with the
   // password they just set, which proves they hold it rather than merely
@@ -362,8 +381,43 @@ async function handleReset(request, env) {
   return new Response(null, { status: 303, headers: { Location: '/login?reset=1', ...SECURITY_HEADERS } });
 }
 
+// An unhandled exception in a Worker becomes Cloudflare's error 1101 page:
+// no message, no route, nothing in the account unless log collection is on.
+// This project has no observability of its own, so it keeps its own record —
+// route and message only, never a body, an address or a credential.
+async function recordFailure_(env, request, err) {
+  const id = [...crypto.getRandomValues(new Uint8Array(6))]
+    .map((b) => b.toString(16).padStart(2, '0')).join('');
+  try {
+    await env.DB.prepare(
+      `INSERT INTO worker_errors (id, at, route, method, message) VALUES (?1, ?2, ?3, ?4, ?5)`
+    ).bind(id, Date.now(), new URL(request.url).pathname, request.method,
+           String(err?.stack ?? err).slice(0, 900)).run();
+  } catch {
+    // The database is the most likely thing to be broken when we get here.
+    // Losing the record is acceptable; failing to answer the request is not.
+  }
+  return id;
+}
+
 export default {
   async fetch(request, env) {
+    try {
+      return await handle(request, env);
+    } catch (err) {
+      const id = await recordFailure_(env, request, err);
+      // The reference is the whole point: it lets an operator find this exact
+      // failure in worker_errors. The visitor is told nothing else.
+      return shell('something went wrong', `
+  <h1>Something went wrong</h1>
+  <p class="sub">The failure was recorded. Nothing you did caused it.</p>
+  <p class="note">Reference <b>${esc(id)}</b> &middot; <a href="/login">Back to sign in</a></p>`, 500);
+    }
+  },
+};
+
+async function handle(request, env) {
+  {
     const url = new URL(request.url);
 
     if (url.pathname === '/healthz')
@@ -412,5 +466,5 @@ export default {
     res.headers.set('Cache-Control', 'private, no-store');
     res.headers.set('X-Signed-In-As', user.email);
     return res;
-  },
-};
+  }
+}

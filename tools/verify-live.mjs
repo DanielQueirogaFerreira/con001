@@ -98,7 +98,9 @@ const resetPost = await get('/reset', {
     next: 'a password long enough', confirm: 'a password long enough',
   }),
 });
-check('a junk reset code is refused, not fatal', resetPost.status === 200,
+// 400 is the reset form re-rendered with its one refusal message; anything 5xx
+// is the route throwing, which is what error 1101 looks like from outside.
+check('a junk reset code is refused, not fatal', resetPost.status === 400,
   `got ${resetPost.status}${resetPost.status >= 500 ? ' — the route threw' : ''}`);
 
 // 6. Liveness, which is allowed to be public and must give nothing away.
