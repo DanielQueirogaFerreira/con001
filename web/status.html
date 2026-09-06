@@ -1,0 +1,217 @@
+<title>Open Hermeneutics — Build Status</title>
+<style>
+  :root {
+    --bg:#faf8f4; --panel:#fffefb; --ink:#1d1a16; --muted:#6b6459; --line:#e3ddd2;
+    --accent:#7a5c3e; --ok:#4a6b4a; --hold:#a3402f; --idle:#8a8378;
+    --font-read: ui-serif, Georgia, "Times New Roman", serif;
+    --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  :root:not([data-theme="light"]) { color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg:#16140f; --panel:#1e1b16; --ink:#ece6dc; --muted:#9b9285; --line:#332e26;
+    --accent:#c9a173; --ok:#8fb98f; --hold:#e08a76; --idle:#7d7568; color-scheme: dark; } }
+  :root[data-theme="dark"] {
+    --bg:#16140f; --panel:#1e1b16; --ink:#ece6dc; --muted:#9b9285; --line:#332e26;
+    --accent:#c9a173; --ok:#8fb98f; --hold:#e08a76; --idle:#7d7568; color-scheme: dark; }
+  body { background:var(--bg); color:var(--ink); font-family:var(--font-ui); line-height:1.55; }
+  .wrap { max-width:1080px; margin:0 auto; padding:22px 18px 70px; }
+  h1 { font-family:var(--font-read); font-size:22px; font-weight:600; margin:0 0 3px; }
+  .sub { color:var(--muted); font-size:12.5px; margin-bottom:8px; }
+  .build { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; color:var(--accent); }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin:16px 0; }
+  .card h2 { font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin:0 0 14px; font-weight:600; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { text-align:left; font-weight:600; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); padding:0 10px 7px 0; border-bottom:1px solid var(--line); }
+  td { padding:7px 10px 7px 0; border-bottom:1px solid var(--line); vertical-align:top; }
+  tr:last-child td { border-bottom:0; }
+  .num { font-variant-numeric:tabular-nums; text-align:right; }
+  .pill { display:inline-block; font-size:10.5px; letter-spacing:.04em; text-transform:uppercase; border-radius:4px; padding:1px 7px; border:1px solid currentColor; }
+  .s-done { color:var(--ok); } .s-hold { color:var(--hold); } .s-idle { color:var(--idle); }
+  .bar { height:6px; border-radius:3px; background:var(--line); overflow:hidden; margin-top:5px; }
+  .bar > i { display:block; height:100%; background:var(--accent); }
+  .dim { color:var(--muted); font-size:12px; }
+  .mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px; }
+  .loop { display:flex; flex-wrap:wrap; gap:10px; align-items:stretch; margin-bottom:6px; }
+  .step { flex:1 1 150px; border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:12.5px; }
+  .step.now { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 8%, transparent); }
+  .step b { display:block; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); margin-bottom:3px; }
+  .note { font-size:12px; color:var(--muted); border-top:1px dashed var(--line); margin-top:14px; padding-top:11px; }
+  .warn { border-left:3px solid var(--hold); padding-left:11px; font-size:12.5px; }
+  a { color:var(--accent); }
+  code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92em; }
+</style>
+
+<div class="wrap">
+  <h1>Open Hermeneutics — build status</h1>
+  <div class="sub">
+    Every figure here is computed from the repository at build time. Nothing on this page is hand-maintained.
+  </div>
+  <div class="build">0.1.0-alpha.1+d52ed9f.dirty &nbsp;·&nbsp; claude/layered-text-interpretation-7kn6jd &nbsp;·&nbsp; built 2026-09-06 01:04Z</div>
+
+  <div class="card"><div class="warn"><strong>Built from a dirty tree.</strong>
+    This build cannot be reproduced from git, so evaluations written against it are not reliably
+    actionable. Commit before circulating it.</div></div>
+
+  <div class="card">
+    <h2>The loop</h2>
+    <div class="loop">
+      <div class="step"><b>1 · prompt</b>Instruction to the model, carrying the constraints that must hold.</div>
+      <div class="step"><b>2 · build</b>A versioned UI. <span class="mono">0.1.0-alpha.1+d52ed9f.dirty</span></div>
+      <div class="step now"><b>3 · evaluation</b>Nobody has evaluated this build yet. <strong>This is where the loop is waiting.</strong></div>
+      <div class="step "><b>4 · compiled prompt</b><code>npm run next-prompt</code> — findings, the files that own them, and the constraints.</div>
+    </div>
+    <div class="note">
+      Evaluations attach to a build id, never to "the UI". A finding written against an older build is
+      marked stale in the compiled prompt, because a fix for a problem that no longer exists is a new bug.
+      See <code>evaluations/README.md</code>.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Progress — 12 of 18 shipped</h2>
+    <div class="bar"><i style="width:67%"></i></div>
+    <table style="margin-top:14px">
+      <tr><th>Milestone</th><th>State</th><th>What it is</th></tr>
+      <tr>
+        <td><strong>Anchoring model</strong><br><span class="dim mono">docs/01-anchoring.md</span></td>
+        <td><span class="pill s-done">shipped</span></td>
+        <td class="dim">CR + span, grapheme-aligned</td></tr><tr>
+        <td><strong>Layer model</strong><br><span class="dim mono">docs/02-layers.md</span></td>
+        <td><span class="pill s-done">shipped</span></td>
+        <td class="dim">eight kinds, fork lineage, machine fence</td></tr><tr>
+        <td><strong>Seven-work corpus</strong><br><span class="dim mono">docs/03-corpus.md</span></td>
+        <td><span class="pill s-done">shipped</span></td>
+        <td class="dim">7 works seeded</td></tr><tr>
+        <td><strong>Salience + contestation</strong><br><span class="dim mono">docs/06-salience.md</span></td>
+        <td><span class="pill s-done">shipped</span></td>
+        <td class="dim">two measures, never blended</td></tr><tr>
+        <td><strong>Resonance map</strong><br><span class="dim mono">docs/10-resonance.md</span></td>
+        <td><span class="pill s-done">shipped</span></td>
+        <td class="dim">positions on questions, mandatory divergence</td></tr><tr>
+        <td><strong>Guardrails + staging gate</strong><br><span class="dim mono">docs/11-guardrails.md</span></td>
+        <td><span class="pill s-done">shipped</span></td>
+        <td class="dim">warns in dev, refuses in prod</td></tr><tr>
+        <td><strong>Advisory sign-off</strong><br><span class="dim mono">advisory/README.md</span></td>
+        <td><span class="pill s-done">shipped</span></td>
+        <td class="dim">RFCs in git</td></tr><tr>
+        <td><strong>Licences + entity</strong><br><span class="dim mono">LICENSING.md</span></td>
+        <td><span class="pill s-done">shipped</span></td>
+        <td class="dim">AGPL / CC BY-SA / CC0 / PD</td></tr><tr>
+        <td><strong>Reader prototype</strong><br><span class="dim mono">docs/12-reader-prototype.md</span></td>
+        <td><span class="pill s-done">shipped</span></td>
+        <td class="dim">layered view, slider, director lens</td></tr><tr>
+        <td><strong>Prompt compiler</strong><br><span class="dim mono">docs/13-studio-compiler.md</span></td>
+        <td><span class="pill s-done">shipped</span></td>
+        <td class="dim">refuses to merge contending readings</td></tr><tr>
+        <td><strong>Versioning + status</strong><br><span class="dim mono">docs/14-loop.md</span></td>
+        <td><span class="pill s-done">shipped</span></td>
+        <td class="dim">build ids stamped into every artefact</td></tr><tr>
+        <td><strong>Evaluation loop</strong><br><span class="dim mono">evaluations/README.md</span></td>
+        <td><span class="pill s-done">shipped</span></td>
+        <td class="dim">UI → team → prompt → UI</td></tr>
+      <tr>
+        <td><strong>Text ingestion</strong><br><span class="dim mono">docs/09-ingestion.md</span></td>
+        <td><span class="pill s-hold">blocks advisory review</span></td>
+        <td class="dim">No source text is verified. Every unit is hand-entered.</td></tr><tr>
+        <td><strong>Advisory seats</strong><br><span class="dim mono">advisory/README.md</span></td>
+        <td><span class="pill s-hold">blocks production</span></td>
+        <td class="dim">No scholars seated. rfc:001 open with zero sign-offs.</td></tr><tr>
+        <td><strong>Annotation + accounts</strong><br><span class="dim mono">docs/02-layers.md</span></td>
+        <td><span class="pill s-idle">not started</span></td>
+        <td class="dim">Readers cannot yet write, fork, or save a lens.</td></tr><tr>
+        <td><strong>Resonance view in the UI</strong><br><span class="dim mono">docs/10-resonance.md</span></td>
+        <td><span class="pill s-idle">not started</span></td>
+        <td class="dim">The map exists as a tool; the reader does not show it.</td></tr><tr>
+        <td><strong>Generation</strong><br><span class="dim mono">docs/13-studio-compiler.md</span></td>
+        <td><span class="pill s-hold">gated on seats</span></td>
+        <td class="dim">The compiler emits payloads. Nothing is wired to a model.</td></tr><tr>
+        <td><strong>Fiscal sponsor</strong><br><span class="dim mono">LICENSING.md</span></td>
+        <td><span class="pill s-idle">not started</span></td>
+        <td class="dim">Entity named with a placeholder until one is engaged.</td></tr>
+    </table>
+    <div class="note">
+      Unfinished work sits in the same table as finished work on purpose. A progress bar computed only
+      over completed milestones always reads 100%, which is how a status page misleads without anyone
+      deciding to.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Corpus — 23 units seeded, 0 verified</h2>
+    <table>
+      <tr><th>Work</th><th>Tradition</th><th class="num">Units</th><th class="num">Of</th><th class="num">Layers</th><th class="num">Readings</th></tr>
+      <tr>
+        <td>Bhagavad Gītā</td><td class="dim">hindu</td>
+        <td class="num">3</td><td class="num dim">700</td>
+        <td class="num">6</td><td class="num">7</td></tr><tr>
+        <td>The Analects</td><td class="dim">confucian</td>
+        <td class="num">4</td><td class="num dim">512</td>
+        <td class="num">1</td><td class="num">2</td></tr><tr>
+        <td>Qur'ān</td><td class="dim">islamic</td>
+        <td class="num">2</td><td class="num dim">6,236</td>
+        <td class="num">1</td><td class="num">2</td></tr><tr>
+        <td>Bible</td><td class="dim">christian</td>
+        <td class="num">4</td><td class="num dim">31,102</td>
+        <td class="num">3</td><td class="num">4</td></tr><tr>
+        <td>Dao De Jing</td><td class="dim">daoist</td>
+        <td class="num">3</td><td class="num dim">81</td>
+        <td class="num">3</td><td class="num">3</td></tr><tr>
+        <td>Principal Upaniṣads</td><td class="dim">hindu</td>
+        <td class="num">3</td><td class="num dim">1,350</td>
+        <td class="num">2</td><td class="num">3</td></tr><tr>
+        <td>Dhammapada</td><td class="dim">buddhist</td>
+        <td class="num">4</td><td class="num dim">423</td>
+        <td class="num">1</td><td class="num">2</td></tr>
+    </table>
+    <div class="note warn" style="margin-top:14px">
+      <strong>0 of 23 text units are verified.</strong>
+      Every passage in this build was hand-entered to demonstrate the data format. Unverified units are
+      not authoritative editions of anyone's scripture and must not be displayed to readers as such.
+      Ingestion from authoritative editions is unstarted work, and it blocks advisory review regardless
+      of whether scholars are seated. See <code>docs/09-ingestion.md</code>.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Advisory gate — 3 item(s) held</h2>
+    <table>
+      <tr><th>RFC</th><th>Status</th><th>Seats</th><th>Covers</th></tr>
+      <tr>
+          <td><strong>rfc:001</strong><br><span class="dim">Anattā and ātman: recording a contradiction on the abiding self</span><br><span class="dim mono">advisory/rfc/001-anatta-vs-atman.md</span></td>
+          <td><span class="pill s-hold">open</span></td>
+          <td class="dim">hindu, buddhist<br>seat(s) not filled: hindu, buddhist</td>
+          <td class="dim mono">res:self.upanishad-dhammapada · held<br>pos:upanishad.ish1.shankara · held<br>pos:dhp.279.buddhaghosa · held</td>
+        </tr>
+    </table>
+    <div class="note">
+      <code>npm run build:prod</code> refuses while anything above is held.
+      <code>npm run build:alpha</code> ships without those items and names them in
+      <code>dist/manifest.json</code>, which is the public transparency log and the scholar
+      recruitment agenda. No sign-off has been invented to unblock a build.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Checks</h2>
+    <table>
+      <tr><td style="width:30%"><strong>Test suite</strong></td>
+        <td><span class="pill s-done">passing</span>
+        <span class="dim"> 62 checks across 6 suites</span></td></tr>
+      <tr><td><strong>Corpus integrity</strong></td><td class="dim">15 editions, 17 layers, 23 readings, 11 positions, 4 resonances — all references resolve</td></tr>
+      <tr><td><strong>Dependencies</strong></td><td class="dim">none — the build and the test suite are plain Node</td></tr>
+    </table>
+    
+  </div>
+
+  <div class="card">
+    <h2>Licensing</h2>
+    <table>
+      <tr><td style="width:36%">Code</td><td class="mono">AGPL-3.0-only</td></tr>
+      <tr><td>Interpretation corpus</td><td class="mono">CC BY-SA 4.0</td></tr>
+      <tr><td>Anchoring data</td><td class="mono">CC0 1.0</td></tr>
+      <tr><td>Source texts</td><td class="mono">public domain, no rights claimed</td></tr>
+    </table>
+    <div class="note">Copyright (c) 2026 The Open Hermeneutics Project, a fiscally sponsored project of [Fiscal Sponsor].
+      The bracket is a placeholder and is deliberately visible.</div>
+  </div>
+</div>

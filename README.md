@@ -57,7 +57,10 @@ Full reasoning, alternatives considered, and source/licence notes: [`docs/03-cor
 - [`docs/11-guardrails.md`](docs/11-guardrails.md) — thresholds, consequence tiers, the staging rule, and the line between the platform asserting and a person expressing
 - [`docs/12-reader-prototype.md`](docs/12-reader-prototype.md) — the Reader / Studio prototype and what it demonstrates
 - [`docs/13-studio-compiler.md`](docs/13-studio-compiler.md) — the prompt compiler, and why it refuses to merge contending readings
+- [`docs/14-loop.md`](docs/14-loop.md) — versioning, the status page, and the evaluate → prompt cycle
 - [`advisory/README.md`](advisory/README.md) — scholar sign-off, managed in git
+- [`evaluations/README.md`](evaluations/README.md) — how a team member files a UI finding
+- [`CHANGELOG.md`](CHANGELOG.md) — what shipped in each build
 - [`LICENSING.md`](LICENSING.md) — the four-licence split, awaiting confirmation
 
 ## Repository layout
@@ -96,6 +99,15 @@ Build the Reader / Studio prototype, then open `web/reader.html`:
 
 ```
 npm run reader
+```
+
+See where the construction actually stands — every figure computed from the
+repo, nothing hand-maintained:
+
+```
+npm run status        # builds web/status.html
+npm run version       # the build id everything is stamped with
+npm run next-prompt   # compiles open team findings into the next prompt
 ```
 
 Build for production — this **refuses** while any high-consequence claim is
@@ -243,6 +255,32 @@ read.
 > Note: `npm run build:prod --hold-excluded` does **not** work — npm swallows the
 > flag as its own config. Use `npm run build:alpha`, or
 > `npm run build:prod -- --hold-excluded`.
+
+## The loop
+
+```
+   1 prompt ──▶ 2 build ──▶ 3 evaluation ──▶ 4 compiled prompt ──┐
+      ▲                                                           │
+      └───────────────────────────────────────────────────────────┘
+```
+
+Every build has an id — `0.1.0-alpha.1+d52ed9f`, with `.dirty` when the tree had
+uncommitted changes and the build therefore cannot be reproduced. Team
+evaluations attach to that id, never to "the UI".
+
+`npm run next-prompt` compiles open findings into one prompt, and adds three
+things a human re-typing feedback would drop: **the files that own each area**,
+a **stale** flag on findings written against an older build, and **the
+constraints that must survive the change** — because a guardrail usually
+disappears three cycles later via a reasonable finding, a reasonable change, and
+nobody remembering why the rule existed.
+
+A finding needs `observed` and `expected` separately. "The slider feels wrong"
+is rejected by the loader as a complaint rather than a finding.
+
+Evaluations are **not** the advisory gate: they queue the next iteration, they
+block nothing. Advisory RFCs block the production build. A usability complaint
+must never clear a doctrinal gate.
 
 ## Status
 

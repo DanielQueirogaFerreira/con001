@@ -10,6 +10,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { map } from './resonance.mjs';
+import { versionInfo } from './version.mjs';
 
 // The prompt compiler is inlined verbatim rather than reimplemented, so the
 // browser runs exactly the module Node tests. It is written import-free for
@@ -33,7 +34,9 @@ const set = prod ? m.productionSet() : { positions: m.positions, resonances: m.r
 // Only the anchors the prototype opens on, to keep the file small.
 const ANCHORS = ['gita:2.47', 'dhammapada:1', 'upanishad:ISH.1', 'daodejing:1', 'quran:2:1'];
 
+const version = versionInfo('.');
 const corpus = {
+  build: version.build,
   built: new Date().toISOString().slice(0, 10),
   mode: prod ? 'production' : 'development',
   held: set.held,
@@ -129,7 +132,7 @@ const html = `<title>Open Hermeneutics Reader</title>
   <h1>Open Hermeneutics — Reader &amp; Studio prototype</h1>
   <div class="sub">
     Seven works. Layered reading, the contestation slider, and the Director Lens Hook.
-    Built <span id="built"></span> · <span id="mode"></span> ·
+    <span class="mono" style="color:var(--accent)">${version.build}</span> · <span id="mode"></span> ·
     <strong>no source text here is verified</strong> — every passage was hand-entered to demonstrate the format.
   </div>
 
@@ -189,7 +192,7 @@ ${COMPILER}
 </script>
 <script>
 const C = JSON.parse(document.getElementById('corpus').textContent);
-document.getElementById('built').textContent = C.built;
+
 document.getElementById('mode').textContent = C.mode + (C.held.length ? \` · \${C.held.length} item(s) held for review\` : '');
 
 const layerOf = Object.fromEntries(C.layers.map(l => [l.id, l]));

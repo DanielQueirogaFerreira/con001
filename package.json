@@ -1,6 +1,6 @@
 {
   "name": "con001",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha.1",
   "private": true,
   "description": "A layered reader for contested texts \u2014 specification and data model.",
   "type": "module",
@@ -11,9 +11,12 @@
     "reader": "node tools/build-reader.mjs",
     "build:prod": "node tools/build-prod.mjs",
     "resolve-spans": "node tools/resolve-spans.mjs",
-    "test": "node tools/validate.mjs && node tools/test-validate.mjs && node tools/test-salience.mjs && node tools/test-resonance.mjs && node tools/test-advisory.mjs && node tools/test-prompt-compiler.mjs",
+    "test": "node tools/validate.mjs && node tools/test-validate.mjs && node tools/test-salience.mjs && node tools/test-resonance.mjs && node tools/test-advisory.mjs && node tools/test-prompt-compiler.mjs && node tools/test-loop.mjs",
     "build:alpha": "node tools/build-prod.mjs --hold-excluded",
-    "advisory": "node tools/advisory.mjs"
+    "advisory": "node tools/advisory.mjs",
+    "version": "node tools/version.mjs",
+    "status": "node tools/build-status.mjs",
+    "next-prompt": "node tools/next-prompt.mjs"
   },
   "engines": {
     "node": ">=20"
