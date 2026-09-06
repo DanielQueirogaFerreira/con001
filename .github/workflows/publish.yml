@@ -91,6 +91,11 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npx --yes wrangler@4 deploy
 
+      # A deploy that succeeds and serves the site ungated is the failure this
+      # project cares about, and it is silent. Ask the live site.
+      - name: Certify the deployed site is gated
+        run: node tools/verify-live.mjs https://con001.daniel-queiroga.workers.dev
+
       - name: Report what was deployed
         run: |
           node -e "console.log('deployed build:', require('./dist/version.json').build)"

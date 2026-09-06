@@ -1,0 +1,36 @@
+# Certifies the LIVE site is gated, from outside.
+#
+# tools/verify-live.mjs has to run somewhere with real network access to the
+# deployed Worker. That is the point of it: the failure it looks for — the asset
+# server answering before the login gate — is invisible from the configuration
+# and silent in the deploy log. So it runs here, on a GitHub runner, against the
+# public URL, with no credentials of any kind.
+#
+# Runs after every publish, and on demand.
+name: verify
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Site to certify'
+        required: true
+        default: 'https://con001.daniel-queiroga.workers.dev'
+  workflow_call:
+    inputs:
+      url:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tools/verify-live.mjs "${{ inputs.url }}"
