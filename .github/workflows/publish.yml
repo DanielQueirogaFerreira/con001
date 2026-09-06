@@ -73,6 +73,10 @@ jobs:
       # names them in dist/manifest.json. To refuse to deploy at all while
       # anything is held, change this to `npm run build:prod`.
       - run: npm run build:alpha
+      # reader.html, status.html and console.html are generated, untracked, and
+      # are the entire site: without this step wrangler would ship a Worker with
+      # no assets behind it. preflight (inside `npm run status`) refuses first.
+      - run: npm run reader
       - run: npm run status
 
       - name: Refuse to deploy an unconfigured database binding
