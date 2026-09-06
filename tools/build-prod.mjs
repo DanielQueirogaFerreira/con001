@@ -11,6 +11,7 @@
 import { execFileSync } from 'node:child_process';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { map } from './resonance.mjs';
+import { versionInfo } from './version.mjs';
 
 const allowExcluded = process.argv.includes('--hold-excluded');
 const step = (label, fn) => {
@@ -77,7 +78,8 @@ const seatsWanted = new Set();
 for (const h of held) for (const s2 of rfcFor(h.id)?.seats_required ?? []) seatsWanted.add(s2);
 
 const manifest = {
-  built: new Date().toISOString(),
+  build: versionInfo('.').build,
+  built: versionInfo('.').built,
   mode: 'production',
   published: { positions: set.positions.length, resonances: set.resonances.length },
   held: held.map((h) => {

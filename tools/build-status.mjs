@@ -147,7 +147,7 @@ const html = `<title>Open Hermeneutics — Build Status</title>
   <div class="sub">
     Every figure here is computed from the repository at build time. Nothing on this page is hand-maintained.
   </div>
-  <div class="build">${esc(v.build)} &nbsp;·&nbsp; ${esc(v.branch)} &nbsp;·&nbsp; built ${esc(v.built.slice(0, 16).replace('T', ' '))}Z</div>
+  <div class="build">${esc(v.build)} &nbsp;·&nbsp; ${esc(v.branch)} &nbsp;·&nbsp; commit ${esc(v.built.slice(0, 16).replace('T', ' '))}</div>
 
   ${v.dirty ? `<div class="card"><div class="warn"><strong>Built from a dirty tree.</strong>
     This build cannot be reproduced from git, so evaluations written against it are not reliably

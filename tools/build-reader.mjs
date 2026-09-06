@@ -37,7 +37,7 @@ const ANCHORS = ['gita:2.47', 'dhammapada:1', 'upanishad:ISH.1', 'daodejing:1', 
 const version = versionInfo('.');
 const corpus = {
   build: version.build,
-  built: new Date().toISOString().slice(0, 10),
+  built: version.built.slice(0, 10),
   mode: prod ? 'production' : 'development',
   held: set.held,
   anchors: ANCHORS,

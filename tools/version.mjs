@@ -39,7 +39,10 @@ export function versionInfo(root = '.') {
     // and the id says so rather than pretending otherwise.
     build: `${pkg.version}+${sha}${dirty ? '.dirty' : ''}`,
     committed,
-    built: new Date().toISOString(),
+    // The commit date, NOT the wall clock. Builds must be reproducible: the
+    // same commit has to produce byte-identical output, or every rebuild
+    // dirties the tree and the `.dirty` flag becomes meaningless noise.
+    built: committed || new Date().toISOString(),
   };
 }
 
