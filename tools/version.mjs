@@ -43,6 +43,13 @@ export function versionInfo(root = '.') {
     // same commit has to produce byte-identical output, or every rebuild
     // dirties the tree and the `.dirty` flag becomes meaningless noise.
     built: committed || new Date().toISOString(),
+    // The same identity, short enough to sit in a corner of the screen without
+    // becoming furniture: `0.1.0a1·f58cc27`, with a trailing * for a dirty
+    // tree. Nothing is invented here — it is `build` with the words taken out,
+    // so a person reading the badge and a person reading a log are looking at
+    // the same build.
+    short: `${pkg.version.replace(/-alpha\./, 'a').replace(/-beta\./, 'b').replace(/-rc\./, 'rc')}` +
+           `\u00b7${sha}${dirty ? '*' : ''}`,
   };
 }
 

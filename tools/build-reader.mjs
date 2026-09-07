@@ -19,6 +19,10 @@ const COMPILER = readFileSync('tools/prompt-compiler.mjs', 'utf8')
   .replace(/^export (const|function) /gm, '$1 ');
 
 const read = (p) => JSON.parse(readFileSync(p, 'utf8'));
+// Build-time escaping. The browser code below defines its own; this one is for
+// the values baked into the markup here.
+const attr = (v) => String(v).replace(/[&<>"]/g, (c) =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const prod = process.argv.includes('--prod');
 
 const works = read('data/works/works.json');
@@ -145,13 +149,33 @@ const html = `<meta charset="utf-8">
   .verse b { font-family: var(--font-ui); font-size: 10.5px; color: var(--muted);
              min-width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
   .verse .has { color: var(--accent); }
+
+  /* The build badge. It sits over the page rather than in it, so it needs its
+     own ground: a translucent scrim of the panel colour plus a blur, which
+     keeps the id legible over text or whitespace in either theme without
+     drawing a box around itself. Small enough to ignore, sharp enough to read
+     when you go looking for which build you are testing. */
+  .ver { position: fixed; right: 12px; bottom: 12px; z-index: 30;
+         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+         font-size: 10.5px; line-height: 1; letter-spacing: .02em;
+         color: var(--muted); text-decoration: none;
+         padding: 6px 9px; border-radius: 7px;
+         border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+         background: color-mix(in srgb, var(--panel) 78%, transparent);
+         backdrop-filter: blur(8px) saturate(1.2);
+         -webkit-backdrop-filter: blur(8px) saturate(1.2); }
+  .ver:hover { color: var(--ink); border-color: var(--accent); }
+  .ver:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-transparency: reduce) {
+    .ver { background: var(--panel); backdrop-filter: none; }
+  }
 </style>
 
 <div class="wrap">
   <h1>Open Hermeneutics — Reader &amp; Studio prototype</h1>
   <div class="sub">
     Seven works. Layered reading, the contestation slider, and the Director Lens Hook.
-    <span class="mono" style="color:var(--accent)">${version.build}</span> · <span id="mode"></span> ·
+    <span id="mode"></span> ·
     <strong>no source text here is verified</strong> — the King James Version below is machine-ingested
     and checksummed but not curator-signed; the sample passages in other works were hand-entered.
     &nbsp;·&nbsp; <a href="/status">Build status</a>
@@ -216,6 +240,8 @@ const html = `<meta charset="utf-8">
     </div>
   </div>
 </div>
+
+<a class="ver" href="/status" title="${attr(version.build)} · ${attr(version.branch)} · ${attr(version.built.slice(0, 10))}">${attr(version.short)}</a>
 
 <script id="corpus" type="application/json">${JSON.stringify(corpus).replace(/</g, '\\u003c')}</script>
 <script>
