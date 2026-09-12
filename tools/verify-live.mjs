@@ -45,7 +45,12 @@ check('it redirects to the login page', (root.headers?.get('Location') ?? '') ==
 for (const asset of ['/', '/status', '/console',
                      '/reader.html', '/status.html', '/console.html', '/index.html',
                      // Scripture is not the public part either.
-                     '/corpus/bible/JHN.json', '/corpus/bible/index.json']) {
+                     '/corpus/bible/JHN.json', '/corpus/bible/index.json',
+                     // Nor is this repository's own source. The navigator publishes the
+                     // tracked tree at the application's origin, which is only acceptable
+                     // while it sits behind the gate — so the gate is checked, not assumed.
+                     '/evolution', '/evolution.json',
+                     '/source/manifest.json', '/source/package.json', '/source/worker/index.mjs']) {
   const res = await get(asset);
   const leaked = res.status === 200;
   check(`${asset} is not served without a session`, !leaked,

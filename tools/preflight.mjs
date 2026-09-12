@@ -51,8 +51,15 @@ for (const page of ['reader.html', 'status.html', 'console.html'])
 
 // `npm run status` is what the deploy scripts call, so the console is only
 // guaranteed to be rebuilt if that script builds it.
+check('npm run status builds the navigator', /build-evolution/.test(pkg.scripts?.status ?? ''),
+  'the history log would go stale while the code moved on');
+
 check('npm run status builds the console', /build-console/.test(pkg.scripts?.status ?? ''),
   'console.html would go stale while reader and status moved on');
+
+check('the navigator was built into the assets',
+  !!assetsDir && existsSync(`${assetsDir}/evolution.html`) && existsSync(`${assetsDir}/evolution.json`),
+  'the /evolution route serves these');
 
 check('the Bible corpus was built into the assets',
   !!assetsDir && existsSync(`${assetsDir}/corpus/bible/index.json`),

@@ -725,7 +725,10 @@ async function handle(request, env) {
     // Clean paths for the pages people actually name. The root is the platform
     // itself — a reader who signs in wants the text, not a dashboard about the
     // text — and the build status lives one path along at /status.
-    const PAGES = { '/': '/reader.html', '/status': '/status.html', '/console': '/console.html' };
+    const PAGES = { '/': '/reader.html', '/status': '/status.html', '/console': '/console.html',
+                    // An ADDRESS, not a name: it sits in links and bookmarks, and should not
+                    // churn because a word improved.
+                    '/evolution': '/evolution.html' };
     const target = PAGES[url.pathname] ? new URL(PAGES[url.pathname], url) : request;
     const asset = await env.ASSETS.fetch(target);
     const res = new Response(asset.body, asset);

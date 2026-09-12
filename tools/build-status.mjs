@@ -28,6 +28,14 @@ const units = read('data/editions/text-units.json');
 // is counted from the index rather than by loading four megabytes to length it.
 const ingested = existsSync('data/editions/bible-kjv/index.json')
   ? read('data/editions/bible-kjv/index.json') : { units: 0, books: [] };
+
+// The navigator's own log — the SAME file the full view animates, not a summary computed
+// separately, which would be a second source of truth for the same four numbers. It is read
+// at build time because this page is generated at build time; the spec's runtime fetch
+// exists so the card cannot go stale against the log, and a card built from the log in the
+// same pass cannot. It fails SILENTLY: a missing history file is not a service problem, and
+// an error banner on a status page says "something is wrong" about the wrong thing.
+const evo = existsSync('web/evolution.json') ? read('web/evolution.json') : null;
 const editions = read('data/editions/editions.json');
 const layers = read('data/layers/layers.json');
 const interps = read('data/interpretations/interpretations.json');
@@ -133,10 +141,32 @@ const html = `<meta charset="utf-8">
   @media (max-width: 640px) {
     .wrap { padding:14px 12px 60px; }
     h1 { font-size:19px; }
+    .sub, .build { font-size:12px; }
     .card { padding:13px 14px; border-radius:10px; }
+    .card h2 { font-size:10.5px; }
     table { font-size:12.5px; }
-    th, td { padding-right:12px; white-space:nowrap; }
+    th, td { padding-right:12px; }
     .step { flex:1 1 100%; }
+  }
+
+  /* Held vertically — 9:16, about 390 CSS pixels — a six-column table cannot be made to
+     fit by shrinking the type; it can only scroll sideways, and a table you have to drag
+     is a table nobody reads. So the rows stop being rows: each cell becomes a labelled
+     line, and the header row goes away because every cell now carries its own label. */
+  @media (max-width: 560px) {
+    .stack table, .stack tbody, .stack tr, .stack td { display:block; width:100%; }
+    .stack tr:first-child { display:none; }          /* the header row */
+    .stack tr { border-bottom:1px solid var(--line); padding:10px 0; }
+    .stack tr:last-child { border-bottom:0; }
+    .stack td { border:0; padding:2px 0; text-align:left; }
+    .stack td.num { text-align:left; }
+    .stack td[data-label]::before {
+      content: attr(data-label) " ";
+      display:inline-block; min-width:78px;
+      font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);
+    }
+    .stack td:first-child::before { display:none; }  /* the row's own name needs no label */
+    .stack td:first-child { font-size:13.5px; margin-bottom:3px; }
   }
   h1 { font-family:var(--font-read); font-size:22px; font-weight:600; margin:0 0 3px; }
   .sub { color:var(--muted); font-size:12.5px; margin-bottom:8px; }
@@ -154,6 +184,10 @@ const html = `<meta charset="utf-8">
   .bar > i { display:block; height:100%; background:var(--accent); }
   .dim { color:var(--muted); font-size:12px; }
   .mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px; }
+  .figs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+  .fig b { display:block; font-size:21px; font-variant-numeric:tabular-nums; }
+  .fig span { font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
+  @media (max-width: 560px) { .figs { grid-template-columns:repeat(2,minmax(0,1fr)); } }
   .loop { display:flex; flex-wrap:wrap; gap:10px; align-items:stretch; margin-bottom:6px; }
   .step { flex:1 1 150px; border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:12.5px; }
   .step.now { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 8%, transparent); }
@@ -198,16 +232,16 @@ const html = `<meta charset="utf-8">
   <div class="card">
     <h2>Progress — ${done} of ${total} shipped</h2>
     ${bar(done, total)}
-    <table style="margin-top:14px">
+    <div class="scroll stack" style="margin-top:14px"><table>
       <tr><th>Milestone</th><th>State</th><th>What it is</th></tr>
       ${milestones.map(([name, ok, what, doc]) => `<tr>
-        <td><strong>${esc(name)}</strong><br><span class="dim mono">${esc(doc)}</span></td>
-        <td><span class="pill ${ok ? 's-done' : 's-idle'}">${ok ? 'shipped' : 'pending'}</span></td>
-        <td class="dim">${esc(what)}</td></tr>`).join('')}
+        <td data-label="Milestone"><strong>${esc(name)}</strong><br><span class="dim mono">${esc(doc)}</span></td>
+        <td data-label="State"><span class="pill ${ok ? 's-done' : 's-idle'}">${ok ? 'shipped' : 'pending'}</span></td>
+        <td class="dim" data-label="What it is">${esc(what)}</td></tr>`).join('')}
       ${ahead.map(([name, what, doc, blocks]) => `<tr>
-        <td><strong>${esc(name)}</strong><br><span class="dim mono">${esc(doc)}</span></td>
-        <td><span class="pill ${blocks ? 's-hold' : 's-idle'}">${esc(blocks || 'not started')}</span></td>
-        <td class="dim">${esc(what)}</td></tr>`).join('')}
+        <td data-label="Milestone"><strong>${esc(name)}</strong><br><span class="dim mono">${esc(doc)}</span></td>
+        <td data-label="State"><span class="pill ${blocks ? 's-hold' : 's-idle'}">${esc(blocks || 'not started')}</span></td>
+        <td class="dim" data-label="What it is">${esc(what)}</td></tr>`).join('')}
     </table></div>
     <div class="note">
       Unfinished work sits in the same table as finished work on purpose. A progress bar computed only
@@ -216,9 +250,26 @@ const html = `<meta charset="utf-8">
     </div>
   </div>
 
+  ${evo ? `<div class="card">
+    <h2>Codebase Navigator — last ${evo.window_days} days</h2>
+    <div class="figs">
+      ${[[evo.totals.commits, 'commits'], [evo.totals.files_at_head, 'files monitored'],
+         [evo.totals.edits, 'file edits'], [evo.totals.authors, 'contributors']]
+        .map(([n, label]) => `<div class="fig"><b>${n.toLocaleString()}</b><span>${esc(label)}</span></div>`).join('')}
+    </div>
+    ${evo.head ? `<div class="note" style="border-top:0;margin-top:12px;padding-top:0">
+      latest tracked commit <span class="mono">${esc(evo.head.sha)}</span> — ${esc(evo.head.subject)}</div>` : ''}
+    <div class="note">
+      <a href="/evolution"><strong>Open the navigator &rarr;</strong></a>
+      — the repository's structure and history as a scene you fly through: the directory tree
+      laid out in three dimensions, a playhead sweeping the window, and every file readable
+      where it sits. Area <span class="mono">501</span>.
+    </div>
+  </div>` : ''}
+
   <div class="card">
     <h2>Corpus — ${(units.length + ingested.units).toLocaleString()} units, ${verified} verified</h2>
-    <div class="scroll"><table>
+    <div class="scroll stack"><table>
       <tr><th>Work</th><th>Tradition</th><th class="num">Units</th><th class="num">Of</th><th class="num">Layers</th><th class="num">Readings</th></tr>
       ${perWork.map((w) => {
         // The ingested edition belongs to the row for its work, not to a
@@ -226,9 +277,9 @@ const html = `<meta charset="utf-8">
         // through, only how much of the work is actually there.
         const held = w.units + (w.title === 'Bible' ? ingested.units : 0);
         return `<tr>
-        <td>${esc(w.title)}</td><td class="dim">${esc(w.tradition)}</td>
-        <td class="num">${held.toLocaleString()}</td><td class="num dim">${w.total.toLocaleString()}</td>
-        <td class="num">${w.layers}</td><td class="num">${w.interps}</td></tr>`;
+        <td data-label="Work">${esc(w.title)}</td><td class="dim" data-label="Tradition">${esc(w.tradition)}</td>
+        <td class="num" data-label="Units">${held.toLocaleString()}</td><td class="num dim" data-label="Of">${w.total.toLocaleString()}</td>
+        <td class="num" data-label="Layers">${w.layers}</td><td class="num" data-label="Readings">${w.interps}</td></tr>`;
       }).join('')}
     </table></div>
     <div class="note warn" style="margin-top:14px">
@@ -245,15 +296,15 @@ const html = `<meta charset="utf-8">
 
   <div class="card">
     <h2>Advisory gate — ${held.length} item(s) held</h2>
-    ${advisory.rfcs.length ? `<div class="scroll"><table>
+    ${advisory.rfcs.length ? `<div class="scroll stack"><table>
       <tr><th>RFC</th><th>Status</th><th>Seats</th><th>Covers</th></tr>
       ${advisory.rfcs.map((r) => {
         const sat = advisory.seatsSatisfied(r);
         return `<tr>
-          <td><strong>${esc(r.id)}</strong><br><span class="dim">${esc(r.title)}</span><br><span class="dim mono">${esc(r._file)}</span></td>
-          <td><span class="pill ${r.status === 'approved' ? 's-done' : 's-hold'}">${esc(r.status)}</span></td>
-          <td class="dim">${esc(r.seats_required.join(', '))}<br>${esc(sat.ok ? 'all cleared' : sat.why)}</td>
-          <td class="dim mono">${r.targets.map((t) => esc(t) + (heldIds.has(t) ? ' · held' : '')).join('<br>')}</td>
+          <td data-label="RFC"><strong>${esc(r.id)}</strong><br><span class="dim">${esc(r.title)}</span><br><span class="dim mono">${esc(r._file)}</span></td>
+          <td data-label="Status"><span class="pill ${r.status === 'approved' ? 's-done' : 's-hold'}">${esc(r.status)}</span></td>
+          <td class="dim" data-label="Seats">${esc(r.seats_required.join(', '))}<br>${esc(sat.ok ? 'all cleared' : sat.why)}</td>
+          <td class="dim mono" data-label="Covers">${r.targets.map((t) => esc(t) + (heldIds.has(t) ? ' · held' : '')).join('<br>')}</td>
         </tr>`;
       }).join('')}
     </table></div>` : '<div class="dim">No RFCs opened.</div>'}
