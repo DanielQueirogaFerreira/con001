@@ -12,6 +12,7 @@
 //   node tools/build-status.mjs
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { BADGE_CSS, BADGE_SCRIPT, badgeHtml } from './badge.mjs';
 import { execFileSync } from 'node:child_process';
 import { versionInfo } from './version.mjs';
 import { map } from './resonance.mjs';
@@ -195,6 +196,7 @@ const html = `<meta charset="utf-8">
   .note { font-size:12px; color:var(--muted); border-top:1px dashed var(--line); margin-top:14px; padding-top:11px; }
   .warn { border-left:3px solid var(--hold); padding-left:11px; font-size:12.5px; }
   a { color:var(--accent); }
+  ${BADGE_CSS}
   code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92em; }
 </style>
 
@@ -340,12 +342,22 @@ const html = `<meta charset="utf-8">
       The bracket is a placeholder and is deliberately visible.</div>
   </div>
 </div>
+
+${badgeHtml({ short: v.short, built: v.built, area: 'status' })}
+<script>${BADGE_SCRIPT}</script>
 `;
 
 mkdirSync('web', { recursive: true });
 writeFileSync('web/status.html', html);
 mkdirSync('dist', { recursive: true });
 writeFileSync('dist/version.json', JSON.stringify(v, null, 2) + '\n');
+
+// The Worker renders the login, reset and account pages itself and has no build step of its
+// own, so it reads its build from here through its asset binding — not over HTTP, which
+// would mean a gated page fetching a gated asset to find out what it is.
+writeFileSync('web/version.json', JSON.stringify({
+  short: v.short, build: v.build, built: v.built, branch: v.branch,
+}));
 
 console.log(
   `build-status: web/status.html (${(html.length / 1024).toFixed(0)} KB) — ` +

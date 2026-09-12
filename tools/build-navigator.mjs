@@ -11,6 +11,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { versionInfo } from './version.mjs';
+import { BADGE_CSS, BADGE_SCRIPT, badgeHtml } from './badge.mjs';
 
 const version = versionInfo('.');
 const AREA = '501';   // this project's identifier for the area; printed in the HUD
@@ -104,6 +105,10 @@ const html = `<meta charset="utf-8">
   .sel { font-size:12.5px; }
   .sel .path { font-family:ui-monospace,Menlo,monospace; font-size:11.5px; word-break:break-all; }
 
+  ${BADGE_CSS}
+  /* The page badge sits clear of the legend card's bottom edge on a phone, where the two
+     would otherwise overlap. */
+  @media (max-width: 560px) { .wrap { padding-bottom:62px; } }
   @media (max-width: 760px) { .panels { grid-template-columns:minmax(0,1fr); } }
   @media (max-width: 560px) {
     .wrap { padding:12px 10px 32px; }
@@ -166,7 +171,10 @@ const html = `<meta charset="utf-8">
   </div>
 </div>
 
+${badgeHtml({ short: version.short, built: version.built, area: 'navigator · 501' })}
+
 <script>
+${BADGE_SCRIPT}
 ${CAMERA}
 ${EVO}
 

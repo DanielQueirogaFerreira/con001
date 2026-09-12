@@ -9,6 +9,7 @@
 //   node tools/build-reader.mjs --prod     production set only (held items excluded)
 
 import { readFileSync, writeFileSync, mkdirSync, cpSync } from 'node:fs';
+import { BADGE_CSS, BADGE_SCRIPT, badgeHtml } from './badge.mjs';
 import { map } from './resonance.mjs';
 import { versionInfo } from './version.mjs';
 
@@ -119,7 +120,6 @@ const html = `<meta charset="utf-8">
     .verse b { min-width: 40px; }
     select { padding: 9px 10px; font-size: 14px; flex: 1 1 auto; min-width: 0; }
     input[type="range"] { height: 30px; }
-    .ver { right: 8px; bottom: 8px; font-size: 10px; padding: 5px 7px; }
   }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
   .card h2 { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; font-weight: 600; }
@@ -162,6 +162,7 @@ const html = `<meta charset="utf-8">
   .chip { font-size: 11px; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; color: var(--muted); }
   .split { border-left: 3px solid var(--hot); padding-left: 10px; font-size: 12px; margin-bottom: 12px; }
   a { color: var(--accent); }
+  ${BADGE_CSS}
   select { font: inherit; font-size: 12.5px; color: var(--ink); background: var(--panel);
            border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
   .verses { margin-top: 12px; max-height: 340px; overflow-y: auto; }
@@ -187,25 +188,6 @@ const html = `<meta charset="utf-8">
   .out .fail { border-left: 3px solid var(--hot); color: var(--hot); padding-left: 10px; }
   .machine-mark { font-size: 11px; color: var(--machine); margin-top: 6px; }
 
-  /* The build badge. It sits over the page rather than in it, so it needs its
-     own ground: a translucent scrim of the panel colour plus a blur, which
-     keeps the id legible over text or whitespace in either theme without
-     drawing a box around itself. Small enough to ignore, sharp enough to read
-     when you go looking for which build you are testing. */
-  .ver { position: fixed; right: 12px; bottom: 12px; z-index: 30;
-         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-         font-size: 10.5px; line-height: 1; letter-spacing: .02em;
-         color: var(--muted); text-decoration: none;
-         padding: 6px 9px; border-radius: 7px;
-         border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
-         background: color-mix(in srgb, var(--panel) 78%, transparent);
-         backdrop-filter: blur(8px) saturate(1.2);
-         -webkit-backdrop-filter: blur(8px) saturate(1.2); }
-  .ver:hover { color: var(--ink); border-color: var(--accent); }
-  .ver:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  @media (prefers-reduced-transparency: reduce) {
-    .ver { background: var(--panel); backdrop-filter: none; }
-  }
 </style>
 
 <div class="wrap">
@@ -289,7 +271,7 @@ const html = `<meta charset="utf-8">
   </div>
 </div>
 
-<a class="ver" href="/status" title="${attr(version.build)} · ${attr(version.branch)} · ${attr(version.built.slice(0, 10))}">${attr(version.short)}</a>
+${badgeHtml({ short: version.short, built: version.built, area: 'reader' })}
 
 <script id="corpus" type="application/json">${JSON.stringify(corpus).replace(/</g, '\\u003c')}</script>
 <script>
@@ -878,6 +860,7 @@ render();
   document.getElementById('bkBook').value = usfm;
   showBook(usfm, chapter);
 }
+${BADGE_SCRIPT}
 </script>
 `;
 

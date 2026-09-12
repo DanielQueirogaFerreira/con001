@@ -248,11 +248,20 @@ async function seeded() {
 
 await t('an unauthenticated request never reaches the assets', async () => {
   const env = await seeded();
-  let assetsTouched = false;
-  env.ASSETS.fetch = async () => { assetsTouched = true; return new Response('leak'); };
+  // The Worker reads its own build from /version.json through this binding so the gate
+  // pages can name the build that refused you. That is the ONLY thing it may touch before
+  // a session exists, and nothing it reads may reach the visitor — so the test names the
+  // exception rather than allowing any asset through.
+  const touched = [];
+  env.ASSETS.fetch = async (r) => {
+    touched.push(new URL(typeof r === 'string' ? r : r.url).pathname);
+    return new Response('leak');
+  };
   const res = await worker.fetch(req('/'), env);
   assert(res.status === 303 && res.headers.get('Location') === '/login', `expected redirect, got ${res.status}`);
-  assert(!assetsTouched, 'the gate must run before the asset server, or it is decorative');
+  assert(touched.every((p) => p === '/version.json'),
+    `the gate must run before the asset server, or it is decorative — it fetched ${touched.join(', ')}`);
+  assert(!(await res.text()).includes('leak'), 'asset content reached an unauthenticated visitor');
 });
 
 await t('an unknown email and a wrong password are indistinguishable', async () => {

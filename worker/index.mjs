@@ -9,6 +9,7 @@
 // is a new identities row, not a migration of users.
 
 import { compile } from '../tools/prompt-compiler.mjs';
+import { BADGE_CSS, BADGE_SCRIPT, badgeHtml } from '../tools/badge.mjs';
 import {
   DUMMY_RECORD, LOGIN_FAILED, PASSWORD_MIN, SESSION_COOKIE, SESSION_TTL_SECONDS,
   hashPassword, hashToken, isLockedOut, looksLikeEmail, newSessionToken,
@@ -91,11 +92,37 @@ const REVEAL_SCRIPT = `
     });
   }`;
 
+/**
+ * The build this Worker is running, read once from its own assets.
+ *
+ * A Worker has no build step to inject a version into, and the pages it renders itself —
+ * the gate — are exactly the pages someone is looking at when they cannot get in and need
+ * to say which build refused them. So it reads the file the build wrote, through the asset
+ * binding rather than over HTTP: fetching it over HTTP would mean a gated page asking a
+ * gated asset what it is, and being handed a redirect to the login page.
+ */
+let BUILD = null;
+async function buildInfo(env) {
+  if (BUILD) return BUILD;
+  try {
+    const res = await env.ASSETS.fetch(new URL('https://assets.invalid/version.json'));
+    BUILD = res.ok ? await res.json() : {};
+  } catch {
+    BUILD = {};   // a missing version file must never cost anyone a sign-in
+  }
+  return BUILD;
+}
+
+const badge = () => (BUILD && BUILD.short)
+  ? badgeHtml({ short: BUILD.short, built: BUILD.built ?? '', area: 'gate' })
+  : '';
+
 const shell = (title, body, status = 200) => html(`<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Open Hermeneutics — ${esc(title)}</title>
-<style>${PAGE_CSS}</style></head><body><main class="card">${body}</main>
-<script>${REVEAL_SCRIPT}</script></body></html>`, status);
+<style>${PAGE_CSS}${BADGE_CSS}</style></head><body><main class="card">${body}</main>
+${badge()}
+<script>${REVEAL_SCRIPT}${BADGE_SCRIPT}</script></body></html>`, status);
 
 const PAGE_CSS = `
   :root{--bg:#faf8f4;--panel:#fffefb;--ink:#1d1a16;--muted:#6b6459;--line:#e3ddd2;--accent:#7a5c3e;--hot:#a3402f;color-scheme:light}
@@ -670,6 +697,7 @@ export default {
 async function handle(request, env) {
   {
     const url = new URL(request.url);
+    await buildInfo(env);
 
     if (url.pathname === '/healthz')
       return new Response('ok', { headers: { 'Content-Type': 'text/plain', ...SECURITY_HEADERS } });

@@ -10,7 +10,8 @@
 //   node tools/build-console.mjs   (after reader + status have been built)
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { execSync } from 'node:child_process';
+import { BADGE_CSS, BADGE_SCRIPT, badgeHtml } from './badge.mjs';
+import { versionInfo } from './version.mjs';
 
 for (const f of ['web/reader.html', 'web/status.html'])
   if (!existsSync(f)) {
@@ -22,10 +23,16 @@ for (const f of ['web/reader.html', 'web/status.html'])
 // The <base> matters as much: a srcdoc document's base URL is about:srcdoc, so
 // the reader's relative fetch of a book of the Bible would resolve to nothing.
 const carry = (f) =>
-  '<base href="/">\n' + readFileSync(f, 'utf8').replaceAll('</script', '<\\/script');
+  '<base href="/">\n' +
+  // Each framed page carries its own build badge. Inside the console the shell's badge
+  // already answers for both, and a srcdoc frame has an opaque origin — so the framed
+  // badges could not share the collapsed state even if three of them were wanted.
+  '<style>.oh-badge{display:none!important}</style>\n' +
+  readFileSync(f, 'utf8').replaceAll('</script', '<\\/script');
 
-const commit = execSync('git rev-parse --short HEAD').toString().trim();
-const dated = execSync('git show -s --format=%cs HEAD').toString().trim();
+const version = versionInfo('.');
+const commit = version.sha;
+const dated = version.built.slice(0, 10);
 
 // Charset is declared by the page, not left to the server's Content-Type. These
 // pages are served raw by the asset server and framed inside srcdoc documents
@@ -68,6 +75,7 @@ const html = `<meta charset="utf-8">
   button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
   main { flex:1; min-height:0; }
   iframe { width:100%; height:100%; border:0; display:block; background:var(--bg); }
+  ${BADGE_CSS}
 </style>
 
 <header>
@@ -81,6 +89,8 @@ const html = `<meta charset="utf-8">
 <main>
   <iframe id="view" title="Progress"></iframe>
 </main>
+
+${badgeHtml({ short: version.short, built: version.built, area: 'console' })}
 
 <script type="text/plain" id="src-progress">${carry('web/status.html')}</script>
 <script type="text/plain" id="src-reader">${carry('web/reader.html')}</script>
@@ -99,6 +109,7 @@ const html = `<meta charset="utf-8">
   let start = 'progress';
   try { const s = localStorage.getItem('oh-console-tab'); if (s in tabs) start = s; } catch {}
   show(start);
+${BADGE_SCRIPT}
 </script>
 `;
 
