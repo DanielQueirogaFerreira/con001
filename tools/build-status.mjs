@@ -13,6 +13,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { BADGE_CSS, BADGE_SCRIPT, badgeHtml } from './badge.mjs';
+import { AREAS_CSS, areasNav, areasTable } from './areas.mjs';
 import { execFileSync } from 'node:child_process';
 import { versionInfo } from './version.mjs';
 import { map } from './resonance.mjs';
@@ -197,6 +198,7 @@ const html = `<meta charset="utf-8">
   .warn { border-left:3px solid var(--hold); padding-left:11px; font-size:12.5px; }
   a { color:var(--accent); }
   ${BADGE_CSS}
+  ${AREAS_CSS}
   code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92em; }
 </style>
 
@@ -206,7 +208,9 @@ const html = `<meta charset="utf-8">
     Every figure here is computed from the repository at build time. Nothing on this page is hand-maintained.
     &nbsp;·&nbsp; <a href="/">Open the reader</a>
   </div>
-  <div class="build">${esc(v.build)} &nbsp;·&nbsp; ${esc(v.branch)} &nbsp;·&nbsp; commit ${esc(v.built.slice(0, 16).replace('T', ' '))}</div>
+  ${areasNav('/status')}
+
+  <div class="build" style="margin-top:10px">${esc(v.build)} &nbsp;·&nbsp; ${esc(v.branch)} &nbsp;·&nbsp; commit ${esc(v.built.slice(0, 16).replace('T', ' '))}</div>
 
   ${v.dirty ? `<div class="card"><div class="warn"><strong>Built from a dirty tree.</strong>
     This build cannot be reproduced from git, so evaluations written against it are not reliably
@@ -250,6 +254,11 @@ const html = `<meta charset="utf-8">
       over completed milestones always reads 100%, which is how a status page misleads without anyone
       deciding to.
     </div>
+  </div>
+
+  <div class="card">
+    <h2>Areas — where everything is, and who may open it</h2>
+    <div class="scroll stack">${areasTable()}</div>
   </div>
 
   ${evo ? `<div class="card">

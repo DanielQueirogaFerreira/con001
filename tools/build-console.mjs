@@ -11,6 +11,7 @@
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { BADGE_CSS, BADGE_SCRIPT, badgeHtml } from './badge.mjs';
+import { AREAS_CSS, areasNav } from './areas.mjs';
 import { versionInfo } from './version.mjs';
 
 for (const f of ['web/reader.html', 'web/status.html'])
@@ -76,6 +77,8 @@ const html = `<meta charset="utf-8">
   main { flex:1; min-height:0; }
   iframe { width:100%; height:100%; border:0; display:block; background:var(--bg); }
   ${BADGE_CSS}
+  ${AREAS_CSS}
+  .oh-areas { padding:6px 16px 8px; border-bottom:1px solid var(--line); background:var(--panel); }
 </style>
 
 <header>
@@ -86,6 +89,7 @@ const html = `<meta charset="utf-8">
     <button role="tab" id="t-reader" aria-selected="false">Reader</button>
   </nav>
 </header>
+${areasNav('/console')}
 <main>
   <iframe id="view" title="Progress"></iframe>
 </main>

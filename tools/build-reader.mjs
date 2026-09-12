@@ -10,6 +10,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync, cpSync } from 'node:fs';
 import { BADGE_CSS, BADGE_SCRIPT, badgeHtml } from './badge.mjs';
+import { AREAS_CSS, areasNav } from './areas.mjs';
 import { map } from './resonance.mjs';
 import { versionInfo } from './version.mjs';
 
@@ -163,6 +164,7 @@ const html = `<meta charset="utf-8">
   .split { border-left: 3px solid var(--hot); padding-left: 10px; font-size: 12px; margin-bottom: 12px; }
   a { color: var(--accent); }
   ${BADGE_CSS}
+  ${AREAS_CSS}
   select { font: inherit; font-size: 12.5px; color: var(--ink); background: var(--panel);
            border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
   .verses { margin-top: 12px; max-height: 340px; overflow-y: auto; }
@@ -197,8 +199,9 @@ const html = `<meta charset="utf-8">
     <span id="mode"></span> ·
     <strong>no source text here is verified</strong> — the King James Version below is machine-ingested
     and checksummed but not curator-signed; the sample passages in other works were hand-entered.
-    &nbsp;·&nbsp; <a href="/status">Build status</a>
   </div>
+
+  ${areasNav('/')}
 
   <div class="bar" id="anchors"></div>
 

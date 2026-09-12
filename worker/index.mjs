@@ -10,6 +10,7 @@
 
 import { compile } from '../tools/prompt-compiler.mjs';
 import { BADGE_CSS, BADGE_SCRIPT, badgeHtml } from '../tools/badge.mjs';
+import { AREAS_CSS, areasNav } from '../tools/areas.mjs';
 import {
   DUMMY_RECORD, LOGIN_FAILED, PASSWORD_MIN, SESSION_COOKIE, SESSION_TTL_SECONDS,
   hashPassword, hashToken, isLockedOut, looksLikeEmail, newSessionToken,
@@ -120,7 +121,7 @@ const badge = () => (BUILD && BUILD.short)
 const shell = (title, body, status = 200) => html(`<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Open Hermeneutics — ${esc(title)}</title>
-<style>${PAGE_CSS}${BADGE_CSS}</style></head><body><main class="card">${body}</main>
+<style>${PAGE_CSS}${BADGE_CSS}${AREAS_CSS}</style></head><body><main class="card">${body}</main>
 ${badge()}
 <script>${REVEAL_SCRIPT}${BADGE_SCRIPT}</script></body></html>`, status);
 
@@ -192,7 +193,7 @@ function accountPage(user, { error = '', notice = '', sessions = 1 } = {}) {
   <form method="POST" action="/logout" style="margin-top:10px">
     <button type="submit" class="ghost">Sign out</button>
   </form>
-  <p class="note"><a href="/">Back to the reader</a></p>`);
+  <div class="note">${areasNav('/account')}</div>`);
 }
 
 function resetPage({ error = '', email = '' } = {}) {
