@@ -12,7 +12,7 @@
     "ingest:bible": "node tools/ingest-bible.mjs",
     "build:prod": "node tools/build-prod.mjs",
     "resolve-spans": "node tools/resolve-spans.mjs",
-    "test": "node tools/validate.mjs && node tools/test-validate.mjs && node tools/test-salience.mjs && node tools/test-resonance.mjs && node tools/test-advisory.mjs && node tools/test-prompt-compiler.mjs && node tools/test-loop.mjs && node tools/test-auth.mjs && node tools/test-corpus.mjs",
+    "test": "node tools/validate.mjs && node tools/test-validate.mjs && node tools/test-salience.mjs && node tools/test-resonance.mjs && node tools/test-advisory.mjs && node tools/test-prompt-compiler.mjs && node tools/test-loop.mjs && node tools/test-auth.mjs && node tools/test-corpus.mjs && node tools/test-generate.mjs",
     "build:alpha": "node tools/build-prod.mjs --hold-excluded",
     "advisory": "node tools/advisory.mjs",
     "version": "node tools/version.mjs",

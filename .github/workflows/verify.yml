@@ -16,6 +16,10 @@ on:
         description: 'Site to certify'
         required: true
         default: 'https://con001.daniel-queiroga.workers.dev'
+      probe:
+        description: 'Single-use probe token, to also check the generation credential'
+        required: false
+        default: ''
   workflow_call:
     inputs:
       url:
@@ -34,3 +38,17 @@ jobs:
         with:
           node-version: '22'
       - run: node tools/verify-live.mjs "${{ inputs.url }}"
+
+      # Asks the live Worker whether it holds a generation credential Google
+      # accepts. The token is spent by the request, so it is worth nothing by
+      # the time this log exists; the answer carries no key and no content.
+      - name: Check the generation credential
+        if: inputs.probe != ''
+        env:
+          PROBE: ${{ inputs.probe }}
+        run: |
+          set -eu
+          out=$(curl -sS -X POST "${{ inputs.url }}/api/selftest" -H "X-Probe-Token: $PROBE")
+          echo "$out"
+          echo "$out" | grep -q '"credential":true' || { echo "no usable generation credential" >&2; exit 1; }
+          echo "$out" | grep -q '"ok":true' || { echo "the credential reached no model" >&2; exit 1; }

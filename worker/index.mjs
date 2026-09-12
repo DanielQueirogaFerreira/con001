@@ -371,6 +371,58 @@ async function handleRevokeAll(request, env, user) {
 
 /* ---------------------------------------------------------- generation */
 
+/**
+ * Answers one question: does this Worker hold a generation credential Google
+ * accepts?
+ *
+ * It exists because the alternative ways of finding out are all worse. The
+ * value of a secret cannot be read back, a binding cannot be seen from outside,
+ * and the route that uses it needs a browser session — so "is the key working?"
+ * could only be answered by a person clicking a button and reporting back.
+ *
+ * It takes no session, so it needs its own key to the door: a single-use probe
+ * token, minted by whoever can write to the database, spent on first use. What
+ * it can do with that token is deliberately almost nothing — ask Google whether
+ * the two models are reachable with this Worker's credential, and say yes or
+ * no. It generates nothing, costs nothing, returns no content, and never echoes
+ * the key.
+ */
+async function handleSelfTest(request, env) {
+  const offered = request.headers.get('X-Probe-Token') ?? '';
+  if (!offered) return json({ error: 'no-probe-token' }, 401);
+
+  const hash = await hashToken(normaliseCode(offered));
+  const row = await env.DB.prepare(
+    `SELECT hash, expires_at, used_at FROM probe_tokens WHERE hash = ?1`
+  ).bind(hash).first();
+
+  // One message whether the token is unknown, spent or expired.
+  if (!row || row.used_at || row.expires_at < Date.now())
+    return json({ error: 'probe-token-not-valid' }, 403);
+
+  await env.DB.prepare(`UPDATE probe_tokens SET used_at = ?1 WHERE hash = ?2`)
+    .bind(Date.now(), hash).run();
+
+  const key = env.GEMINI_API_KEY;
+  if (!key) return json({ credential: false, detail: 'GEMINI_API_KEY is not set on this Worker' }, 200);
+
+  // Metadata only. Asking whether a model exists costs nothing and proves the
+  // credential is accepted; generating something to find out would bill the
+  // account for a question that did not need an image.
+  const reach = async (model) => {
+    try {
+      const res = await fetch(`${GEMINI}/models/${model}?key=${encodeURIComponent(key)}`);
+      const body = await res.json().catch(() => ({}));
+      return { model, ok: res.ok, status: res.status, detail: res.ok ? (body.displayName ?? '') : (body?.error?.message ?? '') };
+    } catch (e) {
+      return { model, ok: false, status: 0, detail: String(e.message ?? e) };
+    }
+  };
+
+  const [image, video] = await Promise.all([reach(MODELS.image), reach(MODELS.video)]);
+  return json({ credential: true, image, video, checked: new Date().toISOString() });
+}
+
 // Google's endpoints. The model ids are written down rather than passed in:
 // which model rendered a reading is part of the record, not a client's choice.
 const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
@@ -631,6 +683,11 @@ async function handle(request, env) {
       return request.method === 'POST' ? handleReset(request, env) : resetPage();
 
     if (url.pathname === '/logout' && request.method === 'POST') return handleLogout(request, env);
+
+    // Before the session gate on purpose: this is how an operator with no
+    // browser asks whether generation is configured. Its own token gates it.
+    if (url.pathname === '/api/selftest' && request.method === 'POST')
+      return handleSelfTest(request, env);
 
     const user = await currentUser(env, request);
 

@@ -72,3 +72,15 @@ CREATE TABLE IF NOT EXISTS worker_errors (
   message       TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS worker_errors_at ON worker_errors (at);
+
+-- Single-use tokens for /api/selftest, which answers "does this Worker hold a
+-- credential Google accepts?" without a browser session. Minted by whoever can
+-- write to this database, spent on first use, and worth nothing afterwards:
+-- the endpoint they open generates nothing and returns no content.
+CREATE TABLE IF NOT EXISTS probe_tokens (
+  hash          TEXT PRIMARY KEY,
+  purpose       TEXT NOT NULL,
+  created_at    INTEGER NOT NULL,
+  expires_at    INTEGER NOT NULL,
+  used_at       INTEGER
+);
