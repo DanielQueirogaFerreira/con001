@@ -488,6 +488,27 @@ await t('a code from tools/user-admin.mjs can actually be redeemed', async () =>
 // The live failure this pair of tests exists for: the code was found and marked
 // spent, then setting the password threw, and the person was left holding a
 // dead code, the old password, and no way in without an administrator.
+// Typing a 25-character generated credential blind, on a phone, is how people
+// lock themselves out of an account that was working.
+await t('every password field can be read back', async () => {
+  const env = await seeded();
+  const jar = (await worker.fetch(login('reader@example.com', PASSWORD), env))
+    .headers.get('Set-Cookie').split(';')[0];
+
+  for (const [label, req_] of [
+    ['login', req('/login')],
+    ['reset', req('/reset')],
+    ['account', req('/account', { headers: { Cookie: jar } })],
+  ]) {
+    const body = await (await worker.fetch(req_, env)).text();
+    const fields = [...body.matchAll(/<input id="([^"]+)"[^>]*type="password"/g)].map(m => m[1]);
+    assert(fields.length > 0, `${label}: expected at least one password field`);
+    for (const id of fields)
+      assert(body.includes(`data-for="${id}"`),
+        `${label}: the ${id} field has no reveal control`);
+  }
+});
+
 await t('a reset that cannot be completed does not burn the code', async () => {
   const env = await seeded();
   const code = generateCredential(RESET_GROUPS);

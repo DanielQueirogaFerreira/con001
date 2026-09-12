@@ -111,6 +111,7 @@ const bar = (n, d) => {
 };
 
 const html = `<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Open Hermeneutics — Build Status</title>
 <style>
   :root {
@@ -128,6 +129,15 @@ const html = `<meta charset="utf-8">
     --accent:#c9a173; --ok:#8fb98f; --hold:#e08a76; --idle:#7d7568; color-scheme: dark; }
   body { background:var(--bg); color:var(--ink); font-family:var(--font-ui); line-height:1.55; }
   .wrap { max-width:1080px; margin:0 auto; padding:22px 18px 70px; }
+  .scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  @media (max-width: 640px) {
+    .wrap { padding:14px 12px 60px; }
+    h1 { font-size:19px; }
+    .card { padding:13px 14px; border-radius:10px; }
+    table { font-size:12.5px; }
+    th, td { padding-right:12px; white-space:nowrap; }
+    .step { flex:1 1 100%; }
+  }
   h1 { font-family:var(--font-read); font-size:22px; font-weight:600; margin:0 0 3px; }
   .sub { color:var(--muted); font-size:12.5px; margin-bottom:8px; }
   .build { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; color:var(--accent); }
@@ -198,7 +208,7 @@ const html = `<meta charset="utf-8">
         <td><strong>${esc(name)}</strong><br><span class="dim mono">${esc(doc)}</span></td>
         <td><span class="pill ${blocks ? 's-hold' : 's-idle'}">${esc(blocks || 'not started')}</span></td>
         <td class="dim">${esc(what)}</td></tr>`).join('')}
-    </table>
+    </table></div>
     <div class="note">
       Unfinished work sits in the same table as finished work on purpose. A progress bar computed only
       over completed milestones always reads 100%, which is how a status page misleads without anyone
@@ -208,7 +218,7 @@ const html = `<meta charset="utf-8">
 
   <div class="card">
     <h2>Corpus — ${(units.length + ingested.units).toLocaleString()} units, ${verified} verified</h2>
-    <table>
+    <div class="scroll"><table>
       <tr><th>Work</th><th>Tradition</th><th class="num">Units</th><th class="num">Of</th><th class="num">Layers</th><th class="num">Readings</th></tr>
       ${perWork.map((w) => {
         // The ingested edition belongs to the row for its work, not to a
@@ -220,7 +230,7 @@ const html = `<meta charset="utf-8">
         <td class="num">${held.toLocaleString()}</td><td class="num dim">${w.total.toLocaleString()}</td>
         <td class="num">${w.layers}</td><td class="num">${w.interps}</td></tr>`;
       }).join('')}
-    </table>
+    </table></div>
     <div class="note warn" style="margin-top:14px">
       <strong>${verified} of ${(units.length + ingested.units).toLocaleString()} text units are verified.</strong>
       ${ingested.units.toLocaleString()} of them are the King James Version, machine-ingested from a
@@ -235,7 +245,7 @@ const html = `<meta charset="utf-8">
 
   <div class="card">
     <h2>Advisory gate — ${held.length} item(s) held</h2>
-    ${advisory.rfcs.length ? `<table>
+    ${advisory.rfcs.length ? `<div class="scroll"><table>
       <tr><th>RFC</th><th>Status</th><th>Seats</th><th>Covers</th></tr>
       ${advisory.rfcs.map((r) => {
         const sat = advisory.seatsSatisfied(r);
@@ -246,7 +256,7 @@ const html = `<meta charset="utf-8">
           <td class="dim mono">${r.targets.map((t) => esc(t) + (heldIds.has(t) ? ' · held' : '')).join('<br>')}</td>
         </tr>`;
       }).join('')}
-    </table>` : '<div class="dim">No RFCs opened.</div>'}
+    </table></div>` : '<div class="dim">No RFCs opened.</div>'}
     <div class="note">
       <code>npm run build:prod</code> refuses while anything above is held.
       <code>npm run build:alpha</code> ships without those items and names them in
@@ -257,24 +267,24 @@ const html = `<meta charset="utf-8">
 
   <div class="card">
     <h2>Checks</h2>
-    <table>
+    <div class="scroll"><table>
       <tr><td style="width:30%"><strong>Test suite</strong></td>
         <td><span class="pill ${tests.ok ? 's-done' : 's-hold'}">${tests.ok ? 'passing' : 'FAILING'}</span>
         <span class="dim"> ${tests.checks ?? 0} checks across ${tests.suites.length} suites</span></td></tr>
       <tr><td><strong>Corpus integrity</strong></td><td class="dim">${editions.length} editions, ${layers.length} layers, ${interps.length} readings, ${m.positions.length} positions, ${m.resonances.length} resonances — all references resolve</td></tr>
       <tr><td><strong>Dependencies</strong></td><td class="dim">none — the build and the test suite are plain Node</td></tr>
-    </table>
+    </table></div>
     ${tests.ok ? '' : `<div class="note warn"><strong>The suite is failing.</strong> Nothing on this page should be trusted until it passes.</div>`}
   </div>
 
   <div class="card">
     <h2>Licensing</h2>
-    <table>
+    <div class="scroll"><table>
       <tr><td style="width:36%">Code</td><td class="mono">AGPL-3.0-only</td></tr>
       <tr><td>Interpretation corpus</td><td class="mono">CC BY-SA 4.0</td></tr>
       <tr><td>Anchoring data</td><td class="mono">CC0 1.0</td></tr>
       <tr><td>Source texts</td><td class="mono">public domain, no rights claimed</td></tr>
-    </table>
+    </table></div>
     <div class="note">Copyright (c) 2026 The Open Hermeneutics Project, a fiscally sponsored project of [Fiscal Sponsor].
       The bracket is a placeholder and is deliberately visible.</div>
   </div>

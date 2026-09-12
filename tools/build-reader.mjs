@@ -63,6 +63,7 @@ const corpus = {
 };
 
 const html = `<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Open Hermeneutics Reader</title>
 <style>
   :root {
@@ -97,6 +98,29 @@ const html = `<meta charset="utf-8">
   button.anchor[aria-pressed="true"] { border-color: var(--accent); color: var(--ink); font-weight: 600; }
   .cols { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: 18px; }
   @media (max-width: 900px) { .cols { grid-template-columns: minmax(0,1fr); } }
+
+  /* Held vertically, this is a reading surface first: one column, the text at a
+     size you can actually read, and every control big enough to hit with a
+     thumb. The anchor bar scrolls sideways rather than wrapping into four rows
+     that push the text off the screen. */
+  @media (max-width: 640px) {
+    .wrap { padding: 14px 12px 72px; }
+    h1 { font-size: 17px; }
+    .sub { font-size: 12px; }
+    .cols { gap: 12px; }
+    .card { padding: 14px; border-radius: 10px; }
+    .bar { display: flex; flex-wrap: nowrap; gap: 6px; overflow-x: auto; padding-bottom: 6px;
+           scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .bar::-webkit-scrollbar { display: none; }
+    .anchor { flex: 0 0 auto; padding: 9px 13px; font-size: 12.5px; }
+    .src, .tr { font-size: 16px; line-height: 1.75; }
+    .verses { max-height: 52vh; }
+    .verse { padding: 9px 8px; font-size: 15.5px; }
+    .verse b { min-width: 40px; }
+    select { padding: 9px 10px; font-size: 14px; flex: 1 1 auto; min-width: 0; }
+    input[type="range"] { height: 30px; }
+    .ver { right: 8px; bottom: 8px; font-size: 10px; padding: 5px 7px; }
+  }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
   .card h2 { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; font-weight: 600; }
   .src { font-family: var(--font-read); font-size: 21px; line-height: 1.75; margin: 0 0 12px; }
@@ -149,6 +173,19 @@ const html = `<meta charset="utf-8">
   .verse b { font-family: var(--font-ui); font-size: 10.5px; color: var(--muted);
              min-width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
   .verse .has { color: var(--accent); }
+  .selanchor { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px;
+               border: 1px solid var(--line); border-left: 3px solid var(--accent);
+               border-radius: 0 7px 7px 0; padding: 9px 11px; margin-top: 10px; color: var(--muted); }
+  .selanchor b { color: var(--ink); font-weight: 600; }
+  .selanchor q { font-family: var(--font-read); font-size: 13.5px; color: var(--ink); display: block; margin-top: 6px; }
+  .act { font: inherit; font-size: 12.5px; padding: 8px 13px; border-radius: 7px; cursor: pointer;
+         border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+  .act:hover { border-color: var(--accent); color: var(--accent); }
+  .act[disabled] { opacity: .5; cursor: default; }
+  .out { margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  .out img, .out video { width: 100%; border-radius: 8px; border: 1px solid var(--line); margin-top: 10px; display: block; }
+  .out .fail { border-left: 3px solid var(--hot); color: var(--hot); padding-left: 10px; }
+  .machine-mark { font-size: 11px; color: var(--machine); margin-top: 6px; }
 
   /* The build badge. It sits over the page rather than in it, so it needs its
      own ground: a translucent scrim of the panel colour plus a blur, which
@@ -231,6 +268,17 @@ const html = `<meta charset="utf-8">
           <button class="link" id="studioToggle">Open Studio — compile prompts &rarr;</button>
           <span class="dim" id="studioHint"></span>
         </div>
+      </div>
+
+      <div class="card" id="compose">
+        <h2>Compose from this passage</h2>
+        <div id="selNote" class="dim">Select any words in the text, or drag across verses, to anchor a rendering to exactly that much of the passage.</div>
+        <div id="selAnchor" class="selanchor" hidden></div>
+        <div class="row" style="gap:8px;margin-top:12px;flex-wrap:wrap">
+          <button class="act" data-medium="image">Image &mdash; Nano Banana Pro</button>
+          <button class="act" data-medium="video">Video &mdash; Omni Flash</button>
+        </div>
+        <div id="composeOut" class="out"></div>
       </div>
 
       <div class="card" id="studio" hidden>
@@ -338,6 +386,8 @@ function renderText(ids) {
     out += esc(chars.slice(at).join(''));
     const isSrc = ed.kind === 'source' || ed.kind === 'critical';
     const d = document.createElement('div');
+    d.dataset.cr = u.cr;
+    d.dataset.edition = u.edition;
     d.innerHTML = \`<p class="\${isSrc ? 'src' : 'tr'}" dir="\${ed.direction || 'ltr'}">\${out}</p>
       <div class="meta">\${ed.title}\${ed.authority === 'interpretive-of-meaning'
         ? ' <span class="tag">interpretation of the meaning, not the Qur\\u2019\\u0101n</span>' : ''}
@@ -529,6 +579,197 @@ document.getElementById('slider').addEventListener('input', e => {
 document.getElementById('studioToggle').addEventListener('click', () => {
   studioOpen = !studioOpen; if (!studioOpen) soloLens = null; render();
 });
+/* -------------------------------------------- selection becomes an anchor */
+
+// A reader points at words; the data model wants a Canonical Reference and,
+// below unit granularity, a character span measured in CODEPOINTS of the NFC
+// text with the quote carried alongside. This is the translation between them.
+//
+// Offsets are codepoints, not UTF-16 units: the Hebrew of Genesis 1:1 is full
+// of characters JavaScript counts as two, and an offset that disagrees with the
+// stored text by one is an annotation that lands on the wrong letter forever.
+
+let selection = null;
+
+const segmenter = typeof Intl !== 'undefined' && Intl.Segmenter
+  ? new Intl.Segmenter(undefined, { granularity: 'grapheme' }) : null;
+
+// Snap to grapheme-cluster boundaries so a consonant is never split from its
+// combining marks. Required for Hebrew, Arabic and Devanagari; harmless here.
+function snap(chars, start, end) {
+  if (!segmenter) return [start, end];
+  const bounds = new Set([0]);
+  let at = 0;
+  for (const { segment } of segmenter.segment(chars.join(''))) {
+    at += cps(segment).length;
+    bounds.add(at);
+  }
+  const down = i => { while (i > 0 && !bounds.has(i)) i--; return i; };
+  const up = i => { while (i < chars.length && !bounds.has(i)) i++; return i; };
+  return [down(start), up(end)];
+}
+
+// Codepoint offset of a (node, offset) DOM position within an element's text.
+function offsetIn(root, node, nodeOffset) {
+  let count = 0;
+  const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let n;
+  while ((n = walk.nextNode())) {
+    if (n === node) return count + cps(n.textContent.slice(0, nodeOffset)).length;
+    count += cps(n.textContent).length;
+  }
+  return count;
+}
+
+function describeSelection() {
+  const sel = window.getSelection();
+  const note = document.getElementById('selNote');
+  const box = document.getElementById('selAnchor');
+
+  if (!sel || sel.isCollapsed || !sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+
+  // Case 1: inside one rendered unit — a character span.
+  const unitEl = range.startContainer.parentElement?.closest('[data-cr]');
+  const endUnitEl = range.endContainer.parentElement?.closest('[data-cr]');
+  if (!unitEl || !endUnitEl) return;
+
+  if (unitEl === endUnitEl) {
+    const cr = unitEl.dataset.cr;
+    if (unitEl.classList.contains('verse')) ensureUnit(cr);
+    const unit = unitsAt(cr).find(u => u.edition === unitEl.dataset.edition) ?? unitsAt(cr)[0];
+    if (!unit) return;
+    const chars = cps(unit.text);
+    let start = offsetIn(unitEl, range.startContainer, range.startOffset);
+    let end = offsetIn(unitEl, range.endContainer, range.endOffset);
+    if (end <= start) return;
+    [start, end] = snap(chars, start, end);
+    selection = {
+      cr,
+      granularity: end - start === 1 ? 'letter' : (end - start < 30 ? 'phrase' : 'clause'),
+      span: {
+        origin: unit.edition,
+        start, end,
+        exact: chars.slice(start, end).join(''),
+        prefix: chars.slice(Math.max(0, start - 32), start).join(''),
+        suffix: chars.slice(end, end + 32).join(''),
+        grapheme_aligned: true,
+      },
+    };
+  } else {
+    // Case 2: across units — a canonical range, no span. A span is defined
+    // within one unit of one edition; a selection that crosses verses is a
+    // range of references and the model says so rather than inventing offsets.
+    selection = { cr: unitEl.dataset.cr, cr_end: endUnitEl.dataset.cr, granularity: 'unit' };
+  }
+
+  note.hidden = true;
+  box.hidden = false;
+  const esc = t => String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  box.innerHTML = selection.span
+    ? \`<b>\${esc(selection.cr)}</b> · \${selection.granularity} · codepoints \${selection.span.start}–\${selection.span.end}
+       <span class="dim">in \${esc(edOf[selection.span.origin]?.title ?? selection.span.origin)}</span>
+       <q>\${esc(selection.span.exact)}</q>\`
+    : \`<b>\${esc(selection.cr)} → \${esc(selection.cr_end)}</b> · range of \${selection.granularity}s
+       <span class="dim">— a span is only defined inside one unit, so this anchors to the references</span>\`;
+}
+
+document.addEventListener('selectionchange', () => {
+  // Only react to selections inside the text and the verse list.
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed) return;
+  const within = sel.anchorNode?.parentElement?.closest('#text, #bkVerses');
+  if (within) describeSelection();
+});
+
+/* ---------------------------------------------------- compose a rendition */
+
+const composeOut = () => document.getElementById('composeOut');
+
+async function composeFrom(medium) {
+  const out = composeOut();
+  const at = selection ?? { cr: anchor };
+  const active = soloLens
+    ? [layerOf[soloLens]].filter(Boolean)
+    : [...new Set(forAnchor(at.cr).map(i => i.layer))].map(id => layerOf[id]);
+
+  if (!active.some(l => l && l.direction)) {
+    out.innerHTML = '<div class="fail">No active lens carries a direction at this anchor. ' +
+      'A rendering is directed by a reading; without one there is nothing to compose.</div>';
+    return;
+  }
+
+  out.innerHTML = '<div>composing…</div>';
+  document.querySelectorAll('.act').forEach(b => b.disabled = true);
+
+  try {
+    const res = await fetch('api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        anchor: at, medium, lenses: active,
+        oppositions: soloLens ? [] : oppositionsAt(C.interps, at.cr),
+      }),
+    });
+    const body = await res.json();
+    renderRendition(body, res.status, medium);
+  } catch (e) {
+    out.innerHTML = '<div class="fail">The request did not reach the server.</div>';
+  } finally {
+    document.querySelectorAll('.act').forEach(b => b.disabled = false);
+  }
+}
+
+function renderRendition(body, status, medium) {
+  const out = composeOut();
+  const esc = t => String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+  if (status === 501) {
+    out.innerHTML = \`<div class="fail">\${esc(body.detail)}</div>\`;
+    return;
+  }
+  if (body.error === 'contending') {
+    out.innerHTML = \`<div class="fail">\${esc(body.note)}</div>\`;
+    return;
+  }
+  if (body.error) {
+    out.innerHTML = \`<div class="fail">\${esc(body.note ?? body.detail ?? body.error)}</div>\`;
+    return;
+  }
+
+  const prov = body.provenance ?? {};
+  const mark = \`<div class="machine-mark">machine-authored · \${esc(prov.model ?? '')} · directed by
+      \${(prov.lenses ?? []).map(l => esc(layerOf[l]?.author.display ?? l)).join(', ')}
+      \${prov.locked_negative?.length ? ' · ' + prov.locked_negative.length + ' locked exclusion(s)' : ''}</div>\`;
+
+  if (medium === 'image' && body.data) {
+    out.innerHTML = \`<img alt="rendering of \${esc(prov.anchor?.cr ?? '')}" src="data:\${esc(body.mime)};base64,\${body.data}">\` + mark;
+    return;
+  }
+  if (medium === 'video') {
+    out.innerHTML = \`<div>the video is rendering…</div>\` + mark;
+    if (body.interaction) pollRendition(body.interaction, mark);
+    return;
+  }
+  out.innerHTML = '<div class="fail">Nothing came back.</div>';
+}
+
+async function pollRendition(id, mark, tries = 0) {
+  if (tries > 60) { composeOut().innerHTML = '<div class="fail">The video is taking longer than expected.</div>'; return; }
+  await new Promise(r => setTimeout(r, 5000));
+  const res = await fetch('api/generate/' + encodeURIComponent(id));
+  const body = await res.json().catch(() => ({}));
+  if (body.video?.uri) {
+    composeOut().innerHTML = \`<video controls playsinline src="\${body.video.uri}"></video>\` + mark;
+    return;
+  }
+  if (body.error) { composeOut().innerHTML = '<div class="fail">' + (body.detail || body.error) + '</div>'; return; }
+  pollRendition(id, mark, tries + 1);
+}
+
+document.querySelectorAll('.act').forEach(b =>
+  b.addEventListener('click', () => composeFrom(b.dataset.medium)));
+
 /* ------------------------------------------------------- the Bible panel */
 
 // Books arrive one at a time, on demand. The whole edition is four megabytes;
@@ -557,6 +798,24 @@ async function loadBook(usfm) {
   }
 }
 
+// Any verse of a loaded book, in TextUnit shape. Selection needs the stored
+// text to measure offsets against, and it must be the SAME string the checksum
+// covers — not what the DOM happens to render.
+function ensureUnit(cr) {
+  if (fetched.has(cr)) return fetched.get(cr);
+  const [, ref] = cr.split(':');
+  const [usfm, c, v] = ref.split('.');
+  const book = books.get(usfm);
+  const text = book?.chapters?.[Number(c) - 1]?.[Number(v) - 1];
+  if (text === undefined) return null;
+  const unit = {
+    type: 'TextUnit', edition: book.edition, cr, label: \`\${c}:\${v}\`,
+    text, provenance: book.provenance,
+  };
+  fetched.set(cr, unit);
+  return unit;
+}
+
 function renderVerses() {
   const el = document.getElementById('bkVerses');
   const book = books.get(openBook);
@@ -565,21 +824,26 @@ function renderVerses() {
   const verses = book.chapters[openChapter - 1] ?? [];
   verses.forEach((text, i) => {
     const cr = \`bible:\${openBook}.\${openChapter}.\${i + 1}\`;
-    const b = document.createElement('button');
+    const b = document.createElement('div');
     b.className = 'verse';
+    b.setAttribute('role', 'button');
+    b.setAttribute('tabindex', '0');
+    b.dataset.cr = cr;
+    b.dataset.edition = book.edition;
     b.setAttribute('aria-current', String(cr === anchor));
     const layered = anchorsWithLayers.has(cr);
     b.innerHTML = \`<b class="\${layered ? 'has' : ''}">\${openChapter}:\${i + 1}</b><span></span>\`;
     b.lastChild.textContent = text;
-    b.addEventListener('click', () => {
-      // A fetched verse becomes a first-class unit, so the rest of the reader
-      // needs no notion of where it came from.
-      fetched.set(cr, {
-        type: 'TextUnit', edition: book.edition, cr, label: \`\${openChapter}:\${i + 1}\`,
-        text, provenance: book.provenance,
-      });
-      anchor = cr; manual.clear(); soloLens = null;
+    const open = () => {
+      // Selecting words inside a verse must not also jump the anchor; a drag
+      // is a different intent from a tap.
+      if (!window.getSelection()?.isCollapsed) return;
+      ensureUnit(cr); anchor = cr; manual.clear(); soloLens = null;
       render(); renderVerses();
+    };
+    b.addEventListener('click', open);
+    b.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
     });
     el.appendChild(b);
   });

@@ -32,6 +32,7 @@ const dated = execSync('git show -s --format=%cs HEAD').toString().trim();
 // that carry no header at all; a page whose encoding depends on how it was
 // delivered renders "Gītā" as "GÄ«tÄ" wherever the header goes missing.
 const html = `<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Open Hermeneutics Console</title>
 <style>
   :root {

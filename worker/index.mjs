@@ -8,6 +8,7 @@
 // them. Today the only provider is 'password'; adding 'google' or 'oidc' later
 // is a new identities row, not a migration of users.
 
+import { compile } from '../tools/prompt-compiler.mjs';
 import {
   DUMMY_RECORD, LOGIN_FAILED, PASSWORD_MIN, SESSION_COOKIE, SESSION_TTL_SECONDS,
   hashPassword, hashToken, isLockedOut, looksLikeEmail, newSessionToken,
@@ -30,7 +31,11 @@ const SECURITY_HEADERS = {
     // collide. Still no remote origin anywhere in this policy.
     // connect-src is for the reader fetching /corpus/bible/<BOOK>.json — its own
     // origin, one book at a time. Still no remote origin in this policy.
-    "img-src 'self' data:; connect-src 'self'; frame-src 'self'; form-action 'self'; " +
+    // media-src carries generated video back to the page as a blob; img-src
+    // data: carries generated stills. Both are produced by this Worker and
+    // handed over inline, so no remote origin appears in the policy.
+    "img-src 'self' data:; media-src 'self' data: blob:; connect-src 'self'; " +
+    "frame-src 'self'; form-action 'self'; " +
     "frame-ancestors 'none'; base-uri 'none'",
 };
 
@@ -46,10 +51,51 @@ const clientIp = (request) => request.headers.get('CF-Connecting-IP') ?? 'unknow
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+/**
+ * A password field with a reveal control.
+ *
+ * Typing a 25-character generated credential blind, on a phone, is how people
+ * end up locked out of an account that was working — and a failed sign-in here
+ * costs a lockout slot. The eye is not a convenience; it is the difference
+ * between a credential you can check and one you can only hope you typed.
+ */
+const passwordField = (id, label, { autocomplete = 'current-password', min = false } = {}) => `
+    <label for="${id}">${esc(label)}</label>
+    <div class="pw">
+      <input id="${id}" name="${id}" type="password" required autocomplete="${autocomplete}"${min ? ` minlength="${PASSWORD_MIN}"` : ''}>
+      <button type="button" class="reveal" data-for="${id}" aria-controls="${id}"
+              aria-pressed="false" aria-label="Show password" title="Show password">${EYE}</button>
+    </div>`;
+
+// Two inline SVGs rather than an emoji or a webfont: the CSP names no remote
+// origin, and an eye that renders as a box on some phone is worse than none.
+const EYE = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M1 10s3.2-5.5 9-5.5S19 10 19 10s-3.2 5.5-9 5.5S1 10 1 10z"/><circle cx="10" cy="10" r="2.6"/></svg>';
+const EYE_OFF = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M1 10s3.2-5.5 9-5.5S19 10 19 10s-3.2 5.5-9 5.5S1 10 1 10z"/><circle cx="10" cy="10" r="2.6"/><path d="M3 3l14 14"/></svg>';
+
+const REVEAL_SCRIPT = `
+  const EYE_OFF = ${JSON.stringify(EYE_OFF)};
+  const EYE_ON = ${JSON.stringify(EYE)};
+  for (const b of document.querySelectorAll('.reveal')) {
+    b.addEventListener('click', () => {
+      const input = document.getElementById(b.dataset.for);
+      const showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      b.setAttribute('aria-pressed', String(!showing));
+      b.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+      b.title = b.getAttribute('aria-label');
+      b.innerHTML = showing ? EYE_ON : EYE_OFF;
+      // Put the caret back where it was; toggling type moves it to the end.
+      const at = input.value.length;
+      input.focus();
+      input.setSelectionRange(at, at);
+    });
+  }`;
+
 const shell = (title, body, status = 200) => html(`<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Open Hermeneutics — ${esc(title)}</title>
-<style>${PAGE_CSS}</style></head><body><main class="card">${body}</main></body></html>`, status);
+<style>${PAGE_CSS}</style></head><body><main class="card">${body}</main>
+<script>${REVEAL_SCRIPT}</script></body></html>`, status);
 
 const PAGE_CSS = `
   :root{--bg:#faf8f4;--panel:#fffefb;--ink:#1d1a16;--muted:#6b6459;--line:#e3ddd2;--accent:#7a5c3e;--hot:#a3402f;color-scheme:light}
@@ -71,6 +117,15 @@ const PAGE_CSS = `
   button.ghost{background:none;border:1px solid var(--line);color:var(--ink);font-weight:500;margin-top:0}
   a{color:var(--accent)}
   .note{color:var(--muted);font-size:11.5px;border-top:1px dashed var(--line);margin-top:20px;padding-top:12px}
+  .pw{position:relative;display:flex;align-items:center}
+  .pw input{padding-right:44px}
+  .reveal{position:absolute;right:4px;width:36px;height:36px;margin:0;padding:0;display:grid;place-items:center;
+          background:none;border:0;border-radius:6px;color:var(--muted);cursor:pointer}
+  .reveal:hover{color:var(--ink)}
+  .reveal:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .reveal svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.5;
+              stroke-linecap:round;stroke-linejoin:round}
+  .reveal[aria-pressed="true"]{color:var(--accent)}
 `;
 
 function loginPage({ error = '', email = '', notice = '' } = {}) {
@@ -81,8 +136,7 @@ function loginPage({ error = '', email = '', notice = '' } = {}) {
   <form method="POST" action="/login" autocomplete="on">
     <label for="email">Email</label>
     <input id="email" name="email" type="email" required autocomplete="username" value="${esc(email)}" autofocus>
-    <label for="password">Password</label>
-    <input id="password" name="password" type="password" required autocomplete="current-password" minlength="${PASSWORD_MIN}">
+    ${passwordField('password', 'Password', { min: true })}
     <button type="submit">Sign in</button>
     ${error ? `<p class="err">${esc(error)}</p>` : ''}
   </form>
@@ -98,12 +152,9 @@ function accountPage(user, { error = '', notice = '', sessions = 1 } = {}) {
   ${error ? `<p class="err">${esc(error)}</p>` : ''}
   <form method="POST" action="/account/password" autocomplete="on">
     <input type="hidden" name="username" value="${esc(user.email)}" autocomplete="username">
-    <label for="current">Current password</label>
-    <input id="current" name="current" type="password" required autocomplete="current-password">
-    <label for="next">New password</label>
-    <input id="next" name="next" type="password" required autocomplete="new-password" minlength="${PASSWORD_MIN}">
-    <label for="confirm">Confirm new password</label>
-    <input id="confirm" name="confirm" type="password" required autocomplete="new-password" minlength="${PASSWORD_MIN}">
+    ${passwordField('current', 'Current password')}
+    ${passwordField('next', 'New password', { autocomplete: 'new-password', min: true })}
+    ${passwordField('confirm', 'Confirm new password', { autocomplete: 'new-password', min: true })}
     <button type="submit">Change password</button>
   </form>
   <p class="note">Changing your password signs out every other session. At least
@@ -127,10 +178,8 @@ function resetPage({ error = '', email = '' } = {}) {
     <label for="code">Reset code</label>
     <input id="code" name="code" type="text" required autocomplete="one-time-code"
            spellcheck="false" placeholder="XXXXX-XXXXX-XXXXX-XXXXX">
-    <label for="next">New password</label>
-    <input id="next" name="next" type="password" required autocomplete="new-password" minlength="${PASSWORD_MIN}">
-    <label for="confirm">Confirm new password</label>
-    <input id="confirm" name="confirm" type="password" required autocomplete="new-password" minlength="${PASSWORD_MIN}">
+    ${passwordField('next', 'New password', { autocomplete: 'new-password', min: true })}
+    ${passwordField('confirm', 'Confirm new password', { autocomplete: 'new-password', min: true })}
     <button type="submit">Set new password</button>
     ${error ? `<p class="err">${esc(error)}</p>` : ''}
   </form>
@@ -320,6 +369,154 @@ async function handleRevokeAll(request, env, user) {
   });
 }
 
+/* ---------------------------------------------------------- generation */
+
+// Google's endpoints. The model ids are written down rather than passed in:
+// which model rendered a reading is part of the record, not a client's choice.
+const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
+const MODELS = {
+  image: 'gemini-3-pro-image',        // Nano Banana Pro
+  video: 'gemini-omni-flash-preview', // Omni Flash
+};
+
+const json = (body, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...SECURITY_HEADERS },
+  });
+
+/**
+ * Compose an image or a video from a reading of a passage.
+ *
+ * THE API TAKES NO PROMPT. It takes an anchor and the lenses active on it, and
+ * composes the prompt here with the same compiler the reader runs. That is what
+ * makes the guardrails real rather than decorative: a corpus that blocks
+ * figural depiction blocks it on the server, where a hand-written request
+ * cannot route around the UI, and the negatives the policy locks are attached
+ * after the caller's words rather than in place of them.
+ *
+ * It also refuses to merge contending readings, for the same reason the
+ * compiler does: an image splitting the difference between two readings
+ * represents neither.
+ */
+async function handleGenerate(request, env, user) {
+  const key = env.GEMINI_API_KEY;
+  if (!key)
+    return json({
+      error: 'not-configured',
+      detail: 'No generation credential is set on this Worker. Set GEMINI_API_KEY as a Worker secret; ' +
+              'until then the Studio compiles payloads but cannot render them.',
+    }, 501);
+
+  let req;
+  try { req = await request.json(); } catch { return json({ error: 'bad-request' }, 400); }
+
+  const medium = req.medium === 'video' ? 'video' : 'image';
+  const result = compile({
+    anchor: req.anchor ?? {},
+    lenses: Array.isArray(req.lenses) ? req.lenses : [],
+    oppositions: Array.isArray(req.oppositions) ? req.oppositions : [],
+    policy: req.policy ?? {},
+  });
+
+  if (result.decision !== 'compiled')
+    return json({ error: result.decision, note: result.note ?? result.reason, blocks: result.blocks ?? [] }, 403);
+  if (result.payloads.length !== 1)
+    return json({
+      error: 'contending',
+      note: result.note,
+      readings: result.payloads.map((p) => ({ id: p.id, lenses: p.lenses })),
+    }, 409);
+
+  const payload = result.payloads[0];
+  // The negatives are stated to the model in words, because neither endpoint
+  // takes a negative-prompt field. Locked ones are named first.
+  const prompt = payload.negative.length
+    ? `${payload.positive}\n\nDo not include: ${payload.negative.join('; ')}.`
+    : payload.positive;
+
+  const res = medium === 'image'
+    ? await renderImage(key, prompt, payload)
+    : await startVideo(key, prompt, payload);
+
+  // Provenance travels with the artefact, always: which reading directed it,
+  // which model rendered it, and which build composed the prompt.
+  return json({
+    ...res,
+    provenance: {
+      anchor: payload.anchor,
+      lenses: payload.lenses,
+      model: MODELS[medium],
+      payload: payload.id,
+      locked_negative: payload.locked_negative,
+      by: user.email,
+      at: new Date().toISOString(),
+    },
+  }, res.error ? 502 : 200);
+}
+
+async function renderImage(key, prompt, payload) {
+  const res = await fetch(`${GEMINI}/models/${MODELS.image}:generateContent?key=${encodeURIComponent(key)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseModalities: ['IMAGE'],
+        imageConfig: { aspectRatio: payload.aspect },
+      },
+    }),
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok)
+    return { error: 'upstream', status: res.status, detail: body?.error?.message ?? 'the image model refused' };
+
+  const part = (body.candidates?.[0]?.content?.parts ?? []).find((p) => p.inlineData);
+  if (!part) return { error: 'no-image', detail: 'the model returned no image part' };
+
+  return {
+    medium: 'image',
+    mime: part.inlineData.mimeType ?? 'image/png',
+    data: part.inlineData.data,
+    prompt,
+  };
+}
+
+// Video is long-running: this starts it and hands back the id the page polls.
+async function startVideo(key, prompt, payload) {
+  const res = await fetch(`${GEMINI}/interactions?key=${encodeURIComponent(key)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: MODELS.video,
+      input: prompt,
+      response_format: { type: 'video', aspect_ratio: payload.aspect },
+    }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok)
+    return { error: 'upstream', status: res.status, detail: body?.error?.message ?? 'the video model refused' };
+  return { medium: 'video', interaction: body.id ?? body.name ?? null, status: body.status ?? 'running', prompt };
+}
+
+async function pollVideo(env, id) {
+  const key = env.GEMINI_API_KEY;
+  if (!key) return json({ error: 'not-configured' }, 501);
+  const res = await fetch(`${GEMINI}/interactions/${encodeURIComponent(id)}?key=${encodeURIComponent(key)}`);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok)
+    return json({ error: 'upstream', status: res.status, detail: body?.error?.message ?? '' }, 502);
+
+  // The finished video arrives as a step carrying video content.
+  const steps = body.steps ?? [];
+  const video = steps.flatMap((st) => st.content ?? []).find((c) => c.type === 'video');
+  return json({
+    status: body.status ?? 'running',
+    video: video ? { uri: video.uri ?? video.url ?? null, mime: video.mime_type ?? 'video/mp4' } : null,
+  });
+}
+
 // One message for every reset failure. An unknown address, a wrong code, an
 // expired code and a spent code are all the same sentence — otherwise the form
 // answers "does this person have an account, and is their code still live?".
@@ -437,8 +634,14 @@ async function handle(request, env) {
 
     const user = await currentUser(env, request);
 
-    if (url.pathname.startsWith('/account')) {
-      if (!user) return new Response(null, { status: 303, headers: { Location: '/login', ...SECURITY_HEADERS } });
+    // Everything a signed-in reader acts through. /api answers JSON rather than
+    // a redirect: a fetch that quietly receives a login page is worse than one
+    // that is told plainly it has no session.
+    if (url.pathname.startsWith('/account') || url.pathname.startsWith('/api/')) {
+      if (!user)
+        return url.pathname.startsWith('/api/')
+          ? json({ error: 'no-session' }, 401)
+          : new Response(null, { status: 303, headers: { Location: '/login', ...SECURITY_HEADERS } });
       if (url.pathname === '/account' && request.method === 'GET')
         return accountPage(user, {
           sessions: await countSessions(env, user.id),
@@ -449,6 +652,10 @@ async function handle(request, env) {
         return handleChangePassword(request, env, user);
       if (url.pathname === '/account/revoke-all' && request.method === 'POST')
         return handleRevokeAll(request, env, user);
+      if (url.pathname === '/api/generate' && request.method === 'POST')
+        return handleGenerate(request, env, user);
+      if (url.pathname.startsWith('/api/generate/') && request.method === 'GET')
+        return pollVideo(env, url.pathname.slice('/api/generate/'.length));
       return new Response('Not found', { status: 404, headers: SECURITY_HEADERS });
     }
 
