@@ -451,12 +451,34 @@ async function handleSelfTest(request, env) {
   return json({ credential: true, image, video, checked: new Date().toISOString() });
 }
 
-// Google's endpoints. The model ids are written down rather than passed in:
-// which model rendered a reading is part of the record, not a client's choice.
+// The endpoints, and the model ids, written down rather than passed in: which model
+// rendered a reading is part of the record, not a caller's choice.
+//
+// PROVIDER AND MEDIUM ARE SEPARATE AXES. Conflating them — a `medium` of "openai" — reads
+// fine with two options and falls apart at three, because the next provider that does video
+// has nowhere to go. A rendition is an image or a video; who rendered it is a different
+// question.
 const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
+const OPENAI = 'https://api.openai.com/v1';
+
 const MODELS = {
-  image: 'gemini-3-pro-image',        // Nano Banana Pro
-  video: 'gemini-omni-flash-preview', // Omni Flash
+  google: {
+    image: 'gemini-3-pro-image',        // Nano Banana Pro
+    video: 'gemini-omni-flash-preview', // Omni Flash
+  },
+  openai: {
+    // Flare rather than Sunburst: higher quality than gpt-image-2 at half the latency, and
+    // Sunburst's advantage is editing precision across a series, which this does not do —
+    // every rendition here is composed once from a reading.
+    image: 'gpt-image-2.5-flare',
+  },
+};
+
+const KEY_FOR = {
+  google: (env) => env.GEMINI_API_KEY,
+  // Named exactly as it was created, rather than tidied to OPENAI_API_KEY: a secret whose
+  // name in the code differs from its name in the store is how an hour goes missing.
+  openai: (env) => env.OPENAI_API_KEY_CON001,
 };
 
 const json = (body, status = 200) =>
@@ -480,18 +502,23 @@ const json = (body, status = 200) =>
  * represents neither.
  */
 async function handleGenerate(request, env, user) {
-  const key = env.GEMINI_API_KEY;
-  if (!key)
-    return json({
-      error: 'not-configured',
-      detail: 'No generation credential is set on this Worker. Set GEMINI_API_KEY as a Worker secret; ' +
-              'until then the Studio compiles payloads but cannot render them.',
-    }, 501);
-
   let req;
   try { req = await request.json(); } catch { return json({ error: 'bad-request' }, 400); }
 
+  const provider = req.provider === 'openai' ? 'openai' : 'google';
   const medium = req.medium === 'video' ? 'video' : 'image';
+  const model = MODELS[provider]?.[medium];
+  if (!model)
+    return json({ error: 'unsupported', detail: `${provider} does not render ${medium} here` }, 400);
+
+  const key = KEY_FOR[provider](env);
+  if (!key)
+    return json({
+      error: 'not-configured',
+      detail: `No ${provider} credential is set on this Worker. Set ` +
+              `${provider === 'openai' ? 'OPENAI_API_KEY_CON001' : 'GEMINI_API_KEY'} as a Worker secret; ` +
+              'until then the Studio compiles payloads but cannot render them.',
+    }, 501);
   const result = compile({
     anchor: req.anchor ?? {},
     lenses: Array.isArray(req.lenses) ? req.lenses : [],
@@ -515,9 +542,11 @@ async function handleGenerate(request, env, user) {
     ? `${payload.positive}\n\nDo not include: ${payload.negative.join('; ')}.`
     : payload.positive;
 
-  const res = medium === 'image'
-    ? await renderImage(key, prompt, payload)
-    : await startVideo(key, prompt, payload);
+  const res = medium === 'video'
+    ? await startVideo(key, prompt, payload)
+    : provider === 'openai'
+      ? await renderOpenAIImage(key, prompt, payload)
+      : await renderImage(key, prompt, payload);
 
   // Provenance travels with the artefact, always: which reading directed it,
   // which model rendered it, and which build composed the prompt.
@@ -526,7 +555,8 @@ async function handleGenerate(request, env, user) {
     provenance: {
       anchor: payload.anchor,
       lenses: payload.lenses,
-      model: MODELS[medium],
+      provider,
+      model,
       payload: payload.id,
       locked_negative: payload.locked_negative,
       by: user.email,
@@ -535,8 +565,42 @@ async function handleGenerate(request, env, user) {
   }, res.error ? 502 : 200);
 }
 
+/**
+ * Aspect ratios to the sizes this endpoint actually offers. The compiler speaks in the
+ * ratios a reading implies — an intimate 4:5, a vast 16:9 — and the API takes pixels, so
+ * the nearest orientation is chosen here rather than the ratio being quietly dropped.
+ */
+function openAISize(aspect) {
+  const [w, h] = String(aspect ?? '3:2').split(':').map(Number);
+  if (!w || !h || Math.abs(w / h - 1) < 0.05) return '1024x1024';
+  return w > h ? '1536x1024' : '1024x1536';
+}
+
+async function renderOpenAIImage(key, prompt, payload) {
+  const res = await fetch(`${OPENAI}/images/generations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model: MODELS.openai.image,
+      prompt,
+      n: 1,
+      size: openAISize(payload.aspect),
+    }),
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok)
+    return { error: 'upstream', status: res.status, detail: body?.error?.message ?? 'the image model refused' };
+
+  const first = body.data?.[0];
+  if (!first?.b64_json)
+    return { error: 'no-image', detail: first?.url ? 'the model returned a URL, not image bytes' : 'the model returned no image' };
+
+  return { medium: 'image', mime: 'image/png', data: first.b64_json, prompt };
+}
+
 async function renderImage(key, prompt, payload) {
-  const res = await fetch(`${GEMINI}/models/${MODELS.image}:generateContent?key=${encodeURIComponent(key)}`, {
+  const res = await fetch(`${GEMINI}/models/${MODELS.google.image}:generateContent?key=${encodeURIComponent(key)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -569,7 +633,7 @@ async function startVideo(key, prompt, payload) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: MODELS.video,
+      model: MODELS.google.video,
       input: prompt,
       response_format: { type: 'video', aspect_ratio: payload.aspect },
     }),

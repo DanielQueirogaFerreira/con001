@@ -52,3 +52,8 @@ jobs:
           echo "$out"
           echo "$out" | grep -q '"credential":true' || { echo "no usable generation credential" >&2; exit 1; }
           echo "$out" | grep -q '"ok":true' || { echo "the credential reached no model" >&2; exit 1; }
+          # Each provider is reported separately, so one working key cannot hide another
+          # that is missing.
+          for p in google openai; do
+            echo "$out" | grep -q "\"provider\":\"$p\"" || { echo "$p was not checked at all" >&2; exit 1; }
+          done

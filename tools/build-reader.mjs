@@ -260,9 +260,12 @@ const html = `<meta charset="utf-8">
         <div id="selNote" class="dim">Select any words in the text, or drag across verses, to anchor a rendering to exactly that much of the passage.</div>
         <div id="selAnchor" class="selanchor" hidden></div>
         <div class="row" style="gap:8px;margin-top:12px;flex-wrap:wrap">
-          <button class="act" data-medium="image">Image &mdash; Nano Banana Pro</button>
-          <button class="act" data-medium="video">Video &mdash; Omni Flash</button>
+          <button class="act" data-medium="image" data-provider="google">Image &mdash; Nano Banana Pro</button>
+          <button class="act" data-medium="image" data-provider="openai">Image &mdash; GPT Image 2.5 Flare</button>
+          <button class="act" data-medium="video" data-provider="google">Video &mdash; Omni Flash</button>
         </div>
+        <p class="dim" style="margin:8px 0 0">Two image models, one reading. The same compiled payload
+          goes to both, so a difference between the results is the model's, not the prompt's.</p>
         <div id="composeOut" class="out"></div>
       </div>
 
@@ -671,7 +674,7 @@ document.addEventListener('selectionchange', () => {
 
 const composeOut = () => document.getElementById('composeOut');
 
-async function composeFrom(medium) {
+async function composeFrom(medium, provider) {
   const out = composeOut();
   const at = selection ?? { cr: anchor };
   const active = soloLens
@@ -692,7 +695,7 @@ async function composeFrom(medium) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        anchor: at, medium, lenses: active,
+        anchor: at, medium, provider, lenses: active,
         oppositions: soloLens ? [] : oppositionsAt(C.interps, at.cr),
       }),
     });
@@ -753,7 +756,7 @@ async function pollRendition(id, mark, tries = 0) {
 }
 
 document.querySelectorAll('.act').forEach(b =>
-  b.addEventListener('click', () => composeFrom(b.dataset.medium)));
+  b.addEventListener('click', () => composeFrom(b.dataset.medium, b.dataset.provider)));
 
 /* ------------------------------------------------------- the Bible panel */
 

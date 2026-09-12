@@ -348,3 +348,26 @@ Both print SQL. Apply it with `npx wrangler d1 execute con001-access --remote
 - **Expired-row cleanup.** Nothing sweeps spent reset codes, dead sessions or old
   `login_attempts`. Harmless at this scale, and a cron trigger later.
 - **SSO.** The schema is ready; the routes are not.
+
+## Generation credentials
+
+Two providers render from a reading, and each needs its own secret **on the Worker** —
+not in GitHub, where the running Worker cannot see it:
+
+| Secret | Used for |
+|---|---|
+| `GEMINI_API_KEY` | `gemini-3-pro-image` (Nano Banana Pro) and `gemini-omni-flash-preview` (Omni Flash, video) |
+| `OPENAI_API_KEY_CON001` | `gpt-image-2.5-flare` (image only) |
+
+The names are the names in the store, verbatim. `OPENAI_API_KEY_CON001` is not tidied to
+`OPENAI_API_KEY` anywhere in the code, because a secret whose name in the source differs
+from its name in the settings page is an hour nobody gets back — which this project has
+already spent once, on a key that was in GitHub's store while the Worker looked in its own.
+
+`.github/workflows/secret.yml` pushes whichever of them exist in the repository's secrets to
+the Worker, using the token that already deploys, and pipes each value rather than passing
+it as an argument. Missing keys are skipped and named; only an empty run fails.
+
+`POST /api/selftest` reports each provider separately, so one working key cannot hide
+another that is missing. A missing credential disables that provider and nothing else: the
+route answers 501 naming the secret to set, and the other provider keeps working.

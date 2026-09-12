@@ -19,10 +19,11 @@ async function t(name, fn) {
 
 const TOKEN = 'a-test-session-token';
 
-async function envFor({ key = 'test-key' } = {}) {
+async function envFor({ key = 'test-key', openaiKey = 'test-openai-key' } = {}) {
   const hash = await hashToken(TOKEN);
   return {
     GEMINI_API_KEY: key,
+    OPENAI_API_KEY_CON001: openaiKey,
     DB: {
       prepare: (sql) => ({
         bind: (...args) => ({
@@ -154,8 +155,84 @@ await t('the image request names the right model and carries provenance', async 
   assert(sentBody.generationConfig.imageConfig.aspectRatio, 'must state an aspect ratio');
   assert(body.data === 'SGVsbG8=' && body.mime === 'image/png', 'the image must come back intact');
   assert(body.provenance.model === 'gemini-3-pro-image', body.provenance.model);
+  assert(body.provenance.provider === 'google', body.provenance.provider);
   assert(body.provenance.lenses.includes('ly:one'), 'the directing lens must be named');
   assert(body.provenance.by === 'reader@example.com', 'the record must name who asked');
+});
+
+await t('the OpenAI image goes to Flare, with the key in a header and never a URL', async () => {
+  const calls = stubFetch({ data: [{ b64_json: 'SGVsbG8=' }] });
+  const env = await envFor();
+  const res = await worker.fetch(post({
+    anchor: { cr: 'gita:2.47' }, lenses: [plain], medium: 'image', provider: 'openai',
+  }), env);
+  const body = await res.json();
+  assert(calls[0].url === 'https://api.openai.com/v1/images/generations', calls[0].url);
+  assert(!calls[0].url.includes('test-openai-key'),
+    'the key must never be in a URL, where it lands in logs and Referer headers');
+  assert(calls[0].init.headers.Authorization === 'Bearer test-openai-key', 'wrong authorization header');
+  const sent = JSON.parse(calls[0].init.body);
+  assert(sent.model === 'gpt-image-2.5-flare', sent.model);
+  assert(sent.n === 1 && /^\d+x\d+$/.test(sent.size), `expected one image at a real size, got ${sent.size}`);
+  assert(/first light over water/.test(sent.prompt), 'the lens motif should be in the prompt');
+  assert(body.data === 'SGVsbG8=' && body.provenance.provider === 'openai', 'the image must come back intact');
+  assert(body.provenance.model === 'gpt-image-2.5-flare', body.provenance.model);
+});
+
+await t('a reading with a locked exclusion keeps it whichever model renders it', async () => {
+  const calls = stubFetch({ data: [{ b64_json: 'AAAA' }] });
+  const env = await envFor();
+  await worker.fetch(post({
+    anchor: { cr: 'quran:2:1' }, lenses: [figuralBlocked], medium: 'image', provider: 'openai',
+  }), env);
+  const sent = JSON.parse(calls[0].init.body).prompt;
+  assert(sent.includes('any figural depiction'),
+    'the policy held for one provider and not the other');
+});
+
+await t('the aspect a reading implies survives as an orientation', async () => {
+  // The compiler speaks in ratios; this endpoint takes pixels. The ratio must not be
+  // silently dropped — an intimate 4:5 reading rendered as a landscape is a different image.
+  const shot = async (register) => {
+    const calls = stubFetch({ data: [{ b64_json: 'AAAA' }] });
+    const env = await envFor();
+    await worker.fetch(post({
+      anchor: { cr: 'gita:2.47' }, provider: 'openai', medium: 'image',
+      lenses: [{ ...plain, direction: { register, motifs: ['a motif'], avoid: [] } }],
+    }), env);
+    return JSON.parse(calls[0].init.body).size;
+  };
+  const intimate = await shot('interior, withdrawn, stillness');   // 4:5
+  const vast = await shot('vast, unbroken, single field');         // 16:9
+  assert(intimate === '1024x1536', `an intimate reading should be portrait, got ${intimate}`);
+  assert(vast === '1536x1024', `a vast reading should be landscape, got ${vast}`);
+});
+
+await t('a provider that cannot do a medium says so instead of guessing', async () => {
+  const calls = stubFetch({});
+  const env = await envFor();
+  const res = await worker.fetch(post({
+    anchor: { cr: 'gita:2.47' }, lenses: [plain], medium: 'video', provider: 'openai',
+  }), env);
+  assert(res.status === 400, `expected 400, got ${res.status}`);
+  assert((await res.json()).error === 'unsupported');
+  assert(calls.length === 0, 'nothing should have been sent upstream');
+});
+
+await t('each provider needs its own credential', async () => {
+  const calls = stubFetch({});
+  const env = await envFor({ openaiKey: '' });
+  const res = await worker.fetch(post({
+    anchor: { cr: 'gita:2.47' }, lenses: [plain], medium: 'image', provider: 'openai',
+  }), env);
+  const body = await res.json();
+  assert(res.status === 501 && body.error === 'not-configured', `got ${res.status}`);
+  assert(body.detail.includes('OPENAI_API_KEY_CON001'), 'the message must name the secret to set');
+  assert(calls.length === 0, 'nothing should have been sent upstream');
+  // And Google still works while OpenAI is unset.
+  stubFetch({ candidates: [{ content: { parts: [{ inlineData: { mimeType: 'image/png', data: 'AAAA' } }] } }] });
+  const ok = await worker.fetch(post({ anchor: { cr: 'gita:2.47' }, lenses: [plain] }), await envFor({ openaiKey: '' }));
+  assert(ok.status === 200, 'one missing credential must not disable the other provider');
 });
 
 await t('video goes to Omni Flash as a long-running interaction', async () => {
