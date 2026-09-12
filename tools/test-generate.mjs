@@ -249,5 +249,86 @@ await t('video goes to Omni Flash as a long-running interaction', async () => {
   assert(body.interaction === 'int_123', 'the page needs the id to poll');
 });
 
+/* ---------------------------------------------------------------- selftest */
+
+// This exists because a broken self-test shipped. The route answers the question "is
+// generation configured?", nothing else was asking it, and when the model table was
+// restructured the self-test kept reading the old shape — so it reported
+// `models/undefined` against a credential that was in fact fine. A check nobody checks is
+// a check that tells you what it told you last time.
+
+async function probeEnv({ used = null, expires = Date.now() + 60000 } = {}) {
+  const { hashToken, normaliseCode } = await import('../worker/auth.mjs');
+  const hash = await hashToken(normaliseCode('AAAAA-BBBBB'));
+  const rows = { [hash]: { hash, expires_at: expires, used_at: used } };
+  return {
+    GEMINI_API_KEY: 'g-key',
+    OPENAI_API_KEY_CON001: 'o-key',
+    ASSETS: { fetch: async () => new Response('{}', { headers: { 'Content-Type': 'application/json' } }) },
+    DB: {
+      prepare: (sql) => ({
+        bind: (...args) => ({
+          first: async () => (sql.includes('FROM probe_tokens') ? rows[args[0]] ?? null : null),
+          run: async () => { if (sql.includes('UPDATE probe_tokens')) rows[args[1]].used_at = args[0]; },
+        }),
+      }),
+    },
+    _rows: rows,
+  };
+}
+
+const probe = (token = 'AAAAA-BBBBB') => new Request('https://x/api/selftest', {
+  method: 'POST', headers: { 'X-Probe-Token': token },
+});
+
+await t('the self-test reports every provider, and never echoes a key', async () => {
+  globalThis.fetch = async (url, init) => new Response(JSON.stringify({
+    displayName: String(url).includes('gemini') ? 'A Google model' : undefined,
+    id: 'gpt-image-2.5-flare',
+  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+
+  const env = await probeEnv();
+  const res = await worker.fetch(probe(), env);
+  const body = await res.json();
+  assert(res.status === 200, `got ${res.status}`);
+  assert(body.credential === true, 'a working credential must be reported as working');
+
+  const providers = body.models.map((m) => `${m.provider}:${m.medium}`);
+  for (const want of ['google:image', 'google:video', 'openai:image'])
+    assert(providers.includes(want), `${want} was not checked — got ${providers.join(', ')}`);
+  for (const m of body.models) {
+    assert(m.model && !String(m.model).includes('undefined'),
+      `${m.provider} reported model "${m.model}" — the model table moved and this did not`);
+    assert(m.ok, `${m.provider} should be reachable in this stub`);
+  }
+  const raw = JSON.stringify(body);
+  assert(!raw.includes('g-key') && !raw.includes('o-key'), 'a credential appeared in the response');
+});
+
+await t('a probe token works once and is refused afterwards', async () => {
+  globalThis.fetch = async () => new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } });
+  const env = await probeEnv();
+  assert((await worker.fetch(probe(), env)).status === 200, 'the first use should be accepted');
+  const again = await worker.fetch(probe(), env);
+  assert(again.status === 403, `a spent token must be refused, got ${again.status}`);
+  assert((await again.json()).error === 'probe-token-not-valid');
+});
+
+await t('an unknown, spent or expired token are one message', async () => {
+  globalThis.fetch = async () => new Response('{}', { status: 200 });
+  const unknown = await worker.fetch(probe('ZZZZZ-ZZZZZ'), await probeEnv());
+  const expired = await worker.fetch(probe(), await probeEnv({ expires: Date.now() - 1 }));
+  const spent = await worker.fetch(probe(), await probeEnv({ used: Date.now() }));
+  for (const [what, res] of [['unknown', unknown], ['expired', expired], ['spent', spent]]) {
+    assert(res.status === 403, `${what}: expected 403, got ${res.status}`);
+    assert((await res.json()).error === 'probe-token-not-valid', `${what}: the reason leaked`);
+  }
+});
+
+await t('the self-test needs no session but does need a token', async () => {
+  const res = await worker.fetch(new Request('https://x/api/selftest', { method: 'POST' }), await probeEnv());
+  assert(res.status === 401 && (await res.json()).error === 'no-probe-token', `got ${res.status}`);
+});
+
 console.log(failures ? `\n  ${failures} failure(s)\n` : '\n  generation route: all checks pass\n');
 process.exit(failures ? 1 : 0);

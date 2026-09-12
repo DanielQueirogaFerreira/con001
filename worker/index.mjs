@@ -431,24 +431,34 @@ async function handleSelfTest(request, env) {
   await env.DB.prepare(`UPDATE probe_tokens SET used_at = ?1 WHERE hash = ?2`)
     .bind(Date.now(), hash).run();
 
-  const key = env.GEMINI_API_KEY;
-  if (!key) return json({ credential: false, detail: 'GEMINI_API_KEY is not set on this Worker' }, 200);
-
   // Metadata only. Asking whether a model exists costs nothing and proves the
   // credential is accepted; generating something to find out would bill the
   // account for a question that did not need an image.
-  const reach = async (model) => {
+  const reach = async (provider, medium) => {
+    const model = MODELS[provider][medium];
+    const key = KEY_FOR[provider](env);
+    if (!key)
+      return { provider, medium, model, ok: false, status: 0, detail: 'no credential on this Worker' };
     try {
-      const res = await fetch(`${GEMINI}/models/${model}?key=${encodeURIComponent(key)}`);
+      const res = provider === 'google'
+        ? await fetch(`${GEMINI}/models/${model}?key=${encodeURIComponent(key)}`)
+        : await fetch(`${OPENAI}/models/${model}`, { headers: { Authorization: `Bearer ${key}` } });
       const body = await res.json().catch(() => ({}));
-      return { model, ok: res.ok, status: res.status, detail: res.ok ? (body.displayName ?? '') : (body?.error?.message ?? '') };
+      return {
+        provider, medium, model, ok: res.ok, status: res.status,
+        detail: res.ok ? (body.displayName ?? body.id ?? '') : (body?.error?.message ?? ''),
+      };
     } catch (e) {
-      return { model, ok: false, status: 0, detail: String(e.message ?? e) };
+      return { provider, medium, model, ok: false, status: 0, detail: String(e.message ?? e) };
     }
   };
 
-  const [image, video] = await Promise.all([reach(MODELS.image), reach(MODELS.video)]);
-  return json({ credential: true, image, video, checked: new Date().toISOString() });
+  // Every provider is reported separately, so one working credential cannot hide
+  // another that is missing.
+  const models = await Promise.all([
+    reach('google', 'image'), reach('google', 'video'), reach('openai', 'image'),
+  ]);
+  return json({ credential: models.some((m) => m.ok), models, checked: new Date().toISOString() });
 }
 
 // The endpoints, and the model ids, written down rather than passed in: which model
