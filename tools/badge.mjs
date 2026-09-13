@@ -4,16 +4,21 @@
 // a string, and the Worker imports it directly for the pages it renders itself. One
 // implementation, so two areas can never disagree about what build they are.
 //
-// Three lines of technical information, and no more:
+// Four lines of technical information, and no more:
 //
-//     version   0.1.0a1·a57e794
-//     build     2026-09-12T03:21:44Z
-//     now       2026-09-12T03:47:12.418Z
+//     area      console
+//     version   0.1.0a1·1f336cf
+//     build     2026-09-12T06:06:33.000Z | age 21h
+//     now       2026-09-13T02:02:05.366Z
 //
-// `build` carries no milliseconds because git commit dates carry none — printing .000
-// there would be precision this project does not have. `now` is a live clock and is the
-// one timestamp that can honestly show milliseconds; it also gives anyone reporting a
-// problem an exact instant to quote.
+// Every timestamp is ISO-8601 in UTC, to milliseconds, ending in exactly one Z. The build's
+// read .000 because git commit dates carry whole seconds — the digits are the format, not a
+// claim about precision, and the build stamp is the commit date deliberately so that
+// rebuilding a commit produces identical bytes.
+//
+// `age` counts from the build to now and keeps two digits by changing scale: 59s becomes
+// 01m, 23h becomes 01d, 06d becomes 01w. Two characters carry the number and one carries
+// the unit, so the line never reflows as a deployment gets older.
 
 // The same pair of eyes the password fields use, so one icon means one thing everywhere.
 export const EYE_OPEN =
@@ -48,6 +53,8 @@ export const BADGE_CSS = `
   .oh-badge dt { color:color-mix(in srgb, var(--muted,#6b6459) 70%, transparent); }
   .oh-badge dd { margin:0; color:var(--ink,#1d1a16); }
   .oh-badge .v { color:var(--accent,#7a5c3e); }
+  .oh-badge .sep { color:color-mix(in srgb, var(--muted,#6b6459) 55%, transparent); }
+  .oh-badge #ohBadgeAge { color:var(--accent,#7a5c3e); }
   .oh-badge[data-open="false"] dl { display:none; }
   .oh-badge[data-open="false"] .short { display:block; color:var(--accent,#7a5c3e); }
   .oh-badge .short { display:none; align-self:center; }
@@ -60,19 +67,62 @@ export const BADGE_CSS = `
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-/** `built` is an ISO string; the seconds are all git gives, so that is all this shows. */
-export const badgeHtml = ({ short, built, area }) => `
-<div class="oh-badge" id="ohBadge" data-open="true" title="${esc(area)} · ${esc(short)} · built ${esc(built)}">
+/**
+ * Any timestamp, as ISO-8601 UTC with milliseconds and exactly one Z.
+ *
+ * PARSED, NEVER PATCHED. The first version trimmed the input with regexes and appended a
+ * Z — which produced `2026-09-12T06:06:33ZZ` the moment git handed back a stamp that
+ * already ended in one, because a rule that strips `+00:00` says nothing about `Z`.
+ * Date.toISOString() emits exactly one shape whatever the input looked like.
+ */
+export function isoMs(input) {
+  const at = new Date(input);
+  return Number.isNaN(at.getTime()) ? '' : at.toISOString();
+}
+
+/**
+ * How long ago, in two digits and a unit.
+ *
+ * The unit is the largest one the interval fills, so the number cannot run past two digits
+ * until a deployment is a century old: 59s → 01m, 23h → 01d, 06d → 01w, 04w → 01M.
+ * Months and years are the average Gregorian lengths — this is an age, not a date
+ * calculation, and 30.44 days is closer to what a person means by "a month" than 30 is.
+ */
+export const AGE_SCALES = [
+  ['s', 1000],
+  ['m', 60 * 1000],
+  ['h', 60 * 60 * 1000],
+  ['d', 24 * 60 * 60 * 1000],
+  ['w', 7 * 24 * 60 * 60 * 1000],
+  ['M', 30.436875 * 24 * 60 * 60 * 1000],
+  ['y', 365.2425 * 24 * 60 * 60 * 1000],
+];
+
+export function age(ms) {
+  if (!Number.isFinite(ms) || ms < 0) ms = 0;
+  let unit = AGE_SCALES[0];
+  for (const scale of AGE_SCALES) if (ms >= scale[1]) unit = scale;
+  return String(Math.floor(ms / unit[1])).padStart(2, '0') + unit[0];
+}
+
+/** `built` is any parseable timestamp; the badge renders and ages it from there. */
+export const badgeHtml = ({ short, built, area }) => {
+  const stamp = isoMs(built);
+  const at = Date.parse(stamp);
+  return `
+<div class="oh-badge" id="ohBadge" data-open="true" data-built="${Number.isNaN(at) ? '' : at}"
+     title="${esc(area)} · ${esc(short)} · built ${esc(stamp)}">
   <button type="button" id="ohBadgeEye" aria-controls="ohBadgeBody" aria-expanded="true"
           aria-label="Hide build details">${EYE_OPEN}</button>
   <span class="short">${esc(short)}</span>
   <dl id="ohBadgeBody">
     <dt>area</dt><dd>${esc(area)}</dd>
     <dt>version</dt><dd class="v">${esc(short)}</dd>
-    <dt>build</dt><dd>${esc(String(built).replace(/\.\d+Z?$/, '').replace(/\+00:00$/, '') + 'Z')}</dd>
+    <dt>build</dt><dd>${esc(stamp)} <span class="sep">|</span> age <span id="ohBadgeAge">—</span></dd>
     <dt>now</dt><dd id="ohBadgeNow">—</dd>
   </dl>
 </div>`;
+};
 
 /**
  * The collapsed choice is shared by every badge on the page and remembered across areas:
@@ -87,6 +137,16 @@ export const BADGE_SCRIPT = `
   if (!badge) return;
   const eye = document.getElementById('ohBadgeEye');
   const now = document.getElementById('ohBadgeNow');
+  const ageOut = document.getElementById('ohBadgeAge');
+  const builtAt = Number(badge.dataset.built);
+
+  const AGE_SCALES = ${JSON.stringify(AGE_SCALES)};
+  const ageOf = (ms) => {
+    if (!isFinite(ms) || ms < 0) ms = 0;
+    let unit = AGE_SCALES[0];
+    for (const scale of AGE_SCALES) if (ms >= scale[1]) unit = scale;
+    return String(Math.floor(ms / unit[1])).padStart(2, '0') + unit[0];
+  };
   const OPEN = ${JSON.stringify(EYE_OPEN)}, SHUT = ${JSON.stringify(EYE_SHUT)};
 
   const apply = (open) => {
@@ -108,7 +168,14 @@ export const BADGE_SCRIPT = `
 
   // Ten times a second: enough for the milliseconds to move, far below anything a person
   // reads, and it stops entirely while the badge is collapsed.
-  const tick = () => { if (badge.dataset.open === 'true' && now) now.textContent = new Date().toISOString(); };
+  const tick = () => {
+    if (badge.dataset.open !== 'true') return;
+    const atMs = Date.now();
+    if (now) now.textContent = new Date(atMs).toISOString();
+    // The age advances against the same instant the clock shows, so the two lines can
+    // never disagree by a tick.
+    if (ageOut && isFinite(builtAt)) ageOut.textContent = ageOf(atMs - builtAt);
+  };
   tick();
   setInterval(tick, 100);
 })();
