@@ -79,12 +79,37 @@ t('age never runs backwards or reports a negative', () => {
 });
 
 t('the badge carries the build as an epoch, for the live age to count from', () => {
-  const html = badgeHtml({ short: '0.1.0a1·abc1234', built: '2026-09-12T06:06:33+00:00', area: 'reader' });
-  assert(html.includes('data-built="1789193193000"'), 'the epoch must be in the markup');
-  assert(html.includes('2026-09-12T06:06:33.000Z'), 'the readable stamp must be there too');
+  const html = badgeHtml({ short: '0.1.0a1·abc1234', built: '2026-09-13T02:30:39.654Z',
+                           commit: '2026-09-12T06:06:33+00:00', area: 'reader' });
+  assert(html.includes('data-built="1789266639654"'), 'the epoch must be in the markup');
+  assert(html.includes('2026-09-13T02:30:39.654Z'), 'the readable stamp must be there too');
   assert(!html.includes('ZZ'), 'the rendered badge contains a double Z');
   assert(html.includes('id="ohBadgeAge"') && html.includes('id="ohBadgeNow"'),
     'the live fields must exist for the script to fill');
+});
+
+t('the build stamp keeps the milliseconds it was given', () => {
+  // The whole point of stamping the run rather than the commit: .654 must survive to the
+  // page. A build line that can only ever end in .000 is what this replaced.
+  const html = badgeHtml({ short: 'x', built: '2026-09-13T02:30:39.654Z', area: 'reader' });
+  assert(html.includes('.654Z'), 'the real milliseconds were rounded away');
+  assert(!/build<\/dt><dd>[^<]*\.000Z/.test(html), 'the build line fell back to whole seconds');
+});
+
+t('age sits on the version line, not the build line', () => {
+  const html = badgeHtml({ short: '0.1.0a1·abc1234', built: '2026-09-13T02:30:39.654Z', area: 'reader' });
+  const version = html.slice(html.indexOf('<dt>version</dt>'), html.indexOf('<dt>build</dt>'));
+  const build = html.slice(html.indexOf('<dt>build</dt>'), html.indexOf('<dt>now</dt>'));
+  assert(version.includes('ohBadgeAge') && version.includes('|'), 'age belongs after the version');
+  assert(!build.includes('ohBadgeAge') && !build.includes('|'), 'the build line must carry the stamp alone');
+});
+
+t('the commit date is kept, in the tooltip, where it cannot be mistaken for the stamp', () => {
+  const html = badgeHtml({ short: 'x', built: '2026-09-13T02:30:39.654Z',
+                           commit: '2026-09-12T06:06:33+00:00', area: 'reader' });
+  const title = html.match(/title="([^"]*)"/)[1];
+  assert(title.includes('commit 2026-09-12T06:06:33.000Z'), `the commit date is missing: ${title}`);
+  assert(title.includes('built 2026-09-13T02:30:39.654Z'), 'the run stamp is missing from the tooltip');
 });
 
 t('a badge with no usable build time still renders', () => {

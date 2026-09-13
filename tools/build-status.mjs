@@ -352,7 +352,7 @@ const html = `<meta charset="utf-8">
   </div>
 </div>
 
-${badgeHtml({ short: v.short, built: v.built, area: 'status' })}
+${badgeHtml({ short: v.short, built: v.stamped, commit: v.built, area: 'status' })}
 <script>${BADGE_SCRIPT}</script>
 `;
 
@@ -365,7 +365,7 @@ writeFileSync('dist/version.json', JSON.stringify(v, null, 2) + '\n');
 // own, so it reads its build from here through its asset binding — not over HTTP, which
 // would mean a gated page fetching a gated asset to find out what it is.
 writeFileSync('web/version.json', JSON.stringify({
-  short: v.short, build: v.build, built: v.built, branch: v.branch,
+  short: v.short, build: v.build, built: v.built, stamped: v.stamped, branch: v.branch,
 }));
 
 console.log(

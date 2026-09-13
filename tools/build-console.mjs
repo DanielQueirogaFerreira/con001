@@ -94,7 +94,7 @@ ${areasNav('/console')}
   <iframe id="view" title="Progress"></iframe>
 </main>
 
-${badgeHtml({ short: version.short, built: version.built, area: 'console' })}
+${badgeHtml({ short: version.short, built: version.stamped, commit: version.built, area: 'console' })}
 
 <script type="text/plain" id="src-progress">${carry('web/status.html')}</script>
 <script type="text/plain" id="src-reader">${carry('web/reader.html')}</script>

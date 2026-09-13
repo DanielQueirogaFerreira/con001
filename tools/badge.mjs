@@ -7,14 +7,16 @@
 // Four lines of technical information, and no more:
 //
 //     area      console
-//     version   0.1.0a1·1f336cf
-//     build     2026-09-12T06:06:33.000Z | age 21h
-//     now       2026-09-13T02:02:05.366Z
+//     version   0.1.0a1·1f336cf | age 21h
+//     build     2026-09-13T02:30:39.654Z
+//     now       2026-09-13T02:51:44.366Z
 //
-// Every timestamp is ISO-8601 in UTC, to milliseconds, ending in exactly one Z. The build's
-// read .000 because git commit dates carry whole seconds — the digits are the format, not a
-// claim about precision, and the build stamp is the commit date deliberately so that
-// rebuilding a commit produces identical bytes.
+// Every timestamp is ISO-8601 in UTC, to milliseconds, ending in exactly one Z.
+//
+// `build` is when the build RAN, not when the source was committed — git stores whole
+// seconds, so a commit date can only ever end in .000. The commit date is still the
+// project's identity and is in the tooltip; the millisecond instant is the one that
+// answers "when was this registered".
 //
 // `age` counts from the build to now and keeps two digits by changing scale: 59s becomes
 // 01m, 23h becomes 01d, 06d becomes 01w. Two characters carry the number and one carries
@@ -106,19 +108,25 @@ export function age(ms) {
 }
 
 /** `built` is any parseable timestamp; the badge renders and ages it from there. */
-export const badgeHtml = ({ short, built, area }) => {
+/**
+ * @param built   when the build ran, to the millisecond — what `build` shows and `age` counts from
+ * @param commit  the commit date, which git gives only to the second; tooltip only
+ */
+export const badgeHtml = ({ short, built, area, commit = '' }) => {
   const stamp = isoMs(built);
   const at = Date.parse(stamp);
+  const commitStamp = commit ? isoMs(commit) : '';
   return `
 <div class="oh-badge" id="ohBadge" data-open="true" data-built="${Number.isNaN(at) ? '' : at}"
-     title="${esc(area)} · ${esc(short)} · built ${esc(stamp)}">
+     title="${esc(area)} · ${esc(short)} · built ${esc(stamp)}${commitStamp ? ` · commit ${esc(commitStamp)}` : ''}">
   <button type="button" id="ohBadgeEye" aria-controls="ohBadgeBody" aria-expanded="true"
           aria-label="Hide build details">${EYE_OPEN}</button>
   <span class="short">${esc(short)}</span>
   <dl id="ohBadgeBody">
     <dt>area</dt><dd>${esc(area)}</dd>
-    <dt>version</dt><dd class="v">${esc(short)}</dd>
-    <dt>build</dt><dd>${esc(stamp)} <span class="sep">|</span> age <span id="ohBadgeAge">—</span></dd>
+    <dt>version</dt><dd><span class="v">${esc(short)}</span>
+      <span class="sep">|</span> age <span id="ohBadgeAge">—</span></dd>
+    <dt>build</dt><dd>${esc(stamp)}</dd>
     <dt>now</dt><dd id="ohBadgeNow">—</dd>
   </dl>
 </div>`;

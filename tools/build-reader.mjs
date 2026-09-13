@@ -277,7 +277,7 @@ const html = `<meta charset="utf-8">
   </div>
 </div>
 
-${badgeHtml({ short: version.short, built: version.built, area: 'reader' })}
+${badgeHtml({ short: version.short, built: version.stamped, commit: version.built, area: 'reader' })}
 
 <script id="corpus" type="application/json">${JSON.stringify(corpus).replace(/</g, '\\u003c')}</script>
 <script>

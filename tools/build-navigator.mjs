@@ -175,7 +175,7 @@ const html = `<meta charset="utf-8">
   </div>
 </div>
 
-${badgeHtml({ short: version.short, built: version.built, area: 'navigator · 501' })}
+${badgeHtml({ short: version.short, built: version.stamped, commit: version.built, area: 'navigator · 501' })}
 
 <script>
 ${BADGE_SCRIPT}

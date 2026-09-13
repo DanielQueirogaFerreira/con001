@@ -115,7 +115,7 @@ async function buildInfo(env) {
 }
 
 const badge = () => (BUILD && BUILD.short)
-  ? badgeHtml({ short: BUILD.short, built: BUILD.built ?? '', area: 'gate' })
+  ? badgeHtml({ short: BUILD.short, built: BUILD.stamped ?? BUILD.built ?? '', commit: BUILD.built ?? '', area: 'gate' })
   : '';
 
 const shell = (title, body, status = 200) => html(`<!doctype html><html lang="en"><head><meta charset="utf-8">
